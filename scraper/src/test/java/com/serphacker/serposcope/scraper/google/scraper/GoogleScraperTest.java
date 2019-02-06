@@ -179,6 +179,14 @@ public class GoogleScraperTest {
             "w+CAIQICIfTGlsbGUsTm9yZC1QYXMtZGUtQ2FsYWlzLEZyYW5jZQ",
             scraper.buildUule("Lille,Nord-Pas-de-Calais,France").replaceAll("=+$", "")
         );
+        assertEquals(
+            "w+CAIQICISTWluYXRvLFRva3lvLEphcGFu",
+            scraper.buildUule("Minato,Tokyo,Japan").replaceAll("=+$", "")
+        );
+        assertEquals(
+            "w+CAIQICIWU2FwcG9ybyxIb2trYWlkbyxKYXBhbg",
+            scraper.buildUule("Sapporo,Hokkaido,Japan").replaceAll("=+$", "")
+        );
     }
 
     @Test

@@ -397,7 +397,7 @@ serposcope.googleGroupController = function () {
                 var item = arg;
                 var array = this.query.split(" ");
                 for(var i=0; i<array.length; i++){
-                    if( item.indexOf(array[i].toLowerCase()) == -1){
+                    if( item.indexOf(array[i]) === -1){
                         return false;
                     }
                 }
