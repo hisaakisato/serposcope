@@ -15,6 +15,7 @@ import serposcope.controllers.admin.UsersController;
 import serposcope.controllers.AuthController;
 import serposcope.controllers.GroupController;
 import serposcope.controllers.HomeController;
+import serposcope.controllers.JudgeController;
 import serposcope.controllers.UserPreferences;
 import serposcope.controllers.admin.AdminController;
 import serposcope.controllers.admin.DebugController;
@@ -124,6 +125,8 @@ public class Routes implements ApplicationRoutes {
         router.GET().route("/google/{groupId: [0-9]+}/target/{targetId: [0-9]+}").with(GoogleTargetController.class, "target");
         
         router.GET().route("/assets/{fileName: .*}").with(AssetsController.class, "serveStatic");
+
+        router.GET().route("/judge").with(JudgeController.class, "judge");
     }
 
 }
