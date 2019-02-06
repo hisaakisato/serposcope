@@ -33,7 +33,6 @@
     <div class="col-sm-6" >
         <div class="pull-right" >
             
-            <#if user.isAdmin()>
             <div class="inline-block">
                 <div class="input-group" >
                     <a href="#" id="btn-add-event" class="btn btn-default" data-toggle="tooltip" data-container="body" 
@@ -42,7 +41,6 @@
                     </a>       
                 </div>
             </div>
-            </#if>
 
             <div class="inline-block" >
                 <div class="input-group" style="width: 190px;">
@@ -127,19 +125,12 @@
                                <i class="glyphicon glyphicon-new-window" ></i>
                             </a>
                         <#else>
-                            <#if user.isAdmin()>
                             <a href="#" class="btn-draw-chart" data-url="${entry.url}" data-toggle="tooltip" title="${i18n("google.search.drawChart")}" >
                                 <i class="fa fa-fw fa-line-chart" ></i>
                             </a>
                             <a href="#" class="btn-add-favorite" data-url="${entry.url}" data-toggle="tooltip" title="${i18n("google.search.addWebsite")}" >
                                 <i class="glyphicon glyphicon-plus" ></i>
                             </a>                                        
-                            <#else>
-                            <a href="#" ><i class="fa fa-fw" ></i></a>
-                            <a href="#" class="btn-draw-chart" data-url="${entry.url}" data-toggle="tooltip" title="${i18n("google.search.drawChart")}" >
-                                <i class="fa fa-fw fa-line-chart" ></i>
-                            </a>
-                            </#if>
                         </#if>
                         <a target="_blank" href="${fu.noreferrer(entry.url)}" data-toggle="tooltip" title="${entry.url}" >${entry.getUnicodeUrl()}</a>
                     </td>

@@ -185,8 +185,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result addSearch(
         Context context,
@@ -273,8 +272,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result addTarget(
         Context context,
@@ -352,8 +350,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result renameTarget(
         Context context,
@@ -386,8 +383,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result delSearch(
         Context context,
@@ -433,8 +429,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result delTarget(
         Context context,
@@ -513,8 +508,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result exportSearches(
         Context context,
@@ -570,8 +564,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result addEvent(Context context,
         @Param("day") String day,
@@ -627,8 +620,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result delEvent(Context context, @Param("day") String day) {
         FlashScope flash = context.getFlashScope();

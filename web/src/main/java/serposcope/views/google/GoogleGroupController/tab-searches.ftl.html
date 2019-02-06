@@ -5,9 +5,9 @@
             <img class="ajax-loader" src="/assets/img/loader.gif" />
         </div>
         <div>
-            <a href="#" class="btn btn-primary btn-add-search" title="${i18n("label.addSearch")}" data-toggle="tooltip" >
-               <i class="glyphicon glyphicon-search hidden-lg" ></i><span class="hidden-xs hidden-sm hidden-md" > ${i18n("label.addSearch")}</span>
-            </a>
+            <button class="btn btn-primary btn-add-search" >
+               <i class="glyphicon glyphicon-search hidden-lg" ></i><span> ${i18n("label.addSearch")}</span>
+            </button>
             <input id="btn-export-searches" type="button" class="btn btn-primary" value="${i18n("google.group.exportKeywords")}"
                    data-action="${reverseRoute("google.GoogleGroupController","exportSearches","groupId",group.getId())}" />
             <input id="btn-delete-searches" type="button" class="btn btn-danger" value="${i18n("google.group.deleteKeywords")}" 
