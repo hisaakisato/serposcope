@@ -40,19 +40,19 @@
                         </div>
                         <table class="table table-condensed table-bordered" >
                             <tr>
-                                <th class="width30" >#</th>
-                                <th class="width40" >${i18n("label.module")}</th>
-                                <th>${i18n("label.name")}</th>
+                                <th class="width30" style="white-space:nowrap;" >#</th>
+                                <th class="width40" style="white-space:nowrap;" >${i18n("label.module")}</th>
+                                <th style="white-space:nowrap;" >${i18n("label.name")}</th>
                             </tr>
                             <#list groups as group>
                             <tr>
-                                <td>
+                                <td style="white-space:nowrap;" >
                                     <a href="${reverseRoute("google.GoogleGroupController","delete", "groupId",group.getId())}" class="btn-delete-group text-danger" 
                                        data-id="${group.getId()}" data-name="${group.getName()}"
                                        title="${i18n("label.delete")}" data-toggle="tooltip" 
                                     >
                                         <i class="glyphicon glyphicon-remove" ></i>
-                                    </a>                                    
+                                    </a>
                                     <a href="${reverseRoute("google.GoogleGroupController","rename","groupId",group.getId())}" class="btn-rename-group text-normal" 
                                        data-id="${group.getId()}" data-name="${group.getName()}"
                                        title="${i18n("label.rename")}" data-toggle="tooltip" 
