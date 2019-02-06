@@ -43,10 +43,10 @@
                 </div>
 
                 <ul class="nav navbar-top-links navbar-left">
-                    <#if user.isAdmin() >
                     <li>
                         <a href="${reverseRoute("GroupController","groups")}" >${i18n("label.groups")}</a>
                     </li>
+                    <#if user.isAdmin() >
                     <li>
                         <a href="${reverseRoute("admin.AdminController","admin")}" >${i18n("label.admin")}</a>
                     </li>

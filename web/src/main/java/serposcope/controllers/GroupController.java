@@ -14,6 +14,7 @@ import com.serphacker.serposcope.db.base.BaseDB;
 import com.serphacker.serposcope.db.google.GoogleDB;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
+import com.serphacker.serposcope.models.base.User;
 import conf.SerposcopeConf;
 import java.util.Comparator;
 import java.util.List;
@@ -83,7 +84,6 @@ public class GroupController extends BaseController {
     }
     
     @FilterWith({
-        AdminFilter.class,
         XSRFFilter.class
     })
     public Result create(
@@ -108,6 +108,8 @@ public class GroupController extends BaseController {
         
         Group group = new Group(module, name);
         baseDB.group.insert(group);
+        User user = context.getAttribute("user", User.class);
+        baseDB.user.addPerm(user, group);
         
         flash.success("home.groupCreated");
         switch(group.getModule()){

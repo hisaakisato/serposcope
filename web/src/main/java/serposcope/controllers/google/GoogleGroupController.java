@@ -476,8 +476,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result delete(Context context) {
         FlashScope flash = context.getFlashScope();
@@ -652,8 +651,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class,
-        AdminFilter.class
+        XSRFFilter.class
     })
     public Result rename(Context context, @Param("name") String name) {
         FlashScope flash = context.getFlashScope();
