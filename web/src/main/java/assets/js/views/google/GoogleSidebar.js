@@ -15,7 +15,7 @@ serposcope.googleSidebar = function () {
     };
     
     var searchSelected = function(search){
-        window.location = "/google/" + search.group + "/search/" + search.id;
+        window.location = "/google/" + $('#csp-vars').data('group-id') + "/search/" + search.id;
     };
     
     var searchSuggest = function(query, cb){
