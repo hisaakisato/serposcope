@@ -21,7 +21,7 @@
     </modules>
     
     <issueManagement>
-        <url>https://github.com/serphacker/serposcope/issues</url>
+        <url>https://github.com/hisaakisato/serposcope/issues</url>
         <system>GitHub Issues</system>
     </issueManagement>
 
@@ -34,9 +34,9 @@
     </licenses>
 
     <scm>
-        <connection>scm:git:git://github.com/serphacker/serposcope.git</connection>
-        <developerConnection>scm:git:ssh://github.com:serphacker/serposcope.git</developerConnection>
-        <url>http://github.com/serphacker/serposcope/tree/master</url>
+        <connection>scm:git:git://github.com/hisaakisato/serposcope.git</connection>
+        <developerConnection>scm:git:ssh://github.com:hisaakisato/serposcope.git</developerConnection>
+        <url>http://github.com/hisaakisato/serposcope/tree/master</url>
     </scm>
     
     <developers>
@@ -48,6 +48,7 @@
         </developer>
     </developers>
     
+    <!--
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -58,7 +59,8 @@
             <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
         </repository>
     </distributionManagement>    
-    
+    -->
+
     <profiles>
         <profile>
             <id>javadoc</id>
@@ -81,6 +83,7 @@
             </build>
         </profile>
 
+        <!--
         <profile>
             <id>deploy</id>
             <activation>
@@ -148,6 +151,7 @@
                 </plugins>
             </build>
         </profile>
+        -->
     </profiles>
     
 </project>
