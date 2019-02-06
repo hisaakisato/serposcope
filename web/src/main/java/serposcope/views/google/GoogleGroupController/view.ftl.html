@@ -20,16 +20,6 @@
             <a href="#" class="btn btn-primary btn-add-event" title="${i18n("label.addEvent")}" data-toggle="tooltip"  >
                <i class="fa fa-fw fa-calendar hidden-lg" ></i><span class="hidden-xs hidden-sm hidden-md" > ${i18n("label.addEvent")}</span>
             </a>
-            <a href="${reverseRoute("google.GoogleGroupController","rename","groupId",group.getId())}" 
-               class="btn btn-primary btn-rename" title="${i18n("label.rename")}" data-toggle="tooltip"  >
-               <i class="fa fa-fw fa-pencil hidden-lg" ></i><span class="hidden-xs hidden-sm hidden-md" >  ${i18n("label.rename")}</span>
-            </a>            
-            <a href="${reverseRoute("google.GoogleGroupController","delete", "groupId",group.getId())}" class="btn btn-danger btn-delete-group" 
-               data-id="${group.getId()}" data-name="${group.getName()}"
-               title="${i18n("google.group.deleteGroup")}" data-toggle="tooltip" 
-               >
-               <i class="glyphicon glyphicon-remove hidden-lg" ></i><span class="hidden-xs hidden-sm hidden-md" > ${i18n("google.group.deleteGroup")}</span>
-            </a>
         </div>
     </div>    
 </div>
