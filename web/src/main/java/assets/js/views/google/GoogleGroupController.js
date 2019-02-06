@@ -444,6 +444,7 @@ serposcope.googleGroupController = function () {
         $('.btn-delete-event').click(deleteEvent);
         
         $('.btn-delete-group').click(deleteGroup);
+        $('.btn-rename-group').click(renameGroup);
         $('.btn-add-target').click(showNewTargetModal);
         $('.btn-add-target-bulk').click(showNewBulkTargetModal);
         $('.btn-add-search').click(showNewSearchModal);

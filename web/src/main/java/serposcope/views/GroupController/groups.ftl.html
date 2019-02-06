@@ -57,6 +57,12 @@
                                         <i class="glyphicon glyphicon-remove" ></i>
                                     </a>                                    
                                     </#if>
+                                    <a href="${reverseRoute("google.GoogleGroupController","rename","groupId",group.getId())}" class="btn-rename-group text-normal" 
+                                       data-id="${group.getId()}" data-name="${group.getName()}"
+                                       title="${i18n("label.rename")}" data-toggle="tooltip" 
+                                    >
+                                        <i class="glyphicon glyphicon-edit" ></i>
+                                    </a>
                                 </td>
                                 <td>${group.getModule()}</td>
                                 <td><a href="${fu.groupLink(group)}" >${group.getName()}</a></td>

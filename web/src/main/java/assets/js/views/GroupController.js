@@ -36,12 +36,33 @@ serposcope.GroupController = function () {
         return false;
     };
     
+    var renameGroup = function(elt){
+        var href = $(elt.currentTarget).attr("href");
+        var name = prompt("new group name");
+        
+        $('<form>', {
+            'action': href,
+            'method': 'post',
+            'target': '_top'
+        }).append($('<input>', {
+            'name': 'name',
+            'value': name,
+            'type': 'hidden'
+        })).append($('<input>', {
+            'name': '_xsrf',
+            'value': $('#_xsrf').attr("data-value"),
+            'type': 'hidden'
+        })).appendTo(document.body).submit();
+        
+        return false;
+    };
     
     var render = function() {
         $(window).bind("load resize", function () {
             resizeTabContent();
         });
         $('.btn-delete-group').click(deleteGroup);
+        $('.btn-rename-group').click(renameGroup);
         $('#sidebar-group-search').typeahead({
             source: serposcope.sidebar.groupSuggest,
             minLength: 0,
