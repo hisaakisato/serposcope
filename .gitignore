@@ -31,3 +31,8 @@ nbactions.xml
 #OSX specific
 .DS_Store
 /settings.xml
+
+# eclipse
+.settings/
+.project
+.classpath
