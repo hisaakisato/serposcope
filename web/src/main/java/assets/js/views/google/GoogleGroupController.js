@@ -426,6 +426,11 @@ serposcope.googleGroupController = function () {
         } 
     };
     
+    var showRunGroupModal = function () {
+        $('#run-group-modal').modal();
+        return false;
+    };
+    
     var view = function() {
         $(window).bind("load resize", onResize);
         $('input[name="day"]').daterangepicker({
@@ -442,6 +447,7 @@ serposcope.googleGroupController = function () {
         $('.toggle-event').click(toggleEvent);
         $('.btn-add-event').click(showNewEventModal);
         $('.btn-delete-event').click(deleteEvent);
+        $('.btn-run-group').click(showRunGroupModal);
         
         $('.btn-delete-group').click(deleteGroup);
         $('.btn-rename-group').click(renameGroup);
@@ -460,6 +466,9 @@ serposcope.googleGroupController = function () {
         $('#btn-delete-searches').click(deleteSearches);
         $('#btn-delete-targets').click(deleteTargets);
         $('#table-target').stupidtable();
+
+        //$('.btn-start-task').click(showNewTargetModal);
+
         renderScoreHistory();
         configureTabs();
         serposcope.googleGroupControllerGrid.render();

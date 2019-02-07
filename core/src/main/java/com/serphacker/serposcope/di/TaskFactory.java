@@ -7,6 +7,7 @@
  */
 package com.serphacker.serposcope.di;
 
+import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.task.google.GoogleTask;
 import java.time.LocalDateTime;
@@ -16,4 +17,5 @@ import javax.annotation.Nullable;
 
 public interface TaskFactory {
     GoogleTask create(Run run);
+    GoogleTask createWithGroup(Run run, Group group);
 }

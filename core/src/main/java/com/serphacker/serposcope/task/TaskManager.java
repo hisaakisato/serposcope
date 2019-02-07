@@ -58,6 +58,19 @@ public class TaskManager {
         }
     }
     
+    public boolean startGoogleTask(Run run, Group group){
+        synchronized(googleTaskLock){
+            
+            if(googleTask != null && googleTask.isAlive()){
+                return false;
+            }
+            
+            googleTask = googleTaskFactory.createWithGroup(run, group);
+            googleTask.start();
+            return true;
+        }
+    }
+
     public boolean abortGoogleTask(boolean interrupt){
         synchronized(googleTaskLock){
             if(googleTask == null || !googleTask.isAlive()){

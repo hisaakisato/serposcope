@@ -25,12 +25,15 @@ import com.serphacker.serposcope.models.google.GoogleTarget.PatternType;
 import com.serphacker.serposcope.models.google.GoogleTargetSummary;
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
+
+import static com.serphacker.serposcope.models.base.Group.Module.GOOGLE;
 import static com.serphacker.serposcope.scraper.google.GoogleDevice.SMARTPHONE;
 import com.serphacker.serposcope.task.TaskManager;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.IDN;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,7 +56,7 @@ import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import serposcope.controllers.GroupController;
-import serposcope.filters.AdminFilter;
+import serposcope.controllers.HomeController;
 import serposcope.filters.XSRFFilter;
 import serposcope.helpers.Validator;
 
@@ -708,6 +711,23 @@ public class GoogleGroupController extends GoogleController {
         builder.append("]");
 
         return Results.json().renderRaw(builder.toString());
+    }
+
+    @FilterWith(XSRFFilter.class)
+    public Result startTask(
+        Context context
+    ) {
+        Group group = context.getAttribute("group", Group.class);
+        FlashScope flash = context.getFlashScope();
+
+        Run run = new Run(Run.Mode.MANUAL, Group.Module.GOOGLE, LocalDateTime.now());
+        
+        if (!taskManager.startGoogleTask(run, group)) {
+            flash.error("admin.task.errGoogleAlreadyRunning");
+            return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
+        }
+        flash.success("admin.task.tasksStarted");
+        return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
     }
 
 }
