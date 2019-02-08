@@ -12,12 +12,11 @@ import com.google.inject.Singleton;
 import com.serphacker.serposcope.db.base.BaseDB;
 import com.serphacker.serposcope.di.TaskFactory;
 import com.serphacker.serposcope.models.base.Group;
-import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.Run;
-import com.serphacker.serposcope.models.base.Run.Mode;
+import com.serphacker.serposcope.scraper.http.proxy.ProxyRotator;
 import com.serphacker.serposcope.task.google.GoogleTask;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +32,8 @@ public class TaskManager {
     @Inject
     BaseDB db;
     
+    public final ProxyRotator rotator = new ProxyRotator(Collections.emptySet());
+
     final Object googleTaskLock = new Object();
     GoogleTask googleTask;
     
@@ -53,6 +54,7 @@ public class TaskManager {
             }
             
             googleTask = googleTaskFactory.create(run);
+            googleTask.rotator = rotator;
             googleTask.start();
             return true;
         }
@@ -66,6 +68,7 @@ public class TaskManager {
             }
             
             googleTask = googleTaskFactory.createWithGroup(run, group);
+            googleTask.rotator = rotator;
             googleTask.start();
             return true;
         }

@@ -38,6 +38,7 @@ public class GoogleTaskRunnable implements Runnable {
     boolean cookiesStickToProxy = true;
 
     @Override
+    @SuppressWarnings("unchecked")
     public void run() {
         GoogleSearch search = null;
         ScrapProxy proxy = null;
@@ -48,7 +49,7 @@ public class GoogleTaskRunnable implements Runnable {
             
             while (!controller.shouldStop()) {
 
-                if (Thread.currentThread().interrupted()) {
+				if (Thread.interrupted()) {
                     LOG.error("interrupted, aborting the thread");
                     break;
                 }
@@ -60,10 +61,20 @@ public class GoogleTaskRunnable implements Runnable {
                     }
                 }
 
-                proxy = controller.rotator.rotate(proxy);
+                while (true) {
+	                proxy = controller.rotator.rotate(proxy);
+	                if (proxy != null) {
+	                	break;
+	                }
+                    LOG.warn("no proxy available, wait a moment");
+                    Thread.sleep(10000);
+                    if (controller.searches.isEmpty()) {
+                    	break;
+                    }
+                }
                 if (proxy == null) {
-                    LOG.warn("no more proxy, stopping the thread");
-                    break;
+//                  LOG.trace("no search to do, waiting for termination");
+                	continue;
                 }
                 scraper.getHttp().setProxy(proxy);
                 

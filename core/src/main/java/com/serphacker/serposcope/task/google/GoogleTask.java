@@ -56,7 +56,7 @@ public class GoogleTask extends AbstractTask {
     ScrapClientFactory scrapClientFactory;
     
     GoogleDB googleDB;
-    ProxyRotator rotator;
+    public ProxyRotator rotator;
 
     Run previousRun;
     final Map<Short,Integer> previousRunsByDay = new ConcurrentHashMap<>();
@@ -123,23 +123,17 @@ public class GoogleTask extends AbstractTask {
         initializeTargets();
         
         
-        int nThread = googleOptions.getMaxThreads();
         List<ScrapProxy> proxies = baseDB.proxy.list().stream().map(Proxy::toScrapProxy).collect(Collectors.toList());
         
         if(proxies.isEmpty()){
             LOG.warn("no proxy configured, using direct connection");
             proxies.add(new DirectNoProxy());
         }
-        
-        if( proxies.size() < nThread ){
-            LOG.info("less proxy ({}) than max thread ({}), setting thread number to {}", 
-                new Object[]{proxies.size(), nThread, nThread});
-            nThread = proxies.size();
-        }
-        
-        rotator = new ProxyRotator(proxies);
+        rotator.replace(proxies);
+
         totalSearch = searches.size();
         
+        int nThread = googleOptions.getMaxThreads();
         startThreads(nThread);
         waitForThreads();
         
@@ -164,7 +158,9 @@ public class GoogleTask extends AbstractTask {
     protected void startThreads(int nThread){
         threads = new Thread[nThread];
         for (int iThread = 0; iThread < threads.length; iThread++) {
-            threads[iThread] = new Thread(new GoogleTaskRunnable(this), "google-" + iThread);
+            threads[iThread] = new Thread(
+            		new GoogleTaskRunnable(this),
+            		"google-" + this.run.getId() + "-" + iThread);
             threads[iThread].start();
         }        
     }

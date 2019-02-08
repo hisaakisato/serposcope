@@ -103,7 +103,7 @@ public class GoogleTaskRunnableTest {
     @Test
     public void testNoProxy() {
         runnable.run();
-        assertLogged("no more proxy, stopping the thread");
+        assertLogged("no proxy available, wait a moment");
     }
 
     @Test
