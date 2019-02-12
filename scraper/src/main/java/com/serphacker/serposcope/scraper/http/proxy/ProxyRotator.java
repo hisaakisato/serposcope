@@ -29,8 +29,8 @@ public class ProxyRotator {
 			if (previousProxy != null) {
 				ScrapProxy p = used(previousProxy);
 				if (p != null) {
-					used.remove(p);
-					proxies.add(p);
+					this.used.remove(p);
+					this.proxies.add(p);
 				}
 			}
 			ScrapProxy proxy = proxies.poll();
@@ -56,6 +56,7 @@ public class ProxyRotator {
 		synchronized (proxy) {
 			ScrapProxy p = used(proxy);
 			if (p != null) {
+				this.used.remove(p);
 				proxy = p;
 			}
 			return proxies.add(proxy);
@@ -100,7 +101,7 @@ public class ProxyRotator {
 				return p;
 			}
 		}
-		return  null;
+		return null;
 	}
 	
 	private boolean check(ScrapProxy p1, ScrapProxy p2) {
