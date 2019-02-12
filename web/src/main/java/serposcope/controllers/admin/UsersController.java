@@ -60,6 +60,7 @@ public class UsersController extends BaseController {
     @FilterWith(XSRFFilter.class)
     public Result add(
         Context context,
+        @Param("name") String name,
         @Param("email") String email,
         @Param("email-confirm") String emailConfirm,
         @Param("password") String password,
@@ -96,6 +97,7 @@ public class UsersController extends BaseController {
         try {
             User user = new User();
             user.setEmail(email);
+            user.setName(name);
             user.setPassword(password);
             user.setAdmin("on".equals(admin));
             if (baseDB.user.insert(user) == -1) {

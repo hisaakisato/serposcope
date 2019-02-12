@@ -8,6 +8,7 @@ create table `CONFIG` (
 drop table if exists `USER`;
 create table `USER` (
     id int primary key auto_increment,
+    name varchar(255),
     email varchar(255),
     password_hash tinyblob,
     password_salt tinyblob,

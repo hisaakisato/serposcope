@@ -48,6 +48,7 @@ public class UserDB extends AbstractDB {
 
             id = new SQLInsertClause(con, dbTplConf, t_user)
                 .set(t_user.email, user.getEmail())
+                .set(t_user.name, user.getName())
                 .set(t_user.passwordHash, user.getPasswordHash() == null ? null : new SerialBlob(user.getPasswordHash()))
                 .set(t_user.passwordSalt, user.getPasswordSalt() == null ? null : new SerialBlob(user.getPasswordSalt()))
                 .set(t_user.admin, user.isAdmin())
@@ -70,6 +71,7 @@ public class UserDB extends AbstractDB {
 
             updated = new SQLUpdateClause(con, dbTplConf, t_user)
                 .set(t_user.email, user.getEmail())
+                .set(t_user.name, user.getName())
                 .set(t_user.passwordHash, user.getPasswordHash() == null ? null : new SerialBlob(user.getPasswordHash()))
                 .set(t_user.passwordSalt, user.getPasswordSalt() == null ? null : new SerialBlob(user.getPasswordSalt()))
                 .set(t_user.admin, user.isAdmin())
@@ -274,6 +276,7 @@ public class UserDB extends AbstractDB {
         User user = new User();
         user.setId(tuple.get(t_user.id));
         user.setEmail(tuple.get(t_user.email));
+        user.setName(tuple.get(t_user.name));
         Blob passwordHash = tuple.get(t_user.passwordHash);
         if(passwordHash != null){
             user.setPasswordHash(passwordHash.getBytes(1,(int)passwordHash.length()));

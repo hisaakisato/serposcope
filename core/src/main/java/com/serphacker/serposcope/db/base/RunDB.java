@@ -462,6 +462,7 @@ public class RunDB extends AbstractDB {
 	        User user = new User();
 	        user.setId(tuple.get(t_user.id));
 	        user.setEmail(tuple.get(t_user.email));
+	        user.setName(tuple.get(t_user.name));
 	        user.setAdmin(tuple.get(t_user.admin));
 	        run.setUser(user);
         }
