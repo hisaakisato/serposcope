@@ -7,12 +7,11 @@
  */
 package com.serphacker.serposcope.task.google;
 
+import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 import com.serphacker.serposcope.db.google.GoogleDB;
 import com.serphacker.serposcope.di.CaptchaSolverFactory;
 import com.serphacker.serposcope.di.ScrapClientFactory;
-import com.serphacker.serposcope.models.base.Group;
 //import com.serphacker.serposcope.di.ScraperFactory;
 import com.serphacker.serposcope.models.base.Proxy;
 import com.serphacker.serposcope.models.base.Run;
@@ -78,9 +77,7 @@ public class GoogleTask extends AbstractTask {
     boolean updateRun;
     boolean shuffle = true;
     
-    Group group;
-
-    @AssistedInject
+    @Inject
     public GoogleTask(
         GoogleScraperFactory googleScraperFactory,
         CaptchaSolverFactory captchaSolverFactory,
@@ -97,21 +94,7 @@ public class GoogleTask extends AbstractTask {
         
         httpUserAgent = ScrapClient.DEFAULT_USER_AGENT;
         httpTimeoutMS = ScrapClient.DEFAULT_TIMEOUT_MS;
-    }    
-    
-    @AssistedInject
-    public GoogleTask(
-        GoogleScraperFactory googleScraperFactory,
-        CaptchaSolverFactory captchaSolverFactory,
-        ScrapClientFactory scrapClientFactory,
-        GoogleDB googleDB,
-        @Assisted Run run,
-        @Assisted Group group
-    ){
-        this(googleScraperFactory, captchaSolverFactory,
-        		scrapClientFactory, googleDB, run);
-        this.group = group;
-    }    
+    }
 
     @Override
     public Run.Status doRun() {
@@ -261,7 +244,7 @@ public class GoogleTask extends AbstractTask {
     
     protected void initializeSearches() {
         List<GoogleSearch> searchList;
-        if (group == null) {
+        if (this.run.getGroup() == null) {
 	        if(updateRun){
 	            searchList = googleDB.search.listUnchecked(run.getId());
 	        } else {
@@ -269,7 +252,7 @@ public class GoogleTask extends AbstractTask {
 	        }
         } else {
         	searchList = googleDB.search.listByGroup(
-        			Arrays.asList(group.getId()));
+        			Arrays.asList(this.run.getGroup().getId()));
         }
         if(shuffle){
             Collections.shuffle(searchList);
@@ -286,11 +269,11 @@ public class GoogleTask extends AbstractTask {
         } 
         
         List<GoogleTarget> targets;
-        if (group == null) {
+        if (this.run.getGroup() == null) {
         	targets = googleDB.target.list();
         } else {
         	targets = googleDB.target.list(
-        			Arrays.asList(group.getId()));
+        			Arrays.asList(this.run.getGroup().getId()));
         }
         for (GoogleTarget target : targets) {
             targetsByGroup.putIfAbsent(target.getGroupId(), new ArrayList<>());

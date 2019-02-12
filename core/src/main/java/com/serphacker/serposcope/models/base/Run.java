@@ -44,6 +44,8 @@ public class Run {
     int progress;
     int captchas;
     int errors;
+    User user;
+    Group group;
     
     public Run(Mode mode, Module module, LocalDateTime started) {
         this.mode = mode;
@@ -166,6 +168,22 @@ public class Run {
 
     public void setMode(Mode mode) {
         this.mode = mode;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
     }
 
     public boolean isRunning(){

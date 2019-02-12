@@ -15,6 +15,7 @@ import com.serphacker.serposcope.db.google.GoogleDB;
 import com.serphacker.serposcope.models.base.Group;
 import static com.serphacker.serposcope.models.base.Group.Module.GOOGLE;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.User;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import java.time.LocalDateTime;
@@ -110,7 +111,8 @@ public class TaskController extends BaseController {
             run.setStarted(LocalDateTime.now());            
         }
         
-        if (!taskManager.startGoogleTask(run)) {
+        User user = context.getAttribute("user", User.class);
+        if (!taskManager.startGoogleTask(run, user, null)) {
             flash.error("admin.task.errGoogleAlreadyRunning");
             return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
         }

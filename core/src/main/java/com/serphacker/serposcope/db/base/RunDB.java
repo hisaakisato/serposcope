@@ -9,21 +9,30 @@ package com.serphacker.serposcope.db.base;
 
 import com.google.inject.Singleton;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.Path;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
 import com.querydsl.sql.dml.SQLUpdateClause;
 import com.serphacker.serposcope.db.AbstractDB;
+import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.base.Run.Status;
+import com.serphacker.serposcope.models.base.User;
+
 import static com.serphacker.serposcope.models.base.Run.Status.ABORTING;
 import static com.serphacker.serposcope.models.base.Run.Status.DONE_ABORTED;
 import static com.serphacker.serposcope.models.base.Run.Status.DONE_CRASHED;
 import static com.serphacker.serposcope.models.base.Run.Status.DONE_SUCCESS;
 import static com.serphacker.serposcope.models.base.Run.Status.DONE_WITH_ERROR;
 import static com.serphacker.serposcope.models.base.Run.Status.RUNNING;
+
+import com.serphacker.serposcope.querybuilder.QGroup;
 import com.serphacker.serposcope.querybuilder.QRun;
+import com.serphacker.serposcope.querybuilder.QUser;
+
+import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -39,6 +48,8 @@ import java.util.stream.Collectors;
 public class RunDB extends AbstractDB {
     
     QRun t_run = QRun.run;
+    QUser t_user = QUser.user;
+    QGroup t_group = QGroup.group;
     
     public int insert(Run run) {
         int id = -1;
@@ -53,6 +64,8 @@ public class RunDB extends AbstractDB {
                 .set(t_run.errors, run.getErrors())
                 .set(t_run.status, run.getStatus().ordinal())
                 .set(t_run.mode, run.getMode().ordinal())
+                .set(t_run.userId, run.getUser() == null ? null : run.getUser().getId())
+                .set(t_run.groupId, run.getGroup() == null ? null : run.getGroup().getId())
                 .executeWithKey(t_run.id);
             
             run.setId(id);
@@ -163,8 +176,10 @@ public class RunDB extends AbstractDB {
         List<Run> runs = new ArrayList<>();
         try(Connection conn = ds.getConnection()){
             SQLQuery<Tuple> query = new SQLQuery<>(conn, dbTplConf)
-                .select(t_run.all())
-                .from(t_run);
+                .select(getFields())
+                .from(t_run)
+                .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+                .leftJoin(t_group).on(t_run.groupId.eq(t_group.id));
             
             if(firstId != null){
                 query = query.where(t_run.id.goe(firstId));
@@ -240,8 +255,10 @@ public class RunDB extends AbstractDB {
         try(Connection conn = ds.getConnection()){
             
             SQLQuery<Tuple> query = new SQLQuery<>(conn, dbTplConf)
-                .select(t_run.all())
-                .from(t_run);
+                .select(getFields())
+                .from(t_run)
+	            .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+	            .leftJoin(t_group).on(t_run.groupId.eq(t_group.id));
             
             if(statusesVal != null){
                 query.where(t_run.status.in(statusesVal));
@@ -277,8 +294,10 @@ public class RunDB extends AbstractDB {
         try(Connection conn = ds.getConnection()){
             
             List<Tuple> tuples = new SQLQuery<>(conn, dbTplConf)
-                .select(t_run.all())
+                .select(getFields())
                 .from(t_run)
+	            .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+	            .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
                 .where(t_run.moduleId.eq(module.ordinal()))
                 .where(t_run.day.eq(Date.valueOf(day)))
                 .fetch();
@@ -301,8 +320,10 @@ public class RunDB extends AbstractDB {
         try(Connection conn = ds.getConnection()){
             
             Tuple tuple = new SQLQuery<>(conn, dbTplConf)
-                .select(t_run.all())
+                .select(getFields())
                 .from(t_run)
+	            .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+	            .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
                 .where(t_run.id.eq(runId))
                 .fetchFirst();
                 
@@ -319,8 +340,10 @@ public class RunDB extends AbstractDB {
         try(Connection conn = ds.getConnection()){
             
             Tuple tuple = new SQLQuery<>(conn, dbTplConf)
-                .select(t_run.all())
+                .select(getFields())
                 .from(t_run)
+	            .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+	            .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
                 .where(t_run.id.lt(runId))
                 .orderBy(t_run.id.desc())
                 .fetchFirst();
@@ -338,8 +361,10 @@ public class RunDB extends AbstractDB {
         try(Connection conn = ds.getConnection()){
 
             SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
-                .select(t_run.all())
+                .select(getFields())
                 .from(t_run)
+	            .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+	            .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
                 .where(t_run.moduleId.eq(module.ordinal()));
             
             if( statuses != null){
@@ -367,8 +392,10 @@ public class RunDB extends AbstractDB {
         try(Connection conn = ds.getConnection()){
 
             SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
-                .select(t_run.all())
+                .select(getFields())
                 .from(t_run)
+	            .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+	            .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
                 .where(t_run.moduleId.eq(module.ordinal()));
             
             if( statuses != null){
@@ -417,8 +444,31 @@ public class RunDB extends AbstractDB {
         run.setErrors(tuple.get(t_run.errors));
         run.setCaptchas(tuple.get(t_run.captchas));
         run.setMode(Run.Mode.values()[tuple.get(t_run.mode)]);
-        
+        Integer userId = tuple.get(t_user.id);
+        if (userId != null) {
+	        User user = new User();
+	        user.setId(tuple.get(t_user.id));
+	        user.setEmail(tuple.get(t_user.email));
+	        user.setAdmin(tuple.get(t_user.admin));
+	        run.setUser(user);
+        }
+        Integer groupId = tuple.get(t_group.id);
+        if (groupId != null) {
+        	Group group = new Group(
+        			groupId,
+        			Group.Module.values()[tuple.get(t_group.moduleId)],
+        			tuple.get(t_group.name));
+        	run.setGroup(group);
+        }
+
         return run;
     }
-    
+
+    private Path<?>[] getFields() {
+    	List<Path<?>> paths = new ArrayList<>();
+    	paths.addAll(Arrays.asList(t_run.all()));
+    	paths.addAll(Arrays.asList(t_user.all()));
+    	paths.addAll(Arrays.asList(t_group.all()));
+    	return paths.toArray(new Path[paths.size()]);
+    }
 }

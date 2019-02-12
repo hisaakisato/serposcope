@@ -19,6 +19,7 @@ import com.serphacker.serposcope.db.google.GoogleDB;
 import com.serphacker.serposcope.models.base.Event;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.User;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.models.google.GoogleTarget.PatternType;
@@ -718,11 +719,12 @@ public class GoogleGroupController extends GoogleController {
         Context context
     ) {
         Group group = context.getAttribute("group", Group.class);
+        User user = context.getAttribute("user", User.class);
         FlashScope flash = context.getFlashScope();
 
         Run run = new Run(Run.Mode.MANUAL, Group.Module.GOOGLE, LocalDateTime.now());
         
-        if (!taskManager.startGoogleTask(run, group)) {
+        if (!taskManager.startGoogleTask(run, user, group)) {
             flash.error("admin.task.errGoogleAlreadyRunning");
             return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
         }

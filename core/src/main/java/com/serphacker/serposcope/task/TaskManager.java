@@ -13,11 +13,15 @@ import com.serphacker.serposcope.db.base.BaseDB;
 import com.serphacker.serposcope.di.TaskFactory;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.User;
 import com.serphacker.serposcope.scraper.http.proxy.ProxyRotator;
 import com.serphacker.serposcope.task.google.GoogleTask;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,6 +41,9 @@ public class TaskManager {
     final Object googleTaskLock = new Object();
     GoogleTask googleTask;
     
+    final Map<String, Object> googleTaskLocks = new ConcurrentHashMap<String, Object>();
+    final Map<String, GoogleTask> googleTasks = new ConcurrentHashMap<String, GoogleTask>();
+
     public boolean isGoogleRunning(){
         synchronized(googleTaskLock){
             if(googleTask != null && googleTask.isAlive()){
@@ -60,15 +67,21 @@ public class TaskManager {
         }
     }
     
-    public boolean startGoogleTask(Run run, Group group){
-        synchronized(googleTaskLock){
-            
+    public boolean startGoogleTask(Run run, User user, Group group){
+    	String key = user.getEmail();
+    	googleTaskLocks.putIfAbsent(key, new Object());
+    	Object lock = googleTaskLocks.get(key);
+        synchronized(lock){
+        	googleTask = googleTasks.get(key);
             if(googleTask != null && googleTask.isAlive()){
                 return false;
             }
-            
-            googleTask = googleTaskFactory.createWithGroup(run, group);
+
+            run.setUser(user);
+            run.setGroup(group);
+            googleTask =googleTaskFactory.create(run);
             googleTask.rotator = rotator;
+            googleTasks.put(key, googleTask);
             googleTask.start();
             return true;
         }
