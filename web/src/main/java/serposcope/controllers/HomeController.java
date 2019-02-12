@@ -7,6 +7,17 @@
  */
 package serposcope.controllers;
 
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.serphacker.serposcope.db.base.BaseDB;
@@ -16,27 +27,16 @@ import com.serphacker.serposcope.models.base.Config;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.User;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.models.google.GoogleTargetSummary;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
 import ninja.Context;
 import ninja.FilterWith;
 import ninja.Result;
 import ninja.Results;
 import ninja.Router;
 import ninja.params.PathParam;
-import org.apache.commons.io.FileUtils;
 import serposcope.filters.AuthFilter;
 import serposcope.lifecycle.DBSizeUtils;
 
@@ -80,10 +80,10 @@ public class HomeController extends BaseController {
         if(!Config.VALID_DISPLAY_HOME.contains(display)){
             display = Config.DEFAULT_DISPLAY_HOME;
         }
-        
+        User user = context.getAttribute("user", User.class);
         List<Group> groups = (List<Group>) context.getAttribute("groups");
-        Run currentRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_RUNNING, null);
-        Run lastRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_DONE, null);
+        Run currentRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_RUNNING, null, user);
+        Run lastRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_DONE, null, user);
         if(lastRun == null){
             return Results
                 .ok()
@@ -135,7 +135,7 @@ public class HomeController extends BaseController {
             .render("groups", context.getAttribute("groups"))
             .render("currentRun", currentRun)
             .render("lastRun", lastRun)
-            .render("lastRuns", baseDB.run.listByStatus(null, 7l, 0l))
+            .render("lastRuns", baseDB.run.listByStatus(null, 7l, 0l, user))
             .render("hasTarget", googleDB.target.hasTarget())
             .render("summaries", summaries)
             .render("searches", googleDB.search.mapBySearchId(searchIds))

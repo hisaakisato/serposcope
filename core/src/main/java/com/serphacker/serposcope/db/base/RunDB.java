@@ -10,6 +10,7 @@ package com.serphacker.serposcope.db.base;
 import com.google.inject.Singleton;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
@@ -245,7 +246,7 @@ public class RunDB extends AbstractDB {
     
     public final static Collection<Run.Status> STATUSES_RUNNING = Arrays.asList(RUNNING,ABORTING);
     public final static Collection<Run.Status> STATUSES_DONE = Arrays.asList(DONE_ABORTED,DONE_CRASHED,DONE_SUCCESS,DONE_WITH_ERROR);
-    public List<Run> listByStatus(Collection<Run.Status> statuses, Long limit, Long offset){
+    public List<Run> listByStatus(Collection<Run.Status> statuses, Long limit, Long offset, User user){
         List<Integer> statusesVal = null;
         if(statuses != null && !statuses.isEmpty()){
             statusesVal = statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList());
@@ -274,7 +275,11 @@ public class RunDB extends AbstractDB {
                 query.offset(offset);
             }
             
-            List<Tuple> tuples = query.fetch();
+        	if (user != null) {
+        		query.where(t_run.userId.eq(user.getId()));
+        	}
+        	
+        	List<Tuple> tuples = query.fetch();
                 
             for (Tuple tuple : tuples) {
                 Run run = fromTuple(tuple);
@@ -356,7 +361,7 @@ public class RunDB extends AbstractDB {
         return run;
     }    
     
-    public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate){
+    public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate, User user){
         Run run = null;
         try(Connection conn = ds.getConnection()){
 
@@ -375,7 +380,11 @@ public class RunDB extends AbstractDB {
                 query.where(t_run.day.loe(Date.valueOf(untilDate)));
             }
         
-            Tuple tuple = query
+        	if (user != null) {
+        		query.where(t_run.userId.eq(user.getId()));
+        	}
+
+        	Tuple tuple = query
                 .orderBy(t_run.id.desc())
                 .fetchFirst();
 
@@ -387,7 +396,7 @@ public class RunDB extends AbstractDB {
         return run;           
     }
     
-    public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate){
+    public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate, User user){
         Run run = null;
         try(Connection conn = ds.getConnection()){
 
@@ -406,7 +415,11 @@ public class RunDB extends AbstractDB {
                 query.where(t_run.day.goe(Date.valueOf(fromDate)));
             }
         
-            Tuple tuple = query
+        	if (user != null) {
+        		query.where(t_run.userId.eq(user.getId()));
+        	}
+
+        	Tuple tuple = query
                 .orderBy(t_run.id.asc())
                 .fetchFirst();
 

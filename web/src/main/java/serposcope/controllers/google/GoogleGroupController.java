@@ -90,7 +90,7 @@ public class GoogleGroupController extends GoogleController {
         Map<Integer, GoogleTargetSummary> summaryByTagetId = new HashMap<>();
         Map<Integer, List<Integer>> scoreHistoryByTagetId = new HashMap<>();
 
-        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null);
+        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null, null);
         if (lastRun != null) {
             List<GoogleTargetSummary> summaries = googleDB.targetSummary.list(lastRun.getId());
             for (GoogleTargetSummary summary : summaries) {

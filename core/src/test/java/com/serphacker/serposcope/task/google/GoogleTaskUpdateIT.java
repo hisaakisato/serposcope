@@ -209,7 +209,7 @@ public class GoogleTaskUpdateIT extends AbstractDBIT {
         currentFactory = successFactory;
         task.shuffle = false;
         task.run();
-        Run lastRun = baseDB.run.findLast(Group.Module.GOOGLE, null, null);
+        Run lastRun = baseDB.run.findLast(Group.Module.GOOGLE, null, null, null);
         assertEquals(1, lastRun.getId());
         assertEquals(Status.DONE_SUCCESS, lastRun.getStatus());
 
@@ -235,7 +235,7 @@ public class GoogleTaskUpdateIT extends AbstractDBIT {
         currentFactory = failFactory;
         task.shuffle = false;
         task.run();
-        Run failRun = baseDB.run.findLast(Group.Module.GOOGLE, null, null);
+        Run failRun = baseDB.run.findLast(Group.Module.GOOGLE, null, null, null);
         assertEquals(2, failRun.getId());
         assertEquals(Status.DONE_WITH_ERROR, failRun.getStatus());
 
@@ -266,7 +266,7 @@ public class GoogleTaskUpdateIT extends AbstractDBIT {
         task.shuffle = false;
         task.run();
         
-        Run updatedRun = baseDB.run.findLast(Group.Module.GOOGLE, null, null);
+        Run updatedRun = baseDB.run.findLast(Group.Module.GOOGLE, null, null, null);
         assertEquals(failRun.getId(), updatedRun.getId());
         assertEquals(Status.DONE_SUCCESS, updatedRun.getStatus());
 

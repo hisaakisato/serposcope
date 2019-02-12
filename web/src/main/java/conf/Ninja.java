@@ -116,7 +116,7 @@ public class Ninja extends NinjaDefault {
             crypto.update(props);
             cookieEncryption.update(props);
             
-            List<Run> runs = db.run.listByStatus(RunDB.STATUSES_RUNNING, null, null);
+            List<Run> runs = db.run.listByStatus(RunDB.STATUSES_RUNNING, null, null, null);
             if(!runs.isEmpty()){
                 LOG.warn("Mark crashed {} running task", runs.size());
                 for (Run run : runs) {

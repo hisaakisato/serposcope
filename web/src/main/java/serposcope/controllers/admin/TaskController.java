@@ -37,7 +37,6 @@ import java.util.Arrays;
 import ninja.params.PathParam;
 import serposcope.controllers.HomeController;
 
-@FilterWith(AdminFilter.class)
 @Singleton
 public class TaskController extends BaseController {
 
@@ -74,7 +73,7 @@ public class TaskController extends BaseController {
         long limit = 50;
         long offset = page * limit;
 
-        List<Run> done = baseDB.run.listByStatus(RunDB.STATUSES_DONE, limit, offset);
+        List<Run> done = baseDB.run.listByStatus(RunDB.STATUSES_DONE, limit, offset, null);
 
         Integer previousPage = page > 0 ? (page - 1) : null;
         Integer nextPage = done.size() == limit ? (page + 1) : null;
@@ -86,7 +85,7 @@ public class TaskController extends BaseController {
             .render("done", done);
     }
 
-    @FilterWith(XSRFFilter.class)
+    @FilterWith({ AdminFilter.class, XSRFFilter.class })
     public Result startTask(
         Context context,
         @Param("module") Integer moduleId,
@@ -101,7 +100,7 @@ public class TaskController extends BaseController {
 
         Run run = null;
         if(Boolean.TRUE.equals(update)){
-            run = baseDB.run.findLast(GOOGLE, null, null);
+            run = baseDB.run.findLast(GOOGLE, null, null, null);
         }
         
         if(run == null){
@@ -160,7 +159,7 @@ public class TaskController extends BaseController {
         return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 
-    @FilterWith(XSRFFilter.class)
+    @FilterWith({ AdminFilter.class, XSRFFilter.class })
     public Result deleteRun(
         Context context,
         @PathParam("runId") Integer runId
@@ -190,7 +189,7 @@ public class TaskController extends BaseController {
         return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 
-    @FilterWith(XSRFFilter.class)
+    @FilterWith({ AdminFilter.class, XSRFFilter.class })
     public Result rescanSerp(
         Context context,
         @PathParam("runId") Integer runId

@@ -44,7 +44,11 @@
                     <td>${task.getCaptchas()}</td>
                     <td>${task.getErrors()}</td>
                     <td>
+                        <#if user.isAdmin() || user.email == (task.user.email)!>
                         <a href="${reverseRoute("admin.TaskController","abortTask","id",task.getId(),"_xsrf", session.___AT)}" class="text-danger" >abort</a>
+                        <#else>
+                        &nbsp;
+                        </#if>
                     </td>
                 </tr>
                 </#list>
@@ -65,7 +69,9 @@
                     <th style="width: 100px;">${i18n("label.captchas")}</th>
                     <th style="width: 100px;">${i18n("label.errors")}</th>
                     <th>${i18n("label.status")}</th>
+                    <#if user.isAdmin()>
                     <th style="width: 150px;">${i18n("label.actions")}</th>
+                    </#if>
                 </tr>            
                 <#list done as task>
                 <#if task.getStatus() == "DONE_SUCCESS" >
@@ -85,6 +91,7 @@
                     <td>${task.getCaptchas()}</td>
                     <td>${task.getErrors()}</td>
                     <td>${task.getStatus()}</td>
+                    <#if user.isAdmin()>
                     <td>
                         <a href="${reverseRoute("admin.TaskController","deleteRun","runId",task.getId())}" 
                            class="btn-delete-run text-danger" data-date="${task.getDay()}" 
@@ -97,6 +104,7 @@
                             <i class="fa fa-fw fa-refresh" ></i></a>
                         </#if>
                     </td>
+                    </#if>
                 </tr>
                 </#list>
             </table>

@@ -190,7 +190,7 @@ public class GoogleTaskIT extends AbstractDBIT {
         initialize();
         GoogleTask task = taskFactory.create(new Run(Mode.CRON, Group.Module.GOOGLE, LocalDateTime.now().withNano(0)));
         task.run();
-        Run lastRun = baseDB.run.findLast(Group.Module.GOOGLE, null, null);
+        Run lastRun = baseDB.run.findLast(Group.Module.GOOGLE, null, null, null);
         assertEquals(6, googleDB.search.listUnchecked(lastRun.getId()).size());
     }
     

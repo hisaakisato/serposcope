@@ -101,10 +101,10 @@ public class PruneDBIT extends AbstractDBIT {
             ldt = ldt.plusDays(1);
         }
 
-        assertEquals(50, baseDB.run.listByStatus(null, null, null).size());
+        assertEquals(50, baseDB.run.listByStatus(null, null, null, null).size());
         
         pruneDB.prune(10);
-        List<Run> runs = baseDB.run.listByStatus(null, null, null);
+        List<Run> runs = baseDB.run.listByStatus(null, null, null, null);
         assertEquals(10, runs.size());
         
         for (int i = 0; i < 10; i++) {
@@ -158,7 +158,7 @@ public class PruneDBIT extends AbstractDBIT {
             task.run();
         }
         
-        assertEquals(totalRuns, baseDB.run.listByStatus(null, null, null).size());
+        assertEquals(totalRuns, baseDB.run.listByStatus(null, null, null, null).size());
         try(Connection conn = ds.getConnection()){
             assertEquals(
                 (long)totalRuns*(group1targets.size()+group2targets.size()), 
@@ -179,7 +179,7 @@ public class PruneDBIT extends AbstractDBIT {
         totalRuns = 10;
         pruneDB.prune(totalRuns);
         
-        assertEquals(totalRuns, baseDB.run.listByStatus(null, null, null).size());
+        assertEquals(totalRuns, baseDB.run.listByStatus(null, null, null, null).size());
         try(Connection conn = ds.getConnection()){
             assertEquals(
                 (long)totalRuns*(group1targets.size()+group2targets.size()), 

@@ -199,7 +199,7 @@ public class DebugController extends BaseController {
             return Results.redirect(router.getReverseRoute(DebugController.class, "debug"));
         }
         
-        Run lastRun = baseDB.run.findLast(Module.GOOGLE, null, null);
+        Run lastRun = baseDB.run.findLast(Module.GOOGLE, null, null, null);
         if(lastRun != null && lastRun.getDay().isAfter(startDate)){
             flash.error("error.invalidDate");
             return Results.redirect(router.getReverseRoute(DebugController.class, "debug"));            
