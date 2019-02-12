@@ -70,8 +70,8 @@ serposcope.googleGroupControllerGrid = function () {
         },{
             id: "country", field: "country", minWidth: 60, sortable: true, name: 'Country', formatter: formatCountry,
         },{
-            id: "datacenter", field: "datacenter", minWidth: 100, sortable: true, name: 'Datacenter'/*, formatter: formatDatacenter,*/
-        },{
+//            id: "datacenter", field: "datacenter", minWidth: 100, sortable: true, name: 'Datacenter'/*, formatter: formatDatacenter,*/
+//        },{
             id: "local", field: "local", minWidth: 250, sortable: true, name: 'Local'/*, formatter: formatLocal,*/
         },{
             id: "custom", field: "custom", minWidth: 250, sortable: true, name: 'Custom'/*, formatter: formatCustom*/

@@ -546,9 +546,9 @@ public class GoogleGroupController extends GoogleController {
         StringBuilder builder = new StringBuilder();
         for (GoogleSearch search : searches) {
             builder.append(StringEscapeUtils.escapeCsv(search.getKeyword())).append(",");
-            builder.append(search.getCountry()).append(",");
-            builder.append(search.getDatacenter() != null ? search.getDatacenter() : "").append(",");
+            //builder.append(search.getDatacenter() != null ? search.getDatacenter() : "").append(",");
             builder.append(search.getDevice() != null ? (search.getDevice() == GoogleDevice.DESKTOP ? "desktop" : "mobile") : "").append(",");
+            builder.append(search.getCountry()).append(",");
             builder.append(StringEscapeUtils.escapeCsv(search.getLocal() != null ? search.getLocal() : "")).append(",");
             builder.append(StringEscapeUtils.escapeCsv(search.getCustomParameters() != null ? search.getCustomParameters() : "")).append("\n");
         }

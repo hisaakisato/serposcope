@@ -192,25 +192,32 @@ serposcope.googleGroupController = function () {
             }
             params = params.data[0];
             keyword[i] = params[0];
-            country[i] = params.length > 1 ? params[1] : $('#csp-vars').attr('data-default-country');
-            datacenter[i] = params.length > 2 ? params[2]  : $('#csp-vars').attr('data-default-datacenter');
-            if(params.length > 3){
-                switch(params[3].toLowerCase()){
+            datacenter[i] = '';
+            // datacenter[i] = params.length > 2 ? params[2]  : $('#csp-vars').attr('data-default-datacenter');
+            if(params.length > 1){
+                switch(params[1].toLowerCase()){
                     case "desktop":
+                        device[i] = 0;
+                        break;
+                    case "pc":
                         device[i] = 0;
                         break;
                     case "mobile":
                         device[i] = 1;
                         break;  
+                    case "sp":
+                        device[i] = 1;
+                        break;  
                     default:
-                        alert(params[3] + " is an invalid device type, valid values : desktop, mobile");
+                        alert(params[1] + " is an invalid device type, valid values : desktop, pc, mobile, sp");
                         return false;
                 }
             } else {
                 device[i] = parseInt($('#csp-vars').attr('data-default-device'));
             }
-            local[i] = params.length > 4 ? params[4]  : $('#csp-vars').attr('data-default-local');
-            custom[i] = params.length > 5 ? params[5]  : $('#csp-vars').attr('data-default-custom');
+            country[i] = params.length > 2 ? params[2] : $('#csp-vars').attr('data-default-country');
+            local[i] = params.length > 3 ? params[3]  : $('#csp-vars').attr('data-default-local');
+            custom[i] = params.length > 4 ? params[4]  : $('#csp-vars').attr('data-default-custom');
         }
         
         var form = $('<form>', {
