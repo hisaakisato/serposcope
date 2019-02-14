@@ -89,6 +89,7 @@ public class GroupController extends BaseController {
     public Result create(
         Context context,
         @Param("name") String name,
+        @Param("cronDisabled") boolean cronDisabled,
         @Param("module") Integer moduleNum
     ){
         FlashScope flash = context.getFlashScope();
@@ -107,6 +108,7 @@ public class GroupController extends BaseController {
         }
         
         Group group = new Group(module, name);
+        group.setCronDisabled(cronDisabled);
         baseDB.group.insert(group);
         User user = context.getAttribute("user", User.class);
         baseDB.user.addPerm(user, group);

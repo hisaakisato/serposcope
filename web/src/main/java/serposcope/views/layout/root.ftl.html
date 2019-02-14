@@ -141,6 +141,12 @@
                                     <option data-icon="fa fa-github-square fa-lg" value="2" >Github</option>-->
                                 </select>
                             </div>
+                            <div class="form-group" >
+                                <label for="groupCronDisabled" class="checkbox-inline" style="width: 100%; line-height: 42px; font-weight: bold">
+                                	<input type="checkbox" id="groupCronDisabled" class="form-control" name="cronDisabled" style="box-shadow: none"  value="true">
+                                	${i18n("label.cronDisabled")}
+                                </label>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>
@@ -151,6 +157,36 @@
             </div>
         </div>
         
+        <div id="rename-group-modal" class="modal fade">
+            <div class="modal-dialog modal-sm">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">${i18n("label.rename")}</h4>
+                    </div>
+                    <form id="rename-group-form" class="form" method="post" >
+                          <@authenticityForm/>
+                          <div class="modal-body">
+                            <div class="form-group" >
+                                <label for="groupName" >${i18n("label.name")}</label>
+                                <input id="groupName" class="form-control" name="name" >
+                            </div>
+                            <div class="form-group" >
+                                <label for="groupCronDisabled" class="checkbox-inline" style="width: 100%; line-height: 42px; font-weight: bold">
+                                	<input type="checkbox" id="groupCronDisabled" class="form-control" name="cronDisabled" style="box-shadow: none" value="true">
+                                	${i18n("label.cronDisabled")}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>
+                            <input type="submit" class="btn btn-primary" value="${i18n("label.save")}" />
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
         <div id="run-modal" class="modal fade">
             <div class="modal-dialog">
                 <div class="modal-content">

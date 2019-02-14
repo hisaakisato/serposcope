@@ -7,6 +7,9 @@
         <ol class="breadcrumb" >
             <li><a href="/"><i class="fa fa-home" ></i></a></li>
             <li><a href="${reverseRoute("google.GoogleGroupController","view","groupId",group.getId())}">${group.getName()}</a></li>
+            <#if (!group.isCronDisabled())>
+            <i class="glyphicon glyphicon-time" data-toggle="tooltip" title="${i18n("label.cron")}"></i>
+            </#if>
         </ol>        
     </div>
     <div class="col-sm-8" >

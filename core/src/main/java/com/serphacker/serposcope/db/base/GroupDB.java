@@ -37,6 +37,7 @@ public class GroupDB extends AbstractDB {
             Integer key = new SQLInsertClause(con, dbTplConf, t_group)
                 .set(t_group.moduleId, group.getModule().ordinal())
                 .set(t_group.name, group.getName())
+                .set(t_group.cronDisabled, group.isCronDisabled())
                 .executeWithKey(t_group.id);
             
             if(key != null){
@@ -82,6 +83,7 @@ public class GroupDB extends AbstractDB {
         try(Connection con = ds.getConnection()){
             updated = new SQLUpdateClause(con, dbTplConf, t_group)
                 .set(t_group.name, group.getName())
+                .set(t_group.cronDisabled, group.isCronDisabled())
                 .where(t_group.id.eq(group.getId()))
                 .execute() == 1;
         }catch(Exception ex){
@@ -174,8 +176,9 @@ public class GroupDB extends AbstractDB {
         return new Group(
             tuple.get(t_group.id), 
             Group.Module.values()[tuple.get(t_group.moduleId)], 
-            tuple.get(t_group.name)
-        );
+            tuple.get(t_group.name),
+            tuple.get(t_group.cronDisabled) == null ? false
+            		: tuple.get(t_group.cronDisabled));
     }
     
 }

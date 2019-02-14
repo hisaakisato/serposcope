@@ -10,7 +10,6 @@ package com.serphacker.serposcope.db.base;
 import com.google.inject.Singleton;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Path;
-import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
@@ -41,7 +40,6 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -471,7 +469,8 @@ public class RunDB extends AbstractDB {
         	Group group = new Group(
         			groupId,
         			Group.Module.values()[tuple.get(t_group.moduleId)],
-        			tuple.get(t_group.name));
+        			tuple.get(t_group.name),
+        			tuple.get(t_group.cronDisabled) == null ? false : true);
         	run.setGroup(group);
         }
 

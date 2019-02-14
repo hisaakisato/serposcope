@@ -20,7 +20,8 @@ drop table if exists `GROUP`;
 create table `GROUP` (
     id int primary key auto_increment,
     module_id int,
-    name varchar(255)
+    name varchar(255),
+    cron_disabled boolean
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
 
 drop table if exists `EVENT`;

@@ -19,6 +19,8 @@ import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.models.google.GoogleTarget.PatternType;
 import com.serphacker.serposcope.querybuilder.QGoogleTarget;
+import com.serphacker.serposcope.querybuilder.QGroup;
+
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,6 +30,7 @@ import java.util.List;
 public class GoogleTargetDB extends AbstractDB {
 
     QGoogleTarget t_target = QGoogleTarget.googleTarget;
+    QGroup t_group = QGroup.group;
 
     public int insert(Collection<GoogleTarget> targets){
         int inserted = 0;
@@ -97,9 +100,13 @@ public class GoogleTargetDB extends AbstractDB {
      * list all target
      */
     public List<GoogleTarget> list(){
-        return list(null);
+        return list(false);
     }
     
+    public List<GoogleTarget> list(boolean cron){
+        return list(null, false);
+    }
+
     public boolean hasTarget(){
         Integer hasOne=null;
         
@@ -121,18 +128,27 @@ public class GoogleTargetDB extends AbstractDB {
      * list target by group
      */
     public List<GoogleTarget> list(Collection<Integer> groups){
+    	return list(groups, false);
+    }
+
+    public List<GoogleTarget> list(Collection<Integer> groups, boolean cron){
         List<GoogleTarget> targets = new ArrayList<>();
         
         try(Connection con = ds.getConnection()){
             
             SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
                 .select(t_target.all())
-                .from(t_target);
+                .from(t_target)
+                .leftJoin(t_group).on(t_target.groupId.eq(t_group.id));
             
             if(groups != null){
                 query.where(t_target.groupId.in(groups));
             }
-            
+
+            if (cron) {
+                query.where(t_group.cronDisabled.ne(true));
+            }
+
             List<Tuple> tuples = query.fetch();
             
             if(tuples != null){

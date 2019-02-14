@@ -299,23 +299,13 @@ serposcope.googleGroupController = function () {
     };
     
     var renameGroup = function(elt){
-        var href = $(elt.currentTarget).attr("href");
-        var name = prompt("new group name");
-        
-        $('<form>', {
-            'action': href,
-            'method': 'post',
-            'target': '_top'
-        }).append($('<input>', {
-            'name': 'name',
-            'value': name,
-            'type': 'hidden'
-        })).append($('<input>', {
-            'name': '_xsrf',
-            'value': $('#_xsrf').attr("data-value"),
-            'type': 'hidden'
-        })).appendTo(document.body).submit();
-        
+        var target = $(elt.currentTarget);
+        var form = $("#rename-group-form");
+        form.attr("action", target.attr("href"));
+        form.find("#groupName").val(target.attr("data-name"));
+        form.find("#groupCronDisabled").prop("checked", target.attr("data-cron-disabled") === "true");
+        $('.modal').modal('hide');
+        $('#rename-group-modal').modal();
         return false;
     };
     

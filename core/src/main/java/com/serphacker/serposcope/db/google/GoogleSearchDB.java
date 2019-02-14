@@ -19,6 +19,7 @@ import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.querybuilder.QGoogleSearch;
 import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
 import com.serphacker.serposcope.querybuilder.QGoogleSerp;
+import com.serphacker.serposcope.querybuilder.QGroup;
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import java.sql.Connection;
@@ -34,6 +35,7 @@ public class GoogleSearchDB extends AbstractDB {
     QGoogleSearch t_gsearch = QGoogleSearch.googleSearch;
     QGoogleSearchGroup t_ggroup = QGoogleSearchGroup.googleSearchGroup;
     QGoogleSerp t_gserp = QGoogleSerp.googleSerp;
+    QGroup t_group = QGroup.group;
 
     public int insert(Collection<GoogleSearch> searches, int groupId){
         int inserted = 0;
@@ -231,26 +233,39 @@ public class GoogleSearchDB extends AbstractDB {
      * list all google search
      */
     public List<GoogleSearch> list(){
-        return listByGroup(null);
+        return list(false);
+    }
+    
+    public List<GoogleSearch> list(boolean cron){
+        return listByGroup(null, cron);
     }
     
     /***
      * list google searches belonging to a specific group
      */
     public List<GoogleSearch> listByGroup(Collection<Integer> groups){
+    	return listByGroup(groups, false);
+    }
+
+    public List<GoogleSearch> listByGroup(Collection<Integer> groups, boolean cron){
         List<GoogleSearch> searches = new ArrayList<>();
         
         try(Connection con = ds.getConnection()){
             
             SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
                 .select(t_gsearch.all())
-                .from(t_gsearch);
+                .from(t_gsearch)
+                .join(t_ggroup).on(t_gsearch.id.eq(t_ggroup.googleSearchId))
+                .leftJoin(t_group).on(t_ggroup.groupId.eq(t_group.id));
             
             if(groups != null){
-                query.join(t_ggroup).on(t_gsearch.id.eq(t_ggroup.googleSearchId));
                 query.where(t_ggroup.groupId.in(groups));
             }
             
+            if(cron){
+                query.where(t_group.cronDisabled.ne(true));
+            }
+
             List<Tuple> tuples = query.fetch();
             
             if(tuples != null){
@@ -321,16 +336,22 @@ public class GoogleSearchDB extends AbstractDB {
         return searches;
     }
     
-    public List<Integer> listGroups(GoogleSearch search){
+    public List<Integer> listGroups(GoogleSearch search, boolean cron){
         List<Integer> groups = new ArrayList<>();
         
         try(Connection con = ds.getConnection()){
             
-            List<Integer> ids = new SQLQuery<Void>(con, dbTplConf)
-                .select(t_ggroup.groupId)
-                .from(t_ggroup)
-                .where(t_ggroup.googleSearchId.eq(search.getId()))
-                .fetch();
+        	SQLQuery<Integer> query = new SQLQuery<Void>(con, dbTplConf)
+	            .select(t_ggroup.groupId)
+	            .from(t_ggroup)
+	            .leftJoin(t_group).on(t_ggroup.groupId.eq(t_group.id))
+	            .where(t_ggroup.googleSearchId.eq(search.getId()));
+        	
+        	if (cron) {
+        		query.where(t_group.cronDisabled.ne(true));
+        	}
+
+        	List<Integer> ids = query.fetch();
             
             if(ids != null){
                 groups.addAll(ids);

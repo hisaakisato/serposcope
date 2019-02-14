@@ -27,11 +27,19 @@ public class Group {
     int id;
     Module module;
     String name;
+    boolean cronDisabled;
 
     public Group(int id, Module module, String name) {
         this.id = id;
         this.module = module;
         this.name = name;
+    }
+
+    public Group(int id, Module module, String name, boolean cronDisabled) {
+        this.id = id;
+        this.module = module;
+        this.name = name;
+        this.cronDisabled = cronDisabled;
     }
 
     public Group(Module module, String name) {
@@ -61,6 +69,14 @@ public class Group {
 
     public void setName(String name) {
         this.name = name;
+    }
+    
+    public boolean isCronDisabled() {
+        return cronDisabled;
+    }
+    
+    public void setCronDisabled(boolean cronDisabled) {
+        this.cronDisabled = cronDisabled;
     }
     
     @Override

@@ -15,6 +15,7 @@ import com.serphacker.serposcope.di.ScrapClientFactory;
 //import com.serphacker.serposcope.di.ScraperFactory;
 import com.serphacker.serposcope.models.base.Proxy;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.Run.Mode;
 import com.serphacker.serposcope.models.google.GoogleSettings;
 import com.serphacker.serposcope.models.google.GoogleRank;
 import com.serphacker.serposcope.models.google.GoogleSearch;
@@ -206,7 +207,7 @@ public class GoogleTask extends AbstractTask {
         }
         googleDB.serp.insert(serp);
 
-        List<Integer> groups = googleDB.search.listGroups(search);
+        List<Integer> groups = googleDB.search.listGroups(search, this.run.getMode() == Mode.CRON);
         for (Integer group : groups) {
             List<GoogleTarget> targets = targetsByGroup.get(group);
             if (targets == null) {
@@ -248,7 +249,7 @@ public class GoogleTask extends AbstractTask {
 	        if(updateRun){
 	            searchList = googleDB.search.listUnchecked(run.getId());
 	        } else {
-	            searchList = googleDB.search.list();
+	            searchList = googleDB.search.list(this.run.getMode() == Mode.CRON);
 	        }
         } else {
         	searchList = googleDB.search.listByGroup(
@@ -270,7 +271,7 @@ public class GoogleTask extends AbstractTask {
         
         List<GoogleTarget> targets;
         if (this.run.getGroup() == null) {
-        	targets = googleDB.target.list();
+        	targets = googleDB.target.list(this.run.getMode() == Mode.CRON);
         } else {
         	targets = googleDB.target.list(
         			Arrays.asList(this.run.getGroup().getId()));

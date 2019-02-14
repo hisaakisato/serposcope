@@ -649,7 +649,7 @@ public class GoogleGroupController extends GoogleController {
     @FilterWith({
         XSRFFilter.class
     })
-    public Result rename(Context context, @Param("name") String name) {
+    public Result rename(Context context, @Param("name") String name, @Param("cronDisabled") boolean cronDisabled) {
         FlashScope flash = context.getFlashScope();
         Group group = context.getAttribute("group", Group.class);
 
@@ -659,6 +659,7 @@ public class GoogleGroupController extends GoogleController {
         }
 
         group.setName(name);
+        group.setCronDisabled(cronDisabled);
         baseDB.group.update(group);
 
         flash.success("google.group.groupRenamed");
