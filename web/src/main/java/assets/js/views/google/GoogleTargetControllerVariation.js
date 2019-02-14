@@ -179,10 +179,12 @@ serposcope.googleTargetControllerVariation = function () {
     
     var formatKeyword = function (row, col, unk, colDef, rowData) {
         var ret = "<div class=\"text-left\">";
-        ret += "<i data-toggle=\"tooltip\" title=\"Country : " + rowData.search.country + "\" class=\"fa fa-globe\" ></i>";
-        if (rowData.search.device === "M") {
+        if (search[COL_SEARCH_DEVICE] === "M") {
             ret += "<i data-toggle=\"tooltip\" title=\"mobile\" class=\"fa fa-mobile fa-fw\" ></i>";
+        } else {
+        	ret += "<i data-toggle=\"tooltip\" title=\"desktop\" class=\"fa fa-desktop fa-fw\" ></i>";
         }
+        ret += "<i data-toggle=\"tooltip\" title=\"Country : " + rowData.search.country + "\" class=\"fa fa-globe fa-fw\" ></i>";
         if (rowData.search.local != "") {
             ret += "<i data-toggle=\"tooltip\" title=\"" + rowData.search.local + "\" class=\"fa fa-map-marker fa-fw\" ></i>";
         }

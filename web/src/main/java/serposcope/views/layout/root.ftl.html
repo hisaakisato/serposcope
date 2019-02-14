@@ -46,6 +46,9 @@
                     <li>
                         <a href="${reverseRoute("GroupController","groups")}" >${i18n("label.groups")}</a>
                     </li>
+                    <li>
+                        <a href="${reverseRoute("admin.TaskController","tasks")}" >${i18n("label.tasks")}</a>
+                    </li>
                     <#if user.isAdmin() >
                     <li>
                         <a href="${reverseRoute("admin.AdminController","admin")}" >${i18n("label.admin")}</a>

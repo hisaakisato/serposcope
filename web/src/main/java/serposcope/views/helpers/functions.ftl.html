@@ -31,12 +31,12 @@
 </#function>
 
 <#function gsIcoInfos search>
-    <#assign country = "<i data-toggle=\"tooltip\" title=\"Country : " + search.getCountry() + "\" class=\"fa fa-globe\" ></i>">
+    <#assign country = "<i data-toggle=\"tooltip\" title=\"Country : " + search.getCountry() + "\" class=\"fa fa-globe fa-fw\" ></i>">
     
     <#if search.getDevice() == "SMARTPHONE" >
         <#assign device = "<i data-toggle=\"tooltip\" title=\"" + i18n("label.mobile") + "\" class=\"fa fa-mobile fa-fw\" ></i>">
     <#else>
-        <#assign device = "">
+        <#assign device = "<i data-toggle=\"tooltip\" title=\"" + i18n("label.desktop") + "\" class=\"fa fa-desktop fa-fw\" ></i>">
     </#if>
     
     <#if search.getLocal()?has_content >
@@ -57,7 +57,7 @@
         <#assign params = "">
     </#if>    
     
-    <#return country + device + local + datacenter + params>
+    <#return device + country + local + datacenter + params>
     <#--
     " <a href=\"" + reverseRoute("google.GoogleSearchController","search", "groupId", groupId, "searchId", search.getId()) + "\"
             data-toggle=\"tooltip\" + title=\"" + search.getKeyword() + "\" >" +search.getKeyword() +  "</a>"

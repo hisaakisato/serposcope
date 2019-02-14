@@ -74,9 +74,7 @@
                         -
                     </#if>
                     <span class="pull-right" >
-                        <a href="${reverseRoute("admin.TaskController","tasks")}" >${i18n("label.tasks")}</a>
                         <#if user.isAdmin()>
-                        |
                         <a href="${reverseRoute("admin.LogController","viewLog","log",.now?date?iso_utc + ".log")}" >${i18n("label.logs")}</a>
                         <#if currentRun?? && currentRun.isRunning() >
                         |

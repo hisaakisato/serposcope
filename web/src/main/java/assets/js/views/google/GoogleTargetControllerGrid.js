@@ -224,10 +224,12 @@ serposcope.googleTargetControllerGrid = function () {
         }
 
         var ret = "<div class=\"text-left\">";
-        ret += "<i data-toggle=\"tooltip\" title=\"Country : " + search[COL_SEARCH_COUNTRY] + "\" class=\"fa fa-globe\" ></i>";
         if (search[COL_SEARCH_DEVICE] === "M") {
             ret += "<i data-toggle=\"tooltip\" title=\"mobile\" class=\"fa fa-mobile fa-fw\" ></i>";
+        } else {
+        	ret += "<i data-toggle=\"tooltip\" title=\"desktop\" class=\"fa fa-desktop fa-fw\" ></i>";
         }
+        ret += "<i data-toggle=\"tooltip\" title=\"Country : " + search[COL_SEARCH_COUNTRY] + "\" class=\"fa fa-globe fa-fw\" ></i>";
         if (search[COL_SEARCH_LOCAL] != "") {
             ret += "<i data-toggle=\"tooltip\" title=\"" + search[COL_SEARCH_LOCAL] + "\" class=\"fa fa-map-marker fa-fw\" ></i>";
         }
