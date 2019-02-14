@@ -128,12 +128,40 @@ public class TaskManager {
         List<Run> tasks = new ArrayList<>();
         
         synchronized(googleTaskLock){
-            if(googleTask != null && googleTask.isAlive()){
-                tasks.add(googleTask.getRun());
+            for (GoogleTask task : listRunningGoogleTasks()) {
+                tasks.add(task.getRun());
             }
         }
         
         return tasks;
     }
-    
+
+    public List<GoogleTask> listRunningGoogleTasks() {
+        List<GoogleTask> tasks = new ArrayList<>();
+        
+        synchronized(googleTaskLock){
+            if(googleTask != null && googleTask.isAlive()){
+                tasks.add(googleTask);
+            }
+            for (GoogleTask task : googleTasks.values()) {
+            	if(task != null && task.isAlive()){
+                    tasks.add(task);
+                }
+            }
+        }
+        
+        return tasks;
+    }
+
+    public List<Thread> listRunningThreads(){
+        List<Thread> threads = new ArrayList<>();
+        
+        synchronized(googleTaskLock){
+            for (GoogleTask task : listRunningGoogleTasks()) {
+            	threads.addAll(task.getRunningThreads());
+            }
+        }
+        
+        return threads;
+    }
 }

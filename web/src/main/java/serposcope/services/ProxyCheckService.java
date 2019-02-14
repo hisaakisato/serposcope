@@ -37,9 +37,11 @@ public class ProxyCheckService {
 
 	@Schedule(delay = 2, initialDelay = 0, timeUnit = TimeUnit.MINUTES)
 	public void check() {
-		List<ScrapProxy> proxies = baseDB.proxy.list().stream().map(Proxy::toScrapProxy).collect(Collectors.toList());
-		LOG.debug("refresh rotator proxies");
-		taskManager.rotator.replace(proxies);
+		synchronized (taskManager.rotator) {			
+			List<ScrapProxy> proxies = baseDB.proxy.list().stream().map(Proxy::toScrapProxy).collect(Collectors.toList());
+			LOG.debug("refresh rotator proxies");
+			taskManager.rotator.replace(proxies);
+		}
 	}
 
 }

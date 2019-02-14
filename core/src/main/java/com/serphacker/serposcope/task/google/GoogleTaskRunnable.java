@@ -67,7 +67,7 @@ public class GoogleTaskRunnable implements Runnable {
 	                	break;
 	                }
                     LOG.warn("no proxy available, wait a moment");
-                    Thread.sleep(10000);
+                	Thread.sleep(10000);
                     if (controller.searches.isEmpty()) {
                     	break;
                     }

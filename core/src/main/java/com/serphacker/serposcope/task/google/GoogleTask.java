@@ -16,6 +16,7 @@ import com.serphacker.serposcope.di.ScrapClientFactory;
 import com.serphacker.serposcope.models.base.Proxy;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.base.Run.Mode;
+import com.serphacker.serposcope.models.base.Run.Status;
 import com.serphacker.serposcope.models.google.GoogleSettings;
 import com.serphacker.serposcope.models.google.GoogleRank;
 import com.serphacker.serposcope.models.google.GoogleSearch;
@@ -29,6 +30,7 @@ import com.serphacker.serposcope.scraper.http.ScrapClient;
 import com.serphacker.serposcope.scraper.http.proxy.DirectNoProxy;
 import com.serphacker.serposcope.scraper.http.proxy.ProxyRotator;
 import com.serphacker.serposcope.task.AbstractTask;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -359,5 +361,35 @@ public class GoogleTask extends AbstractTask {
     int getSearchDone(){
         return searchDone != null ? searchDone.get() : 0;
     }
+    
+    public List<Thread> getRunningThreads() {
+    	List<Thread> list = new ArrayList<>();
+    	for (Thread thread : threads) {
+    		if (thread.isAlive()) {
+    			list.add(thread);
+    		}
+    	}
+    	return list;
+    }
 
+    public int getRemainigSearches() {
+    	return totalSearch - searchDone.intValue();
+    }
+
+    @Override
+    protected void endRun(Status status) {
+    	super.endRun(status);
+    	int groups = targetsByGroup.size();
+    	int targets = targetsByGroup.values()
+    			.stream().collect(Collectors.summingInt(List::size));
+    	int searched = searchDone.intValue();
+        LOG.info("[Finished Task] status: {} "
+        		+ ",duration(sec): {} "
+        		+ ",captcha: {} ,errors: {} "
+        		+ ",groups: {} ,searched: {} ,remained: {} ,targets: {}",
+        		run.getStatus(),
+        		String.format("%.2f", run.getDurationMs() / 1000),
+        		run.getCaptchas(), run.getErrors(),
+        		groups, searched, totalSearch - searched, targets);
+    }
 }

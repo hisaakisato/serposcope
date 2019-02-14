@@ -80,6 +80,12 @@ public class ProxyRotator {
         }
     } 
     
+    public List<ScrapProxy> listUsed(){
+        synchronized(used){
+            return new ArrayList<>(used);
+        }
+    } 
+    
 	public void replace(Collection<ScrapProxy> proxies) {
 		synchronized (this.proxies) {
 			this.proxies.clear();
