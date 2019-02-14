@@ -19,9 +19,9 @@ Copyright (c) 2016 SERP Hacker
         <appender-ref ref="STDOUT" />
     </root>    
     
-    <logger name="com.serphacker" level="TRACE" />
-    <logger name="conf" level="TRACE" />
-    <logger name="serposcope" level="TRACE" />
+    <logger name="com.serphacker" level="INFO" />
+    <logger name="conf" level="WARN" />
+    <logger name="serposcope" level="INFO" />
     <logger name="com.serphacker.serposcope.scraper.http.extensions" level="ERROR" />
 <!--    <logger name="ninja" level="TRACE" />-->
     

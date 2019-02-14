@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+    web:
+        depends_on:
+            - mysql
+        image: serposcope:speee
+        build: "."
+        ports:
+            - "7134:7134"
+            - "1099:1099"
+            - "8000:8000"
+        volumes:
+            - "~/serposcope/logs:/var/log/serposcope"
+        links:
+            - mysql
+        environment:
+            SERPOSCOPE_DB_PASSWORD: secret
+    mysql:
+        image: mysql:5.7
+        environment:
+            MYSQL_DATABASE: serposcope
+            MYSQL_ROOT_PASSWORD: secret
+        ports:
+            - "23306:3306"
