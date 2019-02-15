@@ -53,7 +53,9 @@ public class GoogleSettingsController extends BaseController {
         @Param("searchDisplayMode") String searchDispayMode,
         @Param("pages") Integer pages, @Param("result-per-page") Integer resultPerPage,
         @Param("min-pause") Integer minPause, @Param("max-pause") Integer maxPause,
-        @Param("maxThreads") Integer maxThreads, @Param("fetchRetry") Integer fetchRetry,
+        @Param("maxThreads") Integer maxThreads,
+        @Param("maxManualThreads") Integer maxManualThreads,
+        @Param("fetchRetry") Integer fetchRetry,
         @Param("country") String country, @Param("datacenter") String datacenter,
         @Param("device") Integer device,
         @Param("local") String local, @Param("custom") String custom
@@ -87,6 +89,9 @@ public class GoogleSettingsController extends BaseController {
         
         if(maxThreads != null){
             options.setMaxThreads(maxThreads);
+        }
+        if(maxManualThreads != null){
+            options.setMaxManualThreads(maxManualThreads);
         }
         options.setDefaultCountry(country);
         

@@ -20,6 +20,7 @@ public class GoogleSettings {
     int minPauseBetweenPageSec = 5;
     int maxPauseBetweenPageSec = 5;
     int maxThreads = 1;
+    int maxManualThreads = 1;
     int fetchRetry = 3;    
     
     GoogleCountryCode defaultCountry = GoogleCountryCode.__;
@@ -66,6 +67,14 @@ public class GoogleSettings {
 
     public void setMaxThreads(int maxThreads) {
         this.maxThreads = maxThreads;
+    }
+
+    public int getMaxManualThreads() {
+        return maxManualThreads;
+    }
+
+    public void setMaxManualThreads(int maxManualThreads) {
+        this.maxManualThreads = maxManualThreads;
     }
 
     public int getFetchRetry() {

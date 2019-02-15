@@ -19,6 +19,7 @@ public class GoogleOptionsDB {
     private final static String RESULT_PER_PAGE = "google.result_per_page";
     private final static String MIN_PAUSE_BETWEEN_PAGE_SEC = "google.min_pause_between_page_sec";
     private final static String MAX_PAUSE_BETWEEN_PAGE_SEC = "google.max_pause_between_page_sec";    
+    private final static String MAX_MANUAL_THREADS = "google.manual.maxThreads";
     private final static String MAX_THREADS = "google.maxThreads";
     private final static String FETCH_RETRY = "google.fetchRetry";    
     
@@ -39,6 +40,7 @@ public class GoogleOptionsDB {
         options.setMinPauseBetweenPageSec(configDB.getInt(MIN_PAUSE_BETWEEN_PAGE_SEC, options.getMinPauseBetweenPageSec()));
         options.setMaxPauseBetweenPageSec(configDB.getInt(MAX_PAUSE_BETWEEN_PAGE_SEC, options.getMaxPauseBetweenPageSec()));        
         options.setMaxThreads(configDB.getInt(MAX_THREADS, options.getMaxThreads()));
+        options.setMaxManualThreads(configDB.getInt(MAX_MANUAL_THREADS, options.getMaxManualThreads()));
         options.setFetchRetry(configDB.getInt(FETCH_RETRY, options.getFetchRetry()));
         
         options.setDefaultDatacenter(configDB.get(DEFAULT_DATACENTER, options.getDefaultDatacenter()));
@@ -60,6 +62,7 @@ public class GoogleOptionsDB {
         configDB.updateInt(MIN_PAUSE_BETWEEN_PAGE_SEC, nullIfDefault(opts.getMinPauseBetweenPageSec(), def.getMinPauseBetweenPageSec()));
         configDB.updateInt(MAX_PAUSE_BETWEEN_PAGE_SEC, nullIfDefault(opts.getMaxPauseBetweenPageSec(), def.getMaxPauseBetweenPageSec()));
         configDB.updateInt(MAX_THREADS, nullIfDefault(opts.getMaxThreads(), def.getMaxThreads()));
+        configDB.updateInt(MAX_MANUAL_THREADS, nullIfDefault(opts.getMaxManualThreads(), def.getMaxManualThreads()));
         configDB.updateInt(FETCH_RETRY, nullIfDefault(opts.getFetchRetry(), def.getFetchRetry()));
 
         // search

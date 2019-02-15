@@ -43,6 +43,12 @@
                 </div>                
                 
                 <div class="form-group" >
+                    <label for="maxManualThreads" >${i18n("admin.google.maxManualThreads")}</label>
+                    <input type="number" id="maxManualThreads" class="form-control width80" name="maxManualThreads" value="${options.getMaxManualThreads()}" >
+                    <span class="help-block">${i18n("admin.google.maxManualThreadsHelp")}</span>
+                </div>                
+                
+                <div class="form-group" >
                     <label for="fetchRetry" >${i18n("admin.google.fetchRetry")}</label>
                     <input type="number" id="fetchRetry" class="form-control width80" name="fetchRetry" value="${options.getFetchRetry()}" >
                     <span class="help-block">${i18n("admin.google.fetchRetryHelp")}</span>
