@@ -472,7 +472,10 @@ public class GoogleTargetController extends GoogleController {
             .addHeader("Content-Disposition", "attachment; filename=\"export.csv\"")
             .render((Context context, Result result) -> {
                 ResponseStreams stream = context.finalizeHeaders(result);
-                try (Writer writer = stream.getWriter()) {
+                try (OutputStream out = stream.getOutputStream();
+    					Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
+        			byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+        			out.write(bom);
                     writer.append("date,rank,url,target,keyword,device,country,datacenter,local,custom\n");
                     for (Run run : runs) {
                         String day = run.getDay().toString();

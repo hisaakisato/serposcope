@@ -30,6 +30,9 @@ import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleSerp;
 import com.serphacker.serposcope.models.google.GoogleSerpEntry;
 import com.serphacker.serposcope.models.google.GoogleTarget;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -276,12 +279,13 @@ public class GoogleSearchController extends GoogleController {
         @Param("date") String pdate
     ){
         GoogleSerp serp=null;
+        GoogleSearch search=null;
         LocalDate date=null;
         try {date = LocalDate.parse(pdate);}catch(Exception ex){}
         if(date != null){
             List<Run> runs = baseDB.run.findByDay(Module.GOOGLE, date);
             if(!runs.isEmpty()){
-                GoogleSearch search = getSearch(context, searchId);
+                search = getSearch(context, searchId);
                 if(search != null){
                     serp = googleDB.serp.get(runs.get(0).getId(), search.getId());
                 }
@@ -327,9 +331,28 @@ public class GoogleSearchController extends GoogleController {
             }
         }
         
-        return Results.text()
-            .addHeader("Content-Disposition", "attachment; filename=\"" + serp.getRunDay().toLocalDate() + ".csv\"")
-            .renderRaw(builder.toString());
+        Group group = context.getAttribute("group", Group.class);
+		try {
+			byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+			byte[] bytes = builder.toString().getBytes("UTF-8");
+			byte[] result = new byte[bom.length + bytes.length];        
+			System.arraycopy(bom, 0, result, 0, bom.length);
+			System.arraycopy(bytes, 0, result, bom.length, bytes.length);
+			
+			String localDate = serp.getRunDay().toLocalDate().toString();
+			String encodedFilename = String.format("ranks_%s_%s(%s).csv",
+					localDate,
+					URLEncoder.encode(group.getName(), "UTF-8"),
+					URLEncoder.encode(search.getKeyword(), "UTF-8"));
+			return Results.ok()
+					.contentType(Result.APPLICATION_OCTET_STREAM)
+					.addHeader("Content-Disposition", "attachment; " +
+							"filename=\"ranks_" + localDate + ".csv\"; " + 
+							"filename*=\"UTF-8''" + encodedFilename)
+					.renderRaw(result);
+		} catch (UnsupportedEncodingException e) {
+		}
+		return Results.internalServerError();
     }    
     
     
