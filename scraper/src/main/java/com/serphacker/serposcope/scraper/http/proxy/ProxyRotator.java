@@ -53,7 +53,7 @@ public class ProxyRotator {
     }
     
 	public boolean add(ScrapProxy proxy) {
-		synchronized (proxy) {
+		synchronized (proxies) {
 			ScrapProxy p = used(proxy);
 			if (p != null) {
 				this.used.remove(p);
@@ -87,7 +87,7 @@ public class ProxyRotator {
     } 
     
 	public void replace(Collection<ScrapProxy> proxies) {
-		synchronized (this.proxies) {
+		synchronized (proxies) {
 			this.proxies.clear();
 			for (ScrapProxy proxy : proxies) {
 				ScrapProxy p = used(proxy);

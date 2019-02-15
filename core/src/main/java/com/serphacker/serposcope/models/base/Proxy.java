@@ -21,7 +21,8 @@ public class Proxy {
     public enum Status {
         UNCHECKED,
         OK,
-        ERROR
+        ERROR,
+        REMOVED
     }
     
     public enum Type {

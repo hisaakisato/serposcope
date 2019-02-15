@@ -72,14 +72,14 @@ public class TaskManager {
     	googleTaskLocks.putIfAbsent(key, new Object());
     	Object lock = googleTaskLocks.get(key);
         synchronized(lock){
-        	googleTask = googleTasks.get(key);
+        	GoogleTask googleTask = googleTasks.get(key);
             if(googleTask != null && googleTask.isAlive()){
                 return false;
             }
 
             run.setUser(user);
             run.setGroup(group);
-            googleTask =googleTaskFactory.create(run);
+            googleTask = googleTaskFactory.create(run);
             googleTask.rotator = rotator;
             googleTasks.put(key, googleTask);
             googleTask.start();
@@ -153,15 +153,4 @@ public class TaskManager {
         return tasks;
     }
 
-    public List<Thread> listRunningThreads(){
-        List<Thread> threads = new ArrayList<>();
-        
-        synchronized(googleTaskLock){
-            for (GoogleTask task : listRunningGoogleTasks()) {
-            	threads.addAll(task.getRunningThreads());
-            }
-        }
-        
-        return threads;
-    }
 }

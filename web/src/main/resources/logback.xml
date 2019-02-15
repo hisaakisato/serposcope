@@ -22,6 +22,7 @@ Copyright (c) 2016 SERP Hacker
     <logger name="com.serphacker" level="INFO" />
     <logger name="conf" level="WARN" />
     <logger name="serposcope" level="INFO" />
+    <logger name="org.apache.http.client.protocol.ResponseProcessCookies" level="ERROR" />
     <logger name="com.serphacker.serposcope.scraper.http.extensions" level="ERROR" />
 <!--    <logger name="ninja" level="TRACE" />-->
     

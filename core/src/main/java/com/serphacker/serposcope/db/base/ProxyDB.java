@@ -16,6 +16,7 @@ import com.querydsl.sql.dml.SQLInsertClause;
 import com.querydsl.sql.dml.SQLUpdateClause;
 import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.base.Proxy;
+import com.serphacker.serposcope.models.base.Proxy.Type;
 import com.serphacker.serposcope.querybuilder.QProxy;
 import com.serphacker.serposcope.scraper.http.proxy.BindProxy;
 import com.serphacker.serposcope.scraper.http.proxy.HttpProxy;
@@ -81,6 +82,33 @@ public class ProxyDB extends AbstractDB {
         return updated;
     }    
     
+    public boolean updateStatus(Proxy.Status status, ScrapProxy proxy){
+    	try {
+    		Proxy p = new Proxy(proxy);
+            boolean updated = false;
+            try(Connection con = ds.getConnection()){
+                
+                SQLUpdateClause update = new SQLUpdateClause(con, dbTplConf, t_proxy);
+                update.set(t_proxy.status, (byte)status.ordinal());
+                update.where(t_proxy.ip.eq(p.getIp()));
+                update.where(t_proxy.type.eq(p.getType().ordinal()));
+                if (p.getType() != Type.BIND) {
+                    update.where(t_proxy.port.eq(p.getPort()));
+                    update.where(t_proxy.user.eq(p.getUsername()));
+                }
+                updated = update.execute() > 0;
+                
+            } catch(Exception ex){
+                LOG.error("SQL Error", ex);
+            }
+            return updated;
+    		
+    	} catch (IllegalStateException e) {
+    		// ignore
+    	}
+    	return false;
+    }
+
     public boolean updateStatus(Proxy.Status status, Collection<Integer> ids){
         boolean updated = false;
         try(Connection con = ds.getConnection()){

@@ -23,141 +23,149 @@ import org.apache.http.cookie.Cookie;
 
 public class GoogleTaskRunnable implements Runnable {
 
-    protected static final Logger LOG = LoggerFactory.getLogger(GoogleTaskRunnable.class);
+	protected static final Logger LOG = LoggerFactory.getLogger(GoogleTaskRunnable.class);
 //    public final static int MAX_FETCH_TRY = 3;
 
-    GoogleTask controller;
-    
-    GoogleScraper scraper;
+	GoogleTask controller;
 
-    public GoogleTaskRunnable(GoogleTask controller) {
-        this.controller = controller;
-        scraper = controller.genScraper();
-    }
-    
-    boolean cookiesStickToProxy = true;
+	GoogleScraper scraper;
 
-    @Override
-    @SuppressWarnings("unchecked")
-    public void run() {
-        GoogleSearch search = null;
-        ScrapProxy proxy = null;
-        int searchTry = 0;
-        
-        LOG.info("google thread started");
-        try {
-            
-            while (!controller.shouldStop()) {
+	public GoogleTaskRunnable(GoogleTask controller) {
+		this.controller = controller;
+		scraper = controller.genScraper();
+	}
+
+	boolean cookiesStickToProxy = true;
+
+	@Override
+	@SuppressWarnings("unchecked")
+	public void run() {
+		GoogleSearch search = null;
+		ScrapProxy proxy = null;
+		int searchTry = 0;
+
+		LOG.info("google thread started");
+		try {
+
+			while (!controller.shouldStop()) {
 
 				if (Thread.interrupted()) {
-                    LOG.error("interrupted, aborting the thread");
-                    break;
-                }
-                
-                if(cookiesStickToProxy && proxy != null){
-                    List<Cookie> cookies = scraper.getHttp().getCookies();
-                    if(cookies != null){
-                        proxy.setAttr("cookies", cookies);
-                    }
-                }
+					LOG.error("interrupted, aborting the thread");
+					break;
+				}
 
-                while (true) {
-	                proxy = controller.rotator.rotate(proxy);
-	                if (proxy != null) {
-	                	break;
-	                }
-                    LOG.warn("no proxy available, wait a moment");
-                	Thread.sleep(10000);
-                    if (controller.searches.isEmpty()) {
-                    	break;
-                    }
-                }
-                if (proxy == null) {
+				if (cookiesStickToProxy && proxy != null) {
+					List<Cookie> cookies = scraper.getHttp().getCookies();
+					if (cookies != null) {
+						proxy.setAttr("cookies", cookies);
+					}
+				}
+
+				while (true) {
+					proxy = controller.rotator.rotate(proxy);
+					if (proxy != null) {
+						break;
+					}
+					LOG.warn("no proxy available, wait a moment");
+					try {
+						controller.waitingCount.incrementAndGet();
+					} finally {
+						Thread.sleep(10000);
+						controller.waitingCount.decrementAndGet();
+					}
+					if (controller.searches.isEmpty()) {
+						break;
+					}
+				}
+				if (proxy == null) {
 //                  LOG.trace("no search to do, waiting for termination");
-                	continue;
-                }
-                scraper.getHttp().setProxy(proxy);
-                
-                if(cookiesStickToProxy){
-                    scraper.getHttp().clearCookies();
-                    List<Cookie> cookies = proxy.getAttr("cookies", List.class);
-                    if(cookies != null){
-                        scraper.getHttp().addCookies(proxy.getAttr("cookies", List.class));
-                    }
-                }
+					continue;
+				}
+				scraper.getHttp().setProxy(proxy);
 
-                if(search == null){
-                    try {
-                        search = controller.searches.poll(1, TimeUnit.SECONDS);
-                    } catch (InterruptedException ex) {
-                        LOG.error("interrupted while polling, aborting the thread");
-                        break;
-                    }
-                    searchTry = 0;
-                }
+				if (cookiesStickToProxy) {
+					scraper.getHttp().clearCookies();
+					List<Cookie> cookies = proxy.getAttr("cookies", List.class);
+					if (cookies != null) {
+						scraper.getHttp().addCookies(proxy.getAttr("cookies", List.class));
+					}
+				}
 
-                if (search == null) {
+				if (search == null) {
+					try {
+						search = controller.searches.poll(1, TimeUnit.SECONDS);
+					} catch (InterruptedException ex) {
+						LOG.error("interrupted while polling, aborting the thread");
+						break;
+					}
+					searchTry = 0;
+				}
+
+				if (search == null) {
 //                    LOG.trace("no search to do, waiting for termination");
-                    continue;
-                }
+					continue;
+				}
 
-                ++searchTry;
-                GoogleScrapResult res = null;
-                LOG.info("search \"{}\" | try {} | total search done : {}/{}",
-                    new Object[]{search.getKeyword(), searchTry, controller.getSearchDone(), controller.totalSearch});
+				++searchTry;
+				GoogleScrapResult res = null;
+				LOG.info("search \"{}\" | try {} | total search done : {}/{}", new Object[] { search.getKeyword(),
+						searchTry, controller.getSearchDone(), controller.totalSearch });
 
-                try {
-                    res = scraper.scrap(getScrapConfig(controller.googleOptions, search));
-                } catch (InterruptedException ex) {
-                    LOG.error("interrupted while scraping, aborting the thread");
-                    break;
-                }
-                
-                if( res.captchas > 0 ){
-                    controller.incCaptchaCount(res.captchas);
-                }
+				try {
+					res = scraper.scrap(getScrapConfig(controller.googleOptions, search));
+				} catch (InterruptedException ex) {
+					LOG.error("interrupted while scraping, aborting the thread");
+					break;
+				}
 
-                if (res.status != OK) {
-                    LOG.warn("scrap failed for {} because of {}", search.getKeyword(), res.status);
-                    proxy = null;
-                    continue;
-                }
+				if (res.captchas > 0) {
+					controller.incCaptchaCount(res.captchas);
+				}
 
-                controller.onSearchDone(search, res);
-                search = null;
-            }
-            
-        } catch (Exception ex) {
-            LOG.error("unhandled exception, aborting the thread", ex);
-            ex.printStackTrace();
-        } finally {
-            if (proxy != null){
-                controller.rotator.add(proxy);
-            }
-            if (search != null) {
-                controller.searches.add(search);
-            }
-        }
-        LOG.info("google thread stopped");
-    }
+				if (res.status != OK) {
+					LOG.warn("scrap failed for {} because of {}", search.getKeyword(), res.status);
+					controller.removeProxy(proxy); // mark removed
+					proxy = null;
+					continue;
+				}
 
-    protected GoogleScrapSearch getScrapConfig(GoogleSettings options, GoogleSearch search) {
-        GoogleScrapSearch scrapSearch = new GoogleScrapSearch();
-        
-        // options.getFetchRetry(); // TODO
-        scrapSearch.setPagePauseMS(options.getMinPauseBetweenPageSec()*1000l, options.getMaxPauseBetweenPageSec()*1000l);
-        scrapSearch.setPages(options.getPages());
-        scrapSearch.setResultPerPage(options.getResultPerPage());
-        
-        scrapSearch.setCustomParameters(search.getCustomParameters());
-        scrapSearch.setDatacenter(search.getDatacenter());
-        scrapSearch.setDevice(search.getDevice());
-        scrapSearch.setKeyword(search.getKeyword());
-        scrapSearch.setCountry(search.getCountry());
-        scrapSearch.setLocal(search.getLocal());
-        
-        return scrapSearch;
-    }
-    public static final long serialVersionUID = 0L;
+				controller.onSearchDone(search, res);
+				search = null;
+			}
+
+		} catch (Exception ex) {
+			LOG.error("unhandled exception, aborting the thread", ex);
+			ex.printStackTrace();
+		} finally {
+			if (proxy != null) {
+				controller.rotator.add(proxy);
+			}
+			if (search != null) {
+				controller.searches.add(search);
+			}
+		}
+		LOG.info("google thread stopped");
+	}
+
+	protected GoogleScrapSearch getScrapConfig(GoogleSettings options, GoogleSearch search) {
+		GoogleScrapSearch scrapSearch = new GoogleScrapSearch();
+
+		// options.getFetchRetry(); // TODO
+		scrapSearch.setPagePauseMS(options.getMinPauseBetweenPageSec() * 1000l,
+				options.getMaxPauseBetweenPageSec() * 1000l);
+		scrapSearch.setPages(options.getPages());
+		scrapSearch.setResultPerPage(options.getResultPerPage());
+
+		scrapSearch.setCustomParameters(search.getCustomParameters());
+		scrapSearch.setDatacenter(search.getDatacenter());
+		scrapSearch.setDevice(search.getDevice());
+		scrapSearch.setKeyword(search.getKeyword());
+		scrapSearch.setCountry(search.getCountry());
+		scrapSearch.setLocal(search.getLocal());
+
+		return scrapSearch;
+	}
+
+	public static final long serialVersionUID = 0L;
 
 }

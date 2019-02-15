@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import com.serphacker.serposcope.db.base.BaseDB;
 import com.serphacker.serposcope.db.google.GoogleDB;
 import com.serphacker.serposcope.models.base.Group;
-import com.serphacker.serposcope.models.base.Proxy;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import com.serphacker.serposcope.task.TaskManager;
@@ -79,50 +78,19 @@ public class UsageCheckService {
 			}
 		}
 		// thread stats
-		int activeThread = 0;
-		int sleepThread = 0;
-		for (Thread thread : taskManager.listRunningThreads()) {
-			if (thread.isAlive()) {
-				activeThread++;
-				if (thread.getState() == Thread.State.TIMED_WAITING) {
-					sleepThread++;
-				}
+		int activeThreads = 0;
+		int waitingThreads = 0;
+		for (GoogleTask task : taskManager.listRunningGoogleTasks()) {
+			if (task.isAlive()) {
+				activeThreads += task.getActiveCount();
+				waitingThreads += task.getWaitingCount();
 			}
 		}
 		LOG.info("[Running Task Stats] "
 				+ "tasks: {} ,remaining: {} ,"
-				+ "threads: {} ,waiting: {}",
+				+ "active: {} ,waiting: {}",
 				activeTasks, remainingSearches,
-				activeThread, sleepThread);
-	}
-
-	@Schedule(delay = 1, initialDelay = 0, timeUnit = TimeUnit.MINUTES)
-	public void checkProxyUsage() {
-		// proxy stats
-		synchronized (taskManager.rotator) {			
-			int idle = taskManager.rotator.list().size();
-			int inUse = taskManager.rotator.listUsed().size();
-			int unchecked = 0;
-			int error = 0;
-			List<Proxy> proxies = baseDB.proxy.list();
-			for (Proxy proxy : proxies) {
-				switch (proxy.getStatus()) {
-				case UNCHECKED:
-					unchecked++;
-					break;
-				case ERROR:
-					error++;
-					break;
-				default:
-					break;
-				}
-			}
-			LOG.info("[Proxy Usage] "
-					+ "idle: {} ,in-use: {} ,"
-					+ "unchecked: {} ,error: {} ,total: {}",
-					idle, inUse,
-					unchecked, error, idle + inUse);
-		}
+				activeThreads, waitingThreads);
 	}
 
 	@Schedule(delay = 1, initialDelay = 0, timeUnit = TimeUnit.HOURS)

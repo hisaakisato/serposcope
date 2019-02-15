@@ -69,6 +69,7 @@ public class GoogleTask extends AbstractTask {
     GoogleSettings googleOptions;
     protected final AtomicInteger searchDone = new AtomicInteger();
     final AtomicInteger captchaCount = new AtomicInteger();
+    protected final AtomicInteger waitingCount = new AtomicInteger();
     
     Thread[] threads;
     volatile int totalSearch;
@@ -361,19 +362,21 @@ public class GoogleTask extends AbstractTask {
     int getSearchDone(){
         return searchDone != null ? searchDone.get() : 0;
     }
-    
-    public List<Thread> getRunningThreads() {
-    	List<Thread> list = new ArrayList<>();
-    	for (Thread thread : threads) {
-    		if (thread.isAlive()) {
-    			list.add(thread);
-    		}
-    	}
-    	return list;
-    }
 
     public int getRemainigSearches() {
     	return totalSearch - searchDone.intValue();
+    }
+
+    protected void removeProxy(ScrapProxy proxy) {
+    	baseDB.proxy.updateStatus(Proxy.Status.REMOVED, proxy);
+    }
+
+    public int getWaitingCount() {
+    	return waitingCount.get();
+    }
+
+    public int getActiveCount() {
+    	return threads.length - waitingCount.get();
     }
 
     @Override
@@ -388,7 +391,7 @@ public class GoogleTask extends AbstractTask {
         		+ ",captcha: {} ,errors: {} "
         		+ ",groups: {} ,searched: {} ,remained: {} ,targets: {}",
         		run.getStatus(),
-        		String.format("%.2f", run.getDurationMs() / 1000),
+        		String.format("%.2f", run.getDurationMs() * 1.0 / 1000),
         		run.getCaptchas(), run.getErrors(),
         		groups, searched, totalSearch - searched, targets);
     }

@@ -7,9 +7,9 @@
  */
 package serposcope.services;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 
 import com.serphacker.serposcope.db.base.BaseDB;
 import com.serphacker.serposcope.models.base.Proxy;
+import com.serphacker.serposcope.models.base.Proxy.Status;
 import com.serphacker.serposcope.scraper.http.proxy.ScrapProxy;
 import com.serphacker.serposcope.task.TaskManager;
 
@@ -37,10 +38,38 @@ public class ProxyCheckService {
 
 	@Schedule(delay = 2, initialDelay = 0, timeUnit = TimeUnit.MINUTES)
 	public void check() {
-		synchronized (taskManager.rotator) {			
-			List<ScrapProxy> proxies = baseDB.proxy.list().stream().map(Proxy::toScrapProxy).collect(Collectors.toList());
+		synchronized (taskManager.rotator) {
 			LOG.debug("refresh rotator proxies");
+			int unchecked = 0;
+			int error = 0;
+			int removed = 0;
+			List<ScrapProxy> proxies = new ArrayList<>();
+			for (Proxy proxy : baseDB.proxy.list()) {
+				if (proxy.getStatus() == Status.REMOVED) {
+					removed++;
+					break;					
+				}				
+				switch (proxy.getStatus()) {
+				case UNCHECKED:
+					unchecked++;
+					break;
+				case ERROR:
+					error++;
+					break;
+				default:
+				}
+				proxies.add(proxy.toScrapProxy());
+			}
 			taskManager.rotator.replace(proxies);
+			int idle = taskManager.rotator.list().size();
+			int inUse = taskManager.rotator.listUsed().size();
+			LOG.info("[Proxy Usage] "
+					+ "idle: {} ,in-use: {} "
+					+ ",unchecked: {} ,error: {} ,removed: {} "
+					+ ",total: {}",
+					idle, inUse,
+					unchecked, error, removed,
+					idle + inUse + removed);
 		}
 	}
 
