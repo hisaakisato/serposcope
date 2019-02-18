@@ -23,7 +23,13 @@
                     <td>${task.getId()}</td>
                     <td>${task.getMode()}</td>
                     <td>${(task.user.name)!(task.user.email)!}</td>
-                    <td>${(task.group.name)!}</td>
+                    <td>
+	                    <#if task.getGroup()??>
+	                    <a href="${reverseRoute("google.GoogleGroupController","view","groupId",task.getGroup().getId())}" >
+	                    	${(task.group.name)!}
+	                    </a>
+	                    </#if>
+                    </td>
                     <td>${global.ldtf.format(task.getStarted())}</td>
                     <td>
                         <div class="progress" title="${i18n("admin.task.remainingTime")} : ${task.getRemainingTimeFormated()}" data-toggle="tooltip" >
@@ -84,7 +90,13 @@
                     <td>${task.getId()}</td>
                     <td>${task.getMode()}</td>
                     <td>${(task.user.name)!(task.user.email)!}</td>
-                    <td>${(task.group.name)!}</td>
+                    <td>
+	                    <#if task.getGroup()??>
+	                    <a href="${reverseRoute("google.GoogleGroupController","view","groupId",task.getGroup().getId())}" >
+	                    	${(task.group.name)!}
+	                    </a>
+	                    </#if>
+                    </td>
                     <td>${global.ldtf.format(task.getStarted())}</td>
                     <td>${global.ldtf.format(task.getFinished())}</td>
                     <td>${task.getDurationFormated()}</td>
