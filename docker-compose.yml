@@ -4,7 +4,7 @@ services:
     web:
         depends_on:
             - mysql
-        image: serposcope:speee
+        image: 186165563103.dkr.ecr.ap-northeast-1.amazonaws.com/dc-serposcope:latest
         build: "."
         ports:
             - "7134:7134"
