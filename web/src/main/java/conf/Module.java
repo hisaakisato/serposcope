@@ -97,9 +97,9 @@ public class Module extends FrameworkModule {
     protected void beforeModuleConfigure(){
         conf = new SerposcopeConf(System.getProperty("serposcope.conf"));
         conf.configure();
-        LOG.info("now logging to " + conf.logdir + "/" + LocalDate.now() + ".log");
-        configureLogback();
-        conf.logEnv();
+        //LOG.info("now logging to " + conf.logdir + "/" + LocalDate.now() + ".log");
+        //configureLogback();
+        //conf.logEnv();
     }
     
     protected void configureLogback(){
@@ -120,7 +120,7 @@ public class Module extends FrameworkModule {
         PatternLayoutEncoder encoder = new PatternLayoutEncoder();
         encoder.setContext(context);
         encoder.setCharset(StandardCharsets.UTF_8);
-        encoder.setPattern("[%d] [%t] %-5p %c{5} - %m%n");
+        encoder.setPattern("[%d{yyyy-MM-dd HH:mm:ss.SSS}] [%t] %-5p %c{5} - %m%n");
         encoder.start();
         appender.setEncoder(encoder);
         
