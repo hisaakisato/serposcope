@@ -75,7 +75,7 @@ public class AdminController extends BaseController {
 
     public Result sysconfig() {
 
-        StringBuilder builder = new StringBuilder(conf.dumpEnv());
+        StringBuilder builder = new StringBuilder(conf.dumpEnv()).append("\n");
 
         Properties props = System.getProperties();
         for (Map.Entry<Object, Object> entry : props.entrySet()) {

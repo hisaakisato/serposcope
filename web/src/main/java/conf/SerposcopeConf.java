@@ -144,7 +144,7 @@ public class SerposcopeConf {
             "serposcope.version          : " + Version.CURRENT + "\n" + 
             "serposcope.datadir          : " + datadir + "\n" + 
             "serposcope.logdir           : " + logdir + "\n" + 
-            "serposcope.db.url           : " + dbUrl + "\n" + 
+            // "serposcope.db.url           : " + dbUrl + "\n" + 
             "serposcope.db.debug         : " + dbDebug + "\n" + 
             "serposcope.listenAddress    : " + listenAddress + "\n" + 
             "serposcope.listenPort       : " + listenPort;
