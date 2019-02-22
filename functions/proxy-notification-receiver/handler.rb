@@ -20,7 +20,7 @@ def lambda_handler(event:, context:)
 
   event_type = json['Event']
   if event_type == 'autoscaling:EC2_INSTANCE_LAUNCH'
-    add_proxy(instance_id, private_ip_address, public_ip_address)
+    add_proxy(instance_id, region, private_ip_address, public_ip_address)
   else
     delete_proxy(instance_id)
   end
@@ -43,14 +43,14 @@ def mysql_client
     :database => 'serposcope')
 end
 
-def add_proxy(instance_id, private_ip_address, public_ip_address)
+def add_proxy(instance_id, region, private_ip_address, public_ip_address)
 
   begin
     client = mysql_client
     client.query(
-      "INSERT INTO PROXY (type, ip, port, last_check, status, remote_ip, instance_id) " \
-      "VALUES (1, '#{private_ip_address}', 3128, now(), 1, '#{public_ip_address}', '#{instance_id}')")
-    puts "Proxy addedd: instanceId: #{instance_id} IP: #{private_ip_address} PublicIP: #{public_ip_address}"
+      "INSERT INTO PROXY (type, ip, port, last_check, status, remote_ip, instance_id, region) " \
+      "VALUES (1, '#{private_ip_address}', 3128, now(), 1, '#{public_ip_address}', '#{instance_id}', '#{region}')")
+    puts "Proxy addedd: instanceId: #{instance_id} region: #{region} IP: #{private_ip_address} PublicIP: #{public_ip_address}"
   rescue
     return 0
   ensure
