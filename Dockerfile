@@ -1,6 +1,7 @@
 FROM amazoncorretto:8
 
-ENV SERPOSCOPE_DB_HOST=mysql \
+ENV TZ=Asia/Tokyo \
+    SERPOSCOPE_DB_HOST=mysql \
     SERPOSCOPE_DB_PORT=3306 \
     SERPOSCOPE_DB_USER=root \
     SERPOSCOPE_DB_PASSWORD= \
