@@ -54,14 +54,14 @@ public class UsageCheckService {
 		long heapUsed = mxbean.getHeapMemoryUsage().getUsed();
 		long heapComitted = mxbean.getHeapMemoryUsage().getCommitted();
 		LOG.info("[Heap Usage] "
-				+ "used(bytes): {} ,committed(bytes): {} ,usage(%): {}",
+				+ "used: {} committed: {} usage: {}",
 				heapUsed, heapComitted,
 				String.format("%.2f", heapUsed * 100.0 / heapComitted));
 
 		long nonHeapUsed = mxbean.getNonHeapMemoryUsage().getUsed();
 		long nonHeapComitted = mxbean.getNonHeapMemoryUsage().getCommitted();
 		LOG.info("[Non-Heap Usage] "
-				+ "used(bytes): {} ,committed(bytes): {} ,usage(%): {}",
+				+ "used: {} committed: {} usage: {}",
 				nonHeapUsed, nonHeapComitted,
 				String.format("%.2f", nonHeapUsed * 100.0 / nonHeapComitted));
 	}
@@ -87,8 +87,8 @@ public class UsageCheckService {
 			}
 		}
 		LOG.info("[Running Task Stats] "
-				+ "tasks: {} ,remaining: {} ,"
-				+ "active: {} ,waiting: {}",
+				+ "tasks: {} remaining: {} "
+				+ "active: {} waiting: {}",
 				activeTasks, remainingSearches,
 				activeThreads, waitingThreads);
 	}
@@ -117,8 +117,8 @@ public class UsageCheckService {
 		}
 		int targets = googleDB.target.list().size();
 		LOG.info("[Group Stats] "
-				+ "groups: {} ,scheduled: {} ,non-scheduled: {} ,"
-				+ "keywords: {} ,desktop: {} ,mobile: {} ,"
+				+ "groups: {} scheduled: {} non-scheduled: {} "
+				+ "keywords: {} desktop: {} mobile: {} "
 				+ "targets: {}",
 				cronEnabled + cronDisabled, cronEnabled, cronDisabled,
 				desktopSearch + mobileSearch, desktopSearch, mobileSearch,

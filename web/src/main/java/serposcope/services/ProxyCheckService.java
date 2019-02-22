@@ -64,9 +64,9 @@ public class ProxyCheckService {
 			int idle = taskManager.rotator.list().size();
 			int inUse = taskManager.rotator.listUsed().size();
 			LOG.info("[Proxy Usage] "
-					+ "idle: {} ,in-use: {} "
-					+ ",unchecked: {} ,error: {} ,removed: {} "
-					+ ",total: {}",
+					+ "idle: {} in-use: {} "
+					+ "unchecked: {} error: {} removed: {} "
+					+ "total: {}",
 					idle, inUse,
 					unchecked, error, removed,
 					idle + inUse + removed);
