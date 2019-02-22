@@ -34,6 +34,7 @@
                         <th data-sort="string">${i18n("label.user")} <i class="fa fa-sort"></i></th>
                         <th data-sort="string">${i18n("label.password")} <i class="fa fa-sort"></i></th>
                         <th class="width150" data-sort="string">${i18n("label.remoteIp")} <i class="fa fa-sort"></i></th>
+                        <th class="width150" data-sort="string">${i18n("label.instanceId")} <i class="fa fa-sort"></i></th>
                         <th class="width150" data-sort="string">${i18n("label.lastCheck")} <i class="fa fa-sort"></i></th>
                         <th class="width150" data-sort="string">${i18n("label.status")} <i class="fa fa-sort"></i></th>
                     </tr>
@@ -47,6 +48,7 @@
                         <td>${proxy.getUsername()!""}</td>
                         <td>${proxy.getPassword()!""}</td>
                         <td>${proxy.getRemoteip()!""}</td>
+                        <td>${proxy.getInstanceId()!""}</td>
                         <td><#if proxy.getLastCheck()?? >${global.ldtf.format(proxy.getLastCheck())}</#if></td>                    
                         <td class="<#if proxy.getStatus() == "ERROR" >text-danger<#elseif proxy.getStatus() == "OK" >text-success</#if>">${proxy.getStatus()}</td>
                     </tr>

@@ -74,8 +74,10 @@ create table `PROXY` (
     `password` text,
     `last_check` datetime,
     `status` tinyint,
-    `remote_ip` varchar(256)
+    `remote_ip` varchar(256),
+    `instance_id` varchar(32)
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
+create unique index PROXY_INSTANCE_ID on PROXY(instance_id);
 
 
 SET FOREIGN_KEY_CHECKS=1;
