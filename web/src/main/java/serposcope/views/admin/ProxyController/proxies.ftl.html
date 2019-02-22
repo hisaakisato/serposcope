@@ -44,12 +44,12 @@
                     <tr>
                         <td><input class="chk-proxy" type="checkbox" name="id[]" value="${proxy.getId()}" /></td>
                         <td>${proxy.getType()}</td>
-                        <td>${proxy.getIp()!""}:${proxy.getPort()!""}</td>
+                        <td style="white-space:nowrap">${proxy.getIp()!""}:${proxy.getPort()!""}</td>
                         <td>${proxy.getUsername()!""}</td>
                         <td>${proxy.getPassword()!""}</td>
-                        <td>${proxy.getRemoteip()!""}</td>
-                        <td>${proxy.getInstanceId()!""}</td>
-                        <td><#if proxy.getLastCheck()?? >${global.ldtf.format(proxy.getLastCheck())}</#if></td>                    
+                        <td style="white-space:nowrap">${proxy.getRemoteip()!""}</td>
+                        <td style="white-space:nowrap">${proxy.getInstanceId()!""}</td>
+                        <td style="white-space:nowrap"><#if proxy.getLastCheck()?? >${global.ldtf.format(proxy.getLastCheck())}</#if></td>                    
                         <td class="<#if proxy.getStatus() == "ERROR" >text-danger<#elseif proxy.getStatus() == "OK" >text-success</#if>">${proxy.getStatus()}</td>
                     </tr>
                     </#list>

@@ -47,7 +47,6 @@ public class ProxyDB extends AbstractDB {
                 insert.set(t_proxy.status, (byte)proxy.getStatus().ordinal());
                 insert.set(t_proxy.lastCheck, proxy.getLastCheck() == null ? null : Timestamp.valueOf(proxy.getLastCheck()));
                 insert.set(t_proxy.remoteIp, proxy.getRemoteip());
-                insert.set(t_proxy.instanceId, proxy.getInstanceId());
                 Integer key = insert.executeWithKey(t_proxy.id);
                 if(key != null){
                     ++inserted;
@@ -74,7 +73,6 @@ public class ProxyDB extends AbstractDB {
             update.set(t_proxy.status, (byte)proxy.getStatus().ordinal());
             update.set(t_proxy.lastCheck, proxy.getLastCheck() == null ? null : Timestamp.valueOf(proxy.getLastCheck()));
             update.set(t_proxy.remoteIp, proxy.getRemoteip());
-            update.set(t_proxy.instanceId, proxy.getInstanceId());
             update.where(t_proxy.id.eq(proxy.getId()));
             updated = update.execute() == 1;
             
@@ -181,7 +179,8 @@ public class ProxyDB extends AbstractDB {
             tuple.get(t_proxy.remoteIp),
             tuple.get(t_proxy.lastCheck) == null ? null : tuple.get(t_proxy.lastCheck).toLocalDateTime(),
             proxyStatus,
-            tuple.get(t_proxy.instanceId)
+            tuple.get(t_proxy.instanceId),
+            tuple.get(t_proxy.region)
         );
     }
     

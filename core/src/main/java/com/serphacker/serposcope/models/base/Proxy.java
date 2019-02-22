@@ -34,7 +34,7 @@ public class Proxy {
     public Proxy() {
     }
 
-    public Proxy(int id, Type type, String ip, int port, String username, String password, String instanceId) {
+    public Proxy(int id, Type type, String ip, int port, String username, String password, String instanceId, String region) {
         this.id = id;
         this.type = type;
         this.ip = ip;
@@ -43,6 +43,7 @@ public class Proxy {
         this.password = password;
         this.status = UNCHECKED;
         this.instanceId = instanceId;
+        this.region = region;
     }
     
     public Proxy(ScrapProxy proxy) {
@@ -67,7 +68,7 @@ public class Proxy {
         this.status = UNCHECKED;
     }    
 
-    public Proxy(int id, Type type, String ip, int port, String username, String password, String remoteip, LocalDateTime lastCheck, Status status, String instanceId) {
+    public Proxy(int id, Type type, String ip, int port, String username, String password, String remoteip, LocalDateTime lastCheck, Status status, String instanceId, String region) {
         this.id = id;
         this.type = type;
         this.ip = ip;
@@ -78,6 +79,7 @@ public class Proxy {
         this.lastCheck = lastCheck;
         this.status = status;
         this.instanceId = instanceId;
+        this.region = region;
     }
     
     int id;
@@ -91,6 +93,7 @@ public class Proxy {
     LocalDateTime lastCheck;
     Status status = UNCHECKED;
     String instanceId;
+    String region;
 
     public int getId() {
         return id;
@@ -172,6 +175,14 @@ public class Proxy {
     	this.instanceId = instanceId;
     }
 
+    public String getRegion() {
+    	return region;
+    }
+    
+    public void setRegion(String region) {
+    	this.region = region;
+    }
+
     public ScrapProxy toScrapProxy(){
         switch(type){
             case SOCKS:
@@ -247,6 +258,7 @@ public class Proxy {
         hash = 19 * hash + Objects.hashCode(this.lastCheck);
         hash = 19 * hash + Objects.hashCode(this.status);
         hash = 19 * hash + Objects.hashCode(this.instanceId);
+        hash = 19 * hash + Objects.hashCode(this.region);
         return hash;
     }
 
@@ -290,6 +302,9 @@ public class Proxy {
             return false;
         }
         if (!Objects.equals(this.instanceId, other.instanceId)) {
+            return false;
+        }
+        if (!Objects.equals(this.region, other.region)) {
             return false;
         }
         return true;

@@ -165,7 +165,7 @@ public class ExportDBIT {
         baseDB.run.insert(run);
         
         
-        Proxy proxy = new Proxy(0, Proxy.Type.HTTP, "ip'", 880, "username'", "password'", "remoteip", ldt, Proxy.Status.OK, null);
+        Proxy proxy = new Proxy(0, Proxy.Type.HTTP, "ip'", 880, "username'", "password'", "remoteip", ldt, Proxy.Status.OK, null, null);
         baseDB.proxy.insert(Arrays.asList(proxy));
         
         GoogleSearch search1 = new GoogleSearch();
