@@ -44,7 +44,7 @@ public class GoogleTaskRunnable implements Runnable {
 		ScrapProxy proxy = null;
 		int searchTry = 0;
 
-		LOG.info("google thread started");
+		LOG.debug("google thread started");
 		try {
 
 			while (!controller.shouldStop()) {
@@ -108,8 +108,8 @@ public class GoogleTaskRunnable implements Runnable {
 
 				++searchTry;
 				GoogleScrapResult res = null;
-				LOG.info("search [{}] | try {} | total search done : {}/{}", new Object[] { search.getKeyword(),
-						searchTry, controller.getSearchDone(), controller.totalSearch });
+				LOG.info("search: [{}] retry: {} progress: {} / {}", new Object[] { search.getKeyword(),
+						searchTry - 1, controller.getSearchDone(), controller.totalSearch });
 
 				try {
 					res = scraper.scrap(getScrapConfig(controller.googleOptions, search));
@@ -123,7 +123,7 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 
 				if (res.status != OK) {
-					LOG.warn("scrap failed for [{}] because of {}", search.getKeyword(), res.status);
+					LOG.warn("search failed: [{}] reason: {}", search.getKeyword(), res.status);
 					controller.removeProxy(proxy); // mark removed
 					proxy = null;
 					continue;
@@ -144,7 +144,7 @@ public class GoogleTaskRunnable implements Runnable {
 				controller.searches.add(search);
 			}
 		}
-		LOG.info("google thread stopped");
+		LOG.debug("google thread stopped");
 	}
 
 	protected GoogleScrapSearch getScrapConfig(GoogleSettings options, GoogleSearch search) {

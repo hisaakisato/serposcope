@@ -244,8 +244,8 @@ public class GoogleTaskRunnableTest {
 //        when(taskController.scaperFactory.getGoogleScraper(any())).thenReturn(scraper);
         
         runnable.run();
-        assertLogged("search [keyword] | try 1 | total search done : 0/0");
-        assertLogged("scrap failed for [keyword] because of ERROR_NETWORK");
+        assertLogged("search: [keyword] retry: 0 progress: 0 / 0");
+        assertLogged("search failed: [keyword] reason: ERROR_NETWORK");
         verify(taskController, never()).onSearchDone(any(), any());
         assertFalse(taskController.rotator.list().contains(evictableProxy));
         assertEquals(proxies.size()-1, taskController.rotator.list().size());
