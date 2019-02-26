@@ -108,7 +108,7 @@ public class GoogleTaskRunnable implements Runnable {
 
 				++searchTry;
 				GoogleScrapResult res = null;
-				LOG.info("search \"{}\" | try {} | total search done : {}/{}", new Object[] { search.getKeyword(),
+				LOG.info("search [{}] | try {} | total search done : {}/{}", new Object[] { search.getKeyword(),
 						searchTry, controller.getSearchDone(), controller.totalSearch });
 
 				try {
@@ -123,7 +123,7 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 
 				if (res.status != OK) {
-					LOG.warn("scrap failed for {} because of {}", search.getKeyword(), res.status);
+					LOG.warn("scrap failed for [{}] because of {}", search.getKeyword(), res.status);
 					controller.removeProxy(proxy); // mark removed
 					proxy = null;
 					continue;
