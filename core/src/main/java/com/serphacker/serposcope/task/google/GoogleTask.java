@@ -120,9 +120,9 @@ public class GoogleTask extends AbstractTask {
 
         totalSearch = searches.size();
         
-        int nThread = run.getGroup() == null ?
+        int nThread = Math.min(totalSearch, run.getGroup() == null ?
         		googleOptions.getMaxThreads() :
-        			googleOptions.getMaxManualThreads();
+    					googleOptions.getMaxManualThreads());
         startThreads(nThread);
         waitForThreads();
         
