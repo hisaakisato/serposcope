@@ -94,7 +94,11 @@ public class ProxyDB extends AbstractDB {
                 update.where(t_proxy.type.eq(p.getType().ordinal()));
                 if (p.getType() != Type.BIND) {
                     update.where(t_proxy.port.eq(p.getPort()));
-                    update.where(t_proxy.user.eq(p.getUsername()));
+                    if (p.getUsername() == null) {
+                    	update.where(t_proxy.user.isNull());
+                    } else {
+                    	update.where(t_proxy.user.eq(p.getUsername()));
+                    }
                 }
                 updated = update.execute() > 0;
                 
