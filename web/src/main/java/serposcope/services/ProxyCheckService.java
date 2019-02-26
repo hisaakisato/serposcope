@@ -36,7 +36,7 @@ public class ProxyCheckService {
 	@Inject
 	TaskManager taskManager;
 
-	@Schedule(delay = 2, initialDelay = 0, timeUnit = TimeUnit.MINUTES)
+	@Schedule(delay = 1, initialDelay = 0, timeUnit = TimeUnit.MINUTES)
 	public void check() {
 		synchronized (taskManager.rotator) {
 			LOG.debug("refresh rotator proxies");
