@@ -59,6 +59,8 @@ public class RunDB extends AbstractDB {
                 .set(t_run.started, run.getStarted()== null ? null : Timestamp.valueOf(run.getStarted()))
                 .set(t_run.finished, run.getFinished()== null ? null : Timestamp.valueOf(run.getFinished()))
                 .set(t_run.captchas, run.getCaptchas())
+                .set(t_run.total, run.getTotal())
+                .set(t_run.done, run.getDone())
                 .set(t_run.progress, run.getProgress())
                 .set(t_run.errors, run.getErrors())
                 .set(t_run.status, run.getStatus().ordinal())
@@ -123,6 +125,8 @@ public class RunDB extends AbstractDB {
             updated = new SQLUpdateClause(conn, dbTplConf, t_run)
                 .set(t_run.finished, run.getFinished() == null ? null : Timestamp.valueOf(run.getFinished()))
                 .set(t_run.progress, run.getProgress())
+                .set(t_run.total, run.getTotal())
+                .set(t_run.done, run.getDone())
                 .set(t_run.captchas, run.getCaptchas())
                 .set(t_run.errors, run.getErrors())
                 .where(t_run.id.eq(run.getId()))
@@ -141,6 +145,8 @@ public class RunDB extends AbstractDB {
         boolean updated = false;
         try(Connection conn = ds.getConnection()){
             updated = new SQLUpdateClause(conn, dbTplConf, t_run)
+                .set(t_run.total, run.getTotal())
+                .set(t_run.done, run.getDone())
                 .set(t_run.progress, run.getProgress())
                 .where(t_run.id.eq(run.getId()))
                 .execute() == 1;
@@ -452,6 +458,8 @@ public class RunDB extends AbstractDB {
         run.setFinished(tuple.get(t_run.finished) == null ? null : tuple.get(t_run.finished).toLocalDateTime());
         run.setStatus(Run.Status.values()[tuple.get(t_run.status)]);
         run.setProgress(tuple.get(t_run.progress));
+        run.setTotal(tuple.get(t_run.total));
+        run.setDone(tuple.get(t_run.done));
         run.setErrors(tuple.get(t_run.errors));
         run.setCaptchas(tuple.get(t_run.captchas));
         run.setMode(Run.Mode.values()[tuple.get(t_run.mode)]);

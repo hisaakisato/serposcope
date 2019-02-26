@@ -52,6 +52,8 @@ create table `RUN` (
     day date,
     started datetime,
     finished datetime,
+    total int,
+    done int,
     progress int,
     captchas int,
     errors int,

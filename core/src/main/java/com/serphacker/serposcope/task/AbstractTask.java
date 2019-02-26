@@ -38,7 +38,7 @@ public abstract class AbstractTask extends Thread {
     @Override
     public void run() {
         startMilliseconds = System.currentTimeMillis();
-        LOG.info(
+        LOG.debug(
             "task started for module {} of day {} ({})", 
             new Object[]{run.getModule(), run.getDay(), (run.getId() == 0 ? "new task": "recheck")}
         );
@@ -67,7 +67,7 @@ public abstract class AbstractTask extends Thread {
             LOG.error("Task crashed", ex);
             endRun(Run.Status.DONE_CRASHED);
         }
-        LOG.info("task done for module {}", run.getModule());
+        LOG.debug("task done for module {}", run.getModule());
     }
     
     protected abstract Run.Status doRun() throws Exception;

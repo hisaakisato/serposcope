@@ -50,7 +50,7 @@ public class GoogleTaskRunnable implements Runnable {
 			while (!controller.shouldStop()) {
 
 				if (Thread.interrupted()) {
-					LOG.error("interrupted, aborting the thread");
+					LOG.error("[Search Abort] interrupted, aborting the thread");
 					break;
 				}
 
@@ -95,7 +95,7 @@ public class GoogleTaskRunnable implements Runnable {
 					try {
 						search = controller.searches.poll(1, TimeUnit.SECONDS);
 					} catch (InterruptedException ex) {
-						LOG.error("interrupted while polling, aborting the thread");
+						LOG.error("[Search Abort] interrupted while polling, aborting the thread");
 						break;
 					}
 					searchTry = 0;
@@ -108,13 +108,13 @@ public class GoogleTaskRunnable implements Runnable {
 
 				++searchTry;
 				GoogleScrapResult res = null;
-				LOG.info("search: [{}] retry: {} progress: {} / {}", new Object[] { search.getKeyword(),
+				LOG.info("[Search Info] keyword: [{}] retry: {} done: {} total: {}", new Object[] { search.getKeyword(),
 						searchTry - 1, controller.getSearchDone(), controller.totalSearch });
 
 				try {
 					res = scraper.scrap(getScrapConfig(controller.googleOptions, search));
 				} catch (InterruptedException ex) {
-					LOG.error("interrupted while scraping, aborting the thread");
+					LOG.error("[Search Abort] interrupted while scraping, aborting the thread");
 					break;
 				}
 
@@ -123,7 +123,7 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 
 				if (res.status != OK) {
-					LOG.warn("search failed: [{}] reason: {}", search.getKeyword(), res.status);
+					LOG.warn("[Search Error] keyword: [{}] reason: {}", search.getKeyword(), res.status);
 					controller.removeProxy(proxy); // mark removed
 					proxy = null;
 					continue;
@@ -134,7 +134,7 @@ public class GoogleTaskRunnable implements Runnable {
 			}
 
 		} catch (Exception ex) {
-			LOG.error("unhandled exception, aborting the thread", ex);
+			LOG.error("[Search Error] unhandled exception, aborting the thread", ex);
 			ex.printStackTrace();
 		} finally {
 			if (proxy != null) {

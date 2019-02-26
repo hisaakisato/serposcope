@@ -41,6 +41,8 @@ public class Run {
     LocalDateTime started;
     LocalDateTime finished;
     Status status;
+    int total;
+    int done;
     int progress;
     int captchas;
     int errors;
@@ -106,6 +108,22 @@ public class Run {
         this.started = started;
     }
 
+    public int getTotal() {
+        return total;
+    }
+
+    public void setTotal(int total) {
+        this.total = total;
+    }
+    
+    public int getDone() {
+        return done;
+    }
+
+    public void setDone(int done) {
+        this.done = done;
+    }
+    
     public int getProgress() {
         return progress;
     }

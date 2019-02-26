@@ -14,6 +14,8 @@
                     <th style="width: 100px;">${i18n("label.group")}</th>
                     <th style="width: 180px;">${i18n("label.started")}</th>
                     <th>${i18n("label.progress")}</th>
+                    <th style="width: 100px;">${i18n("label.done")}</th>
+                    <th style="width: 100px;">${i18n("label.total")}</th>
                     <th style="width: 100px;">${i18n("label.captchas")}</th>
                     <th style="width: 100px;">${i18n("label.errors")}</th>
                     <th style="width: 150px;">${i18n("label.actions")}</th>
@@ -47,6 +49,8 @@
                             </div>
                         </div>
                     </td>
+                    <td>${task.getDone()}</td>
+                    <td>${task.getTotal()}</td>
                     <td>${task.getCaptchas()}</td>
                     <td>${task.getErrors()}</td>
                     <td>
@@ -72,6 +76,7 @@
                     <th style="width: 150px;">${i18n("label.started")}</th>
                     <th style="width: 150px;">${i18n("label.finished")}</th>
                     <th>${i18n("label.duration")}</th>
+                    <th style="width: 100px;">${i18n("label.total")}</th>
                     <th style="width: 100px;">${i18n("label.captchas")}</th>
                     <th style="width: 100px;">${i18n("label.errors")}</th>
                     <th>${i18n("label.status")}</th>
@@ -100,6 +105,7 @@
                     <td>${global.ldtf.format(task.getStarted())}</td>
                     <td>${global.ldtf.format(task.getFinished())}</td>
                     <td>${task.getDurationFormated()}</td>
+                    <td>${task.getTotal()}</td>
                     <td>${task.getCaptchas()}</td>
                     <td>${task.getErrors()}</td>
                     <td>${task.getStatus()}</td>

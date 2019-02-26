@@ -119,6 +119,7 @@ public class GoogleTask extends AbstractTask {
         rotator.replace(proxies);
 
         totalSearch = searches.size();
+        this.run.setTotal(totalSearch);
         
         int nThread = Math.min(totalSearch, run.getGroup() == null ?
         		googleOptions.getMaxThreads() :
@@ -132,7 +133,7 @@ public class GoogleTask extends AbstractTask {
             try {solver.close();} catch (IOException ex) {}
         }
         
-        LOG.warn("{} proxies failed during the task", proxies.size() - rotator.list().size());
+        LOG.debug("{} proxies failed during the task", proxies.size() - rotator.list().size());
         
         int remainingSearch = totalSearch - searchDone.get();
         if(remainingSearch > 0){
@@ -198,6 +199,7 @@ public class GoogleTask extends AbstractTask {
     
     protected void incSearchDone(){
         run.setProgress((int) (((float)searchDone.incrementAndGet()/(float)totalSearch)*100f) );
+        run.setDone(searchDone.get());
         baseDB.run.updateProgress(run);
     }
     
@@ -264,7 +266,7 @@ public class GoogleTask extends AbstractTask {
             Collections.shuffle(searchList);
         }
         searches = new LinkedBlockingQueue<>(searchList);
-        LOG.info("{} searches to do", searches.size());
+        LOG.debug("{} searches to do", searches.size());
     }
     
     protected void initializeTargets() {
@@ -350,12 +352,12 @@ public class GoogleTask extends AbstractTask {
         solver = captchaSolverFactory.get(baseDB.config.getConfig());
         if(solver != null){
             if(!solver.init()){
-                LOG.info("failed to init captcha solver {}", solver.getFriendlyName());
+                LOG.warn("failed to init captcha solver {}", solver.getFriendlyName());
                 return null;
             }
             return solver;
         } else {
-            LOG.info("no captcha service configured");
+            LOG.debug("no captcha service configured");
             return null;
         }
         

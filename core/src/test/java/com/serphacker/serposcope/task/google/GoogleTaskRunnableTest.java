@@ -97,7 +97,7 @@ public class GoogleTaskRunnableTest {
         Thread.currentThread().interrupt();
         runnable.run();
         assertTrue(!Thread.currentThread().isInterrupted());
-        assertLogged("interrupted, aborting the thread");
+        assertLogged("[Search Abort] interrupted, aborting the thread");
     }
 
     @Test
@@ -116,7 +116,7 @@ public class GoogleTaskRunnableTest {
         Thread.sleep(50);
         thread.interrupt();
         thread.join();
-        assertLogged("interrupted while polling, aborting the thread");
+        assertLogged("[Search Abort] interrupted while polling, aborting the thread");
     }
     
 //    @Test
@@ -140,7 +140,7 @@ public class GoogleTaskRunnableTest {
         when(runnable.scraper.scrap(any())).thenThrow(new UnsupportedOperationException("lolex"));
         
         runnable.run();
-        assertLogged("unhandled exception, aborting the thread");
+        assertLogged("[Search Error] unhandled exception, aborting the thread");
         
         // proxy should sent back to proxyrotator
         Assert.assertEquals(new HashSet<>(proxies), new HashSet<>(taskController.rotator.list()));
@@ -244,8 +244,8 @@ public class GoogleTaskRunnableTest {
 //        when(taskController.scaperFactory.getGoogleScraper(any())).thenReturn(scraper);
         
         runnable.run();
-        assertLogged("search: [keyword] retry: 0 progress: 0 / 0");
-        assertLogged("search failed: [keyword] reason: ERROR_NETWORK");
+        assertLogged("[Search Info] keyword: [keyword] retry: 0 done: 0 total: 0");
+        assertLogged("[Search Error] keyword: [keyword] reason: ERROR_NETWORK");
         verify(taskController, never()).onSearchDone(any(), any());
         assertFalse(taskController.rotator.list().contains(evictableProxy));
         assertEquals(proxies.size()-1, taskController.rotator.list().size());
