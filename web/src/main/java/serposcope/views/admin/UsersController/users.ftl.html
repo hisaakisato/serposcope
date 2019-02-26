@@ -82,17 +82,13 @@
                                                   <i class="fa fa-user fa-stack-1x"></i> 
                                             </span>
                                             </#if>
-                                            ${user.getEmail()}
+                                            ${user.getName()!user.getEmail()}
                                         </th>
                                         <#list groups as group>
                                         <td>
-                                            <#if user.isAdmin()>
-                                            <input checked="checked" disabled type="checkbox" >
-                                            <#else>
                                             <input class="btn-toggle-perm" type="checkbox"
                                                    ${user.canRead(group.getId())?string("checked=checked","")}
                                                    data-user="${user.getId()}" data-group="${group.getId()}" >
-                                            </#if>
                                         </td>                                    
                                         </#list>
                                     </tr>
