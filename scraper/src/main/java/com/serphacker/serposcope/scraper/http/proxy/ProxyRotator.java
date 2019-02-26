@@ -110,6 +110,13 @@ public class ProxyRotator {
 		return null;
 	}
 	
+	public void remove(ScrapProxy proxy) {
+		synchronized (proxies) {
+			this.proxies.remove(proxy);
+			this.used.remove(proxy);
+		}
+	}
+
 	private boolean check(ScrapProxy p1, ScrapProxy p2) {
 		if (p1 == null) {
 			return p2 == null;

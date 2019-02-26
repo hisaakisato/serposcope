@@ -370,6 +370,7 @@ public class GoogleTask extends AbstractTask {
     }
 
     protected void removeProxy(ScrapProxy proxy) {
+    	rotator.remove(proxy);
     	baseDB.proxy.updateStatus(Proxy.Status.REMOVED, proxy);
     }
 
