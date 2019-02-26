@@ -32,7 +32,6 @@
                         <th class="width100"  data-sort="string">${i18n("label.type")} <i class="fa fa-sort"></i></th>
                         <th data-sort="string">IP:Port <i class="fa fa-sort"></i></th>
                         <th data-sort="string">${i18n("label.user")} <i class="fa fa-sort"></i></th>
-                        <th data-sort="string">${i18n("label.password")} <i class="fa fa-sort"></i></th>
                         <th class="width150" data-sort="string">${i18n("label.remoteIp")} <i class="fa fa-sort"></i></th>
                         <th class="width150" data-sort="string">${i18n("label.instanceId")} <i class="fa fa-sort"></i></th>
                         <th class="width150" data-sort="string">${i18n("label.lastCheck")} <i class="fa fa-sort"></i></th>
@@ -46,7 +45,6 @@
                         <td>${proxy.getType()}</td>
                         <td style="white-space:nowrap">${proxy.getIp()!""}:${proxy.getPort()!""}</td>
                         <td>${proxy.getUsername()!""}</td>
-                        <td>${proxy.getPassword()!""}</td>
                         <td style="white-space:nowrap">${proxy.getRemoteip()!""}</td>
                         <td style="white-space:nowrap">${proxy.getInstanceId()!""}</td>
                         <td style="white-space:nowrap"><#if proxy.getLastCheck()?? >${global.ldtf.format(proxy.getLastCheck())}</#if></td>                    
