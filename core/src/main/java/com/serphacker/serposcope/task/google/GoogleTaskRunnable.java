@@ -66,7 +66,7 @@ public class GoogleTaskRunnable implements Runnable {
 					if (proxy != null) {
 						break;
 					}
-					LOG.warn("no proxy available, wait a moment");
+					LOG.debug("no proxy available, wait a moment");
 					try {
 						controller.waitingCount.incrementAndGet();
 					} finally {
