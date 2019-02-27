@@ -253,6 +253,7 @@ public class GoogleSearchDB extends AbstractDB {
         try(Connection con = ds.getConnection()){
             
             SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+                .distinct()
                 .select(t_gsearch.all())
                 .from(t_gsearch)
                 .join(t_ggroup).on(t_gsearch.id.eq(t_ggroup.googleSearchId))
