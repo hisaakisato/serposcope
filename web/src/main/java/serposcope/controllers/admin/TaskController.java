@@ -143,7 +143,7 @@ public class TaskController extends BaseController {
 
         switch (run.getModule()) {
             case GOOGLE:
-                if (taskManager.abortGoogleTask(true)) {
+                if (taskManager.abortGoogleTask(true, run.getId())) {
                     flash.success("admin.task.abortingTask");
                 } else {
                     flash.error("admin.task.failAbort");

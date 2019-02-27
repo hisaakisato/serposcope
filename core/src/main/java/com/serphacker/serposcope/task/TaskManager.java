@@ -88,12 +88,55 @@ public class TaskManager {
     }
 
     public boolean abortGoogleTask(boolean interrupt){
+        if (this.googleTask != null && this.googleTask.isAlive()){
+	    	if(db.run.updateStatusAborting(this.googleTask.getRun())){
+	    		this.googleTask.getRun().setStatus(Run.Status.ABORTING);
+	        }
+	    	this.googleTask.abort();
+	        if(interrupt){
+	        	this.googleTask.interrupt();
+	        }
+        }
+		for (GoogleTask googleTask : this.googleTasks.values()) {
+	        if (googleTask != null && googleTask.isAlive()){
+		    	if(db.run.updateStatusAborting(googleTask.getRun())){
+		    		googleTask.getRun().setStatus(Run.Status.ABORTING);
+		        }
+		    	googleTask.abort();
+		        if(interrupt){
+		        	googleTask.interrupt();
+		        }
+    		}
+		}
+    	return true;
+    }
+
+    public boolean abortGoogleTask(boolean interrupt, Integer id){
         synchronized(googleTaskLock){
-            if(googleTask == null || !googleTask.isAlive()){
+        	GoogleTask googleTask = null; 
+        	if (id == null) {
+        		googleTask = this.googleTask;
+        	} else {
+        		if (this.googleTask != null &&
+        				id.equals(this.googleTask.getRun().getId())) {
+            		googleTask = this.googleTask;
+        		}
+        		if (googleTask == null) {
+        			for (GoogleTask t : this.googleTasks.values()) {
+                		if (t != null &&
+                				id.equals(t.getRun().getId())) {
+                    		googleTask = t;
+                    		break;
+                		}
+        			}
+        		}
+        	}
+            
+            if (googleTask == null || !googleTask.isAlive()){
                 return false;
             }
-            
-            if(db.run.updateStatusAborting(googleTask.getRun())){
+
+        	if(db.run.updateStatusAborting(googleTask.getRun())){
                 googleTask.getRun().setStatus(Run.Status.ABORTING);
             }
             googleTask.abort();
