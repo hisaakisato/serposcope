@@ -392,9 +392,9 @@ public class GoogleTask extends AbstractTask {
     			.stream().collect(Collectors.summingInt(List::size));
     	int searched = searchDone.intValue();
         LOG.info("[Finished Task] status: {} "
-        		+ ",duration(sec): {} "
-        		+ ",captcha: {} ,errors: {} "
-        		+ ",groups: {} ,searched: {} ,remained: {} ,targets: {}",
+        		+ "duration(sec): {} "
+        		+ "captcha: {} errors: {} "
+        		+ "groups: {} searched: {} remained: {} targets: {}",
         		run.getStatus(),
         		String.format("%.2f", run.getDurationMs() * 1.0 / 1000),
         		run.getCaptchas(), run.getErrors(),

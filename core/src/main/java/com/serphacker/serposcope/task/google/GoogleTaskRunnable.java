@@ -108,14 +108,17 @@ public class GoogleTaskRunnable implements Runnable {
 
 				++searchTry;
 				GoogleScrapResult res = null;
-				LOG.info("[Search Info] keyword: [{}] retry: {} done: {} total: {}", new Object[] { search.getKeyword(),
-						searchTry - 1, controller.getSearchDone(), controller.totalSearch });
-
+				long start = System.currentTimeMillis();
 				try {
 					res = scraper.scrap(getScrapConfig(controller.googleOptions, search));
 				} catch (InterruptedException ex) {
 					LOG.error("[Search Abort] interrupted while scraping, aborting the thread");
 					break;
+				}
+				long duration = System.currentTimeMillis() - start;
+				if (res.status == OK) {
+					LOG.info("[Search Done] keyword: [{}] duration: {} done: {} total: {} retry: {}",
+								search.getKeyword(), duration, controller.getSearchDone(), controller.totalSearch, searchTry - 1);
 				}
 
 				if (res.captchas > 0) {
@@ -123,7 +126,8 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 
 				if (res.status != OK) {
-					LOG.warn("[Search Error] keyword: [{}] reason: {}", search.getKeyword(), res.status);
+					LOG.warn("[Search Error] keyword: [{}] duration: {} reason: {}",
+							search.getKeyword(), duration, res.status);
 					controller.removeProxy(proxy); // mark removed
 					proxy = null;
 					continue;

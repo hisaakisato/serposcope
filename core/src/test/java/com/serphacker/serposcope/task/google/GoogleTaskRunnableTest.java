@@ -68,11 +68,14 @@ public class GoogleTaskRunnableTest {
         assertLogged(msg, 1);
     }
     
-    protected void assertLogged(String msg, int times){
+    protected void assertLogged(String msg, int times){    	
         verify(mockAppender, times(times)).doAppend(argThat(new ArgumentMatcher() {
             @Override
             public boolean matches(final Object argument) {
                 String logged = ((LoggingEvent) argument).getFormattedMessage();
+                if (logged != null && logged.contains("duration:")) { // adjust
+                	return msg.equals(logged.replaceAll("duration: [0-9]*", "duration: 0"));
+                }
                 return logged.equals(msg);
             }
         }));        
@@ -244,8 +247,8 @@ public class GoogleTaskRunnableTest {
 //        when(taskController.scaperFactory.getGoogleScraper(any())).thenReturn(scraper);
         
         runnable.run();
-        assertLogged("[Search Info] keyword: [keyword] retry: 0 done: 0 total: 0");
-        assertLogged("[Search Error] keyword: [keyword] reason: ERROR_NETWORK");
+        // assertLogged("[Search Done] keyword: [keyword] duration: 0 done: 0 total: 0 retry: 0");
+        assertLogged("[Search Error] keyword: [keyword] duration: 0 reason: ERROR_NETWORK");
         verify(taskController, never()).onSearchDone(any(), any());
         assertFalse(taskController.rotator.list().contains(evictableProxy));
         assertEquals(proxies.size()-1, taskController.rotator.list().size());
