@@ -184,6 +184,9 @@ public class GoogleTask extends AbstractTask {
             return true;
         }
         
+        if (searches.isEmpty()) {
+        	return true;
+        }
         return false;
     }
     

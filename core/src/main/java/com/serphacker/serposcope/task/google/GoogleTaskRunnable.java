@@ -73,7 +73,7 @@ public class GoogleTaskRunnable implements Runnable {
 						Thread.sleep(10000);
 						controller.waitingCount.decrementAndGet();
 					}
-					if (controller.searches.isEmpty()) {
+					if (controller.shouldStop()) {
 						break;
 					}
 				}
