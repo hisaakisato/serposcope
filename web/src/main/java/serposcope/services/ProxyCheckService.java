@@ -45,11 +45,10 @@ public class ProxyCheckService {
 			int removed = 0;
 			List<ScrapProxy> proxies = new ArrayList<>();
 			for (Proxy proxy : baseDB.proxy.list()) {
-				if (proxy.getStatus() == Status.REMOVED) {
-					removed++;
-					break;					
-				}				
 				switch (proxy.getStatus()) {
+				case REMOVED:
+					removed++;
+					break;
 				case UNCHECKED:
 					unchecked++;
 					break;

@@ -10,6 +10,7 @@ package com.serphacker.serposcope.scraper.http.proxy;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Queue;
@@ -25,7 +26,7 @@ public class ProxyRotator {
 	final Queue<ScrapProxy> used = new ArrayDeque<>();
 
 	public ScrapProxy rotate(ScrapProxy previousProxy) {
-		synchronized (proxies) {
+		synchronized (this.proxies) {
 			if (previousProxy != null) {
 				ScrapProxy p = used(previousProxy);
 				if (p != null) {
@@ -35,7 +36,7 @@ public class ProxyRotator {
 			}
 			ScrapProxy proxy = proxies.poll();
 			if (proxy != null) {				
-				used.add(proxy);
+				this.used.add(proxy);
 			}
 			return proxy;
 		}
@@ -53,13 +54,13 @@ public class ProxyRotator {
     }
     
 	public boolean add(ScrapProxy proxy) {
-		synchronized (proxies) {
+		synchronized (this.proxies) {
 			ScrapProxy p = used(proxy);
 			if (p != null) {
 				this.used.remove(p);
 				proxy = p;
 			}
-			return proxies.add(proxy);
+			return this.proxies.add(proxy);
 		}
 	}
     
@@ -69,33 +70,30 @@ public class ProxyRotator {
     
     
     public int remaining(){
-        synchronized(proxies){
-            return proxies.size();
+        synchronized(this.proxies){
+            return this.proxies.size();
         }
     }
     
     public List<ScrapProxy> list(){
-        synchronized(proxies){
-            return new ArrayList<>(proxies);
+        synchronized(this.proxies){
+            return new ArrayList<>(this.proxies);
         }
     } 
     
     public List<ScrapProxy> listUsed(){
-        synchronized(used){
-            return new ArrayList<>(used);
+        synchronized(this.used){
+            return new ArrayList<>(this.used);
         }
     } 
     
 	public void replace(Collection<ScrapProxy> proxies) {
 		synchronized (proxies) {
-			this.proxies.clear();
+			this.proxies.retainAll(proxies);
+			this.used.retainAll(proxies);
 			for (ScrapProxy proxy : proxies) {
-				ScrapProxy p = used(proxy);
-				if (p == null) {
+				if (used(proxy) == null) {
 					this.proxies.add(proxy);
-				} else {
-					this.used.remove(p);
-					this.used.add(proxy);
 				}
 			}
 		}
@@ -109,7 +107,7 @@ public class ProxyRotator {
 		}
 		return null;
 	}
-	
+
 	public void remove(ScrapProxy proxy) {
 		synchronized (proxies) {
 			this.proxies.remove(proxy);
