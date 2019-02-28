@@ -28,7 +28,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.http.HttpHost;
@@ -85,56 +84,61 @@ public class GoogleScraper {
         prepareHttpClient(search);
         long resultsNumber = 0;
         
-        String referrer = "https://" + buildHost(search) + "/";
-        for (int page = 0; page < search.getPages(); page++) {
-            
-            if(Thread.interrupted()){
-                throw new InterruptedException();
-            }
-            
-            String url = buildRequestUrl(search, page);
-            
-            Status status = null;
-            for (int retry = 0; retry < maxRetry; retry++) {
-                
-                LOG.debug("GET {} via {} try {}", url, http.getProxy() == null ? new DirectNoProxy() : http.getProxy(), retry+1);
-                
-                status = downloadSerp(url, referrer, search, retry);
-                if(status == Status.OK){
-                    status = parseSerp(urls);
-                    if(status == Status.OK){
-                        break;
-                    }
-                }
-                
-                if(!isRetryableStatus(status)){
-                    break;
-                }
-            }
-            
-            if(status != Status.OK){
-                return new GoogleScrapResult(status, urls, captchas);
-            }
-            
-            if(page  == 0){
-                resultsNumber = parseResultsNumberOnFirstPage();
-            }
-            
-            if(!hasNextPage()){
-                break;
-            }
-            
+        try {
+	        String referrer = "https://" + buildHost(search) + "/";
+	        for (int page = 0; page < search.getPages(); page++) {
+	            
+	            if(Thread.interrupted()){
+	                throw new InterruptedException();
+	            }
+	            
+	            String url = buildRequestUrl(search, page);
+	            
+	            Status status = null;
+	            for (int retry = 0; retry < maxRetry; retry++) {
+	                
+	                LOG.debug("GET {} via {} try {}", url, http.getProxy() == null ? new DirectNoProxy() : http.getProxy(), retry+1);
+	                
+	                status = downloadSerp(url, referrer, search, retry);
+	                if(status == Status.OK){
+	                    status = parseSerp(urls);
+	                    if(status == Status.OK){
+	                        break;
+	                    }
+	                }
+	                
+	                if(!isRetryableStatus(status)){
+	                    break;
+	                }
+	            }
+	            
+	            if(status != Status.OK){
+	                return new GoogleScrapResult(status, urls, captchas);
+	            }
+	            
+	            if(page  == 0){
+	                resultsNumber = parseResultsNumberOnFirstPage();
+	            }
+	            
+	            if(hasNextPage()){
+	                Thread.sleep(2500);
+	            } else {
+	                break;            	
+	            }
+	            
+	        }
+	        return new GoogleScrapResult(Status.OK, urls, captchas, resultsNumber);
+        } finally {
             long pause = search.getRandomPagePauseMS();
             if(pause > 0){
                 try {
-                    LOG.trace("sleeping {} milliseconds", pause);
+                    LOG.debug("sleeping {} milliseconds [{}]", pause, Thread.currentThread().getName());
                     Thread.sleep(pause);
                 } catch(InterruptedException ex){
                     throw ex;
                 }                
             }
         }
-        return new GoogleScrapResult(Status.OK, urls, captchas, resultsNumber);
     }
     
     protected void prepareHttpClient(GoogleScrapSearch search){
@@ -178,7 +182,7 @@ public class GoogleScraper {
                 return Status.OK;
                 
             case 403:
-                try{Thread.sleep((retry+1)*1000);}catch(Exception ex){}
+                try{Thread.sleep((retry+1)*2500);}catch(Exception ex){}
                 break;
 
             case 302:

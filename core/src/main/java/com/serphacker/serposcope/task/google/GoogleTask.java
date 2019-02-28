@@ -58,7 +58,7 @@ public class GoogleTask extends AbstractTask {
     ScrapClientFactory scrapClientFactory;
     
     GoogleDB googleDB;
-    public ProxyRotator rotator;
+    public volatile ProxyRotator rotator;
 
     Run previousRun;
     final Map<Short,Integer> previousRunsByDay = new ConcurrentHashMap<>();
@@ -69,7 +69,7 @@ public class GoogleTask extends AbstractTask {
     GoogleSettings googleOptions;
     protected final AtomicInteger searchDone = new AtomicInteger();
     final AtomicInteger captchaCount = new AtomicInteger();
-    protected final AtomicInteger waitingCount = new AtomicInteger();
+    volatile int waitingCount;
     
     Thread[] threads;
     volatile int totalSearch;
@@ -110,13 +110,14 @@ public class GoogleTask extends AbstractTask {
         initializeTargets();
         
         
-        List<ScrapProxy> proxies = baseDB.proxy.list().stream().map(Proxy::toScrapProxy).collect(Collectors.toList());
-        
-        if(proxies.isEmpty()){
-            LOG.warn("no proxy configured, using direct connection");
-            proxies.add(new DirectNoProxy());
+        if (rotator.list().isEmpty()) {        	
+        	List<ScrapProxy> proxies = baseDB.proxy.list().stream().map(Proxy::toScrapProxy).collect(Collectors.toList());        	
+        	if(proxies.isEmpty()){
+        		LOG.warn("no proxy configured, using direct connection");
+        		proxies.add(new DirectNoProxy());
+        	}
+        	rotator.replace(proxies);
         }
-        rotator.replace(proxies);
 
         totalSearch = searches.size();
         this.run.setTotal(totalSearch);
@@ -133,7 +134,7 @@ public class GoogleTask extends AbstractTask {
             try {solver.close();} catch (IOException ex) {}
         }
         
-        LOG.debug("{} proxies failed during the task", proxies.size() - rotator.list().size());
+        // LOG.debug("{} proxies failed during the task", proxies.size() - rotator.list().size());
         
         int remainingSearch = totalSearch - searchDone.get();
         if(remainingSearch > 0){
@@ -187,6 +188,11 @@ public class GoogleTask extends AbstractTask {
         if (searches.isEmpty()) {
         	return true;
         }
+        
+        if (searches.size() < waitingCount) {
+        	return true;
+        }
+        
         return false;
     }
     
@@ -380,11 +386,11 @@ public class GoogleTask extends AbstractTask {
     }
 
     public int getWaitingCount() {
-    	return waitingCount.get();
+    	return waitingCount;
     }
 
     public int getActiveCount() {
-    	return threads.length - waitingCount.get();
+    	return (int) (Arrays.stream(threads).filter(t -> t != null && t.isAlive()).count() - waitingCount);
     }
 
     @Override
@@ -394,9 +400,9 @@ public class GoogleTask extends AbstractTask {
     	int targets = targetsByGroup.values()
     			.stream().collect(Collectors.summingInt(List::size));
     	int searched = searchDone.intValue();
-        LOG.info("[Finished Task] status: {} "
-        		+ "duration(sec): {} "
-        		+ "captcha: {} errors: {} "
+        LOG.info("[Task Finished] status: {} "
+        		+ "duration: {} "
+        		+ "captchas: {} errors: {} "
         		+ "groups: {} searched: {} remained: {} targets: {}",
         		run.getStatus(),
         		String.format("%.2f", run.getDurationMs() * 1.0 / 1000),

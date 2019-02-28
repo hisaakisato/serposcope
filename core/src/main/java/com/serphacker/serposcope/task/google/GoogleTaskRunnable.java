@@ -47,7 +47,7 @@ public class GoogleTaskRunnable implements Runnable {
 		LOG.debug("google thread started");
 		try {
 
-			while (!controller.shouldStop()) {
+			MAIN_LOOP: while (!controller.shouldStop()) {
 
 				if (Thread.interrupted()) {
 					LOG.error("[Search Abort] interrupted, aborting the thread");
@@ -62,19 +62,22 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 
 				while (true) {
-					proxy = controller.rotator.rotate(proxy);
+					try {
+						if (proxy != null) {							
+							controller.rotator.add(proxy);
+							proxy = null;
+						}
+						++controller.waitingCount;
+						proxy = controller.rotator.poll();
+					} finally {
+						--controller.waitingCount;
+					}
 					if (proxy != null) {
 						break;
 					}
 					LOG.debug("no proxy available, wait a moment");
-					try {
-						controller.waitingCount.incrementAndGet();
-					} finally {
-						Thread.sleep(10000);
-						controller.waitingCount.decrementAndGet();
-					}
 					if (controller.shouldStop()) {
-						break;
+						break MAIN_LOOP;
 					}
 				}
 				if (proxy == null) {
@@ -117,8 +120,10 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 				long duration = System.currentTimeMillis() - start;
 				if (res.status == OK) {
-					LOG.info("[Search Done] keyword: [{}] duration: {} done: {} total: {} retry: {}",
-								search.getKeyword(), duration, controller.getSearchDone(), controller.totalSearch, searchTry - 1);
+					LOG.info("[Search Done] keyword: [{}] duration: {} done: {} total: {} retry: {} captchas: {} proxy: [{}]",
+								search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), controller.getSearchDone(),
+								controller.totalSearch, searchTry - 1, res.captchas,
+								proxy.toString().replaceFirst("proxy:", ""));
 				}
 
 				if (res.captchas > 0) {
@@ -126,8 +131,9 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 
 				if (res.status != OK) {
-					LOG.warn("[Search Error] keyword: [{}] duration: {} reason: {}",
-							search.getKeyword(), duration, res.status);
+					LOG.warn("[Search Error] keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}]",
+							search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
+							proxy.toString().replaceFirst("proxy:", ""));
 					controller.removeProxy(proxy); // mark removed
 					proxy = null;
 					continue;

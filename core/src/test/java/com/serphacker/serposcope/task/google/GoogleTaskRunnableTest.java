@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -74,7 +73,7 @@ public class GoogleTaskRunnableTest {
             public boolean matches(final Object argument) {
                 String logged = ((LoggingEvent) argument).getFormattedMessage();
                 if (logged != null && logged.contains("duration:")) { // adjust
-                	return msg.equals(logged.replaceAll("duration: [0-9]*", "duration: 0"));
+                	return msg.equals(logged.replaceAll("duration: [0-9.]*", "duration: 0"));
                 }
                 return logged.equals(msg);
             }
@@ -105,6 +104,7 @@ public class GoogleTaskRunnableTest {
 
     @Test
     public void testNoProxy() {
+        when(runnable.controller.shouldStop()).thenReturn(false, true);
         runnable.run();
         assertLogged("no proxy available, wait a moment");
     }
@@ -247,8 +247,9 @@ public class GoogleTaskRunnableTest {
 //        when(taskController.scaperFactory.getGoogleScraper(any())).thenReturn(scraper);
         
         runnable.run();
-        // assertLogged("[Search Done] keyword: [keyword] duration: 0 done: 0 total: 0 retry: 0");
-        assertLogged("[Search Error] keyword: [keyword] duration: 0 reason: ERROR_NETWORK");
+        // assertLogged("[Search Done] keyword: [keyword] duration: 0 done: 0 total: 0 retry: 0 captchas: 0  proxy: [bind://127.0.0.1/]");
+        assertLogged("[Search Error] keyword: [keyword] duration: 0 retry: 0 captchas: 0 reason: ERROR_NETWORK proxy: ["
+        		+ evictableProxy.toString().replaceFirst("proxy:", "") + "]");
         verify(taskController, never()).onSearchDone(any(), any());
         assertFalse(taskController.rotator.list().contains(evictableProxy));
         assertEquals(proxies.size()-1, taskController.rotator.list().size());

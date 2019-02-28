@@ -7,14 +7,12 @@
  */
 package com.serphacker.serposcope.scraper.http.proxy;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
-import java.util.Queue;
-
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * thread safe
@@ -22,26 +20,9 @@ import java.util.Queue;
  */
 public class ProxyRotator {
 
-    final Queue<ScrapProxy> proxies = new ArrayDeque<>();
-	final Queue<ScrapProxy> used = new ArrayDeque<>();
-
-	public ScrapProxy rotate(ScrapProxy previousProxy) {
-		synchronized (this.proxies) {
-			if (previousProxy != null) {
-				ScrapProxy p = used(previousProxy);
-				if (p != null) {
-					this.used.remove(p);
-					this.proxies.add(p);
-				}
-			}
-			ScrapProxy proxy = proxies.poll();
-			if (proxy != null) {				
-				this.used.add(proxy);
-			}
-			return proxy;
-		}
-	}
-
+    private volatile LinkedBlockingQueue<ScrapProxy> proxies = new LinkedBlockingQueue<>();
+    private volatile LinkedBlockingQueue<ScrapProxy> used = new LinkedBlockingQueue<>();
+    private final ReentrantLock lock = new ReentrantLock(true);
 
     public ProxyRotator(Collection<ScrapProxy> proxies) {
         this.proxies.addAll(proxies);
@@ -54,19 +35,29 @@ public class ProxyRotator {
     }
     
 	public boolean add(ScrapProxy proxy) {
+		if (proxy == null) {
+			return false;
+		}
 		synchronized (this.proxies) {
-			ScrapProxy p = used(proxy);
-			if (p != null) {
-				this.used.remove(p);
-				proxy = p;
-			}
+			this.used.remove(proxy);
 			return this.proxies.add(proxy);
 		}
 	}
     
     public ScrapProxy poll(){
-        return rotate(null);
-    }
+		try {
+			lock.lock();
+			ScrapProxy proxy = this.proxies.poll(10, TimeUnit.SECONDS);
+			if (proxy != null) {
+				this.used.add(proxy);
+			}
+			return proxy;
+		} catch (InterruptedException e) {
+		} finally {
+			lock.unlock();
+		}
+		return null;
+	}
     
     
     public int remaining(){
@@ -92,20 +83,11 @@ public class ProxyRotator {
 			this.proxies.retainAll(proxies);
 			this.used.retainAll(proxies);
 			for (ScrapProxy proxy : proxies) {
-				if (used(proxy) == null) {
+				if (!this.proxies.contains(proxy) && !this.used.contains(proxy)) {
 					this.proxies.add(proxy);
 				}
 			}
 		}
-	}
-
-	private ScrapProxy used(ScrapProxy proxy) {
-		for (ScrapProxy p : this.used) {
-			if (check(proxy, p)) {
-				return p;
-			}
-		}
-		return null;
 	}
 
 	public void remove(ScrapProxy proxy) {
@@ -113,37 +95,6 @@ public class ProxyRotator {
 			this.proxies.remove(proxy);
 			this.used.remove(proxy);
 		}
-	}
-
-	private boolean check(ScrapProxy p1, ScrapProxy p2) {
-		if (p1 == null) {
-			return p2 == null;
-		}
-		if (p2 == null) {
-			return false;
-		}
-		if (p1.getClass() != p2.getClass()) {
-			return false;
-		}
-		if (p1 instanceof DirectNoProxy) {
-			return true;
-		}
-		if (p1 instanceof BindProxy) {
-			return ((BindProxy) p1).equals((BindProxy) p2);
-		}
-		if (p1 instanceof HttpProxy) {
-			if (((HttpProxy) p1).getPort() != ((HttpProxy) p1).getPort()) {
-				return false;
-			}
-			if (!Objects.equals(((HttpProxy) p1).getIp(), ((HttpProxy) p2).getIp())) {
-				return false;
-			}
-			return true;
-		}
-		if (p1 instanceof SocksProxy) {
-			return ((SocksProxy) p1).match((SocksProxy) p2);
-		}
-		return false;
 	}
     
 }

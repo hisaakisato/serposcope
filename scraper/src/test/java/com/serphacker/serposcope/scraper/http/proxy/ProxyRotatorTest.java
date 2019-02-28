@@ -35,7 +35,8 @@ public class ProxyRotatorTest {
         ScrapProxy proxy = null;
         for (int i = 0; i < 50; i++) {
             for (int j = 0; j < proxies.size(); j++) {
-                proxy = rotator.rotate(proxy);
+            	rotator.add(proxy);
+                proxy = rotator.poll();
                 assertEquals(((HttpProxy)proxies.get(j)).ip, ((HttpProxy)proxy).ip);
             }
         }
