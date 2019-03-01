@@ -10,12 +10,19 @@ package com.serphacker.serposcope.db.google;
 import com.google.inject.Singleton;
 import com.mysema.commons.lang.CloseableIterator;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.SubQueryExpression;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
 import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.google.GoogleSerp;
+import com.serphacker.serposcope.querybuilder.QGoogleRank;
 import com.serphacker.serposcope.querybuilder.QGoogleSerp;
+import com.serphacker.serposcope.querybuilder.QRun;
+
 import java.nio.ByteBuffer;
 import java.sql.Blob;
 import java.sql.Connection;
@@ -30,7 +37,9 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 public class GoogleSerpDB extends AbstractDB {
     
     QGoogleSerp t_serp = QGoogleSerp.googleSerp;
-    
+    QGoogleRank t_rank = QGoogleRank.googleRank;
+    static QRun t_run = QRun.run;
+
     LZ4Factory factory = LZ4Factory.fastestInstance();
     LZ4Compressor compressor = factory.fastCompressor();
     LZ4FastDecompressor decompressor = factory.fastDecompressor();    
@@ -125,23 +134,30 @@ public class GoogleSerpDB extends AbstractDB {
     
     public void stream(Integer firstRun, Integer lastRun, int googleSearchId, Consumer<GoogleSerp> callback){
         try(Connection con = ds.getConnection()){
+
+        	BooleanExpression exp = t_rank.googleSearchId.eq(googleSearchId).and(t_rank.runId.eq(t_run.id));
             
-            SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-                .select(t_serp.all())
-                .from(t_serp);
-            
-            if(firstRun != null){
-                query.where(t_serp.runId.goe(firstRun));
+        	if(firstRun != null){
+        		exp = t_rank.runId.goe(firstRun).and(exp);
             }
             
             if(lastRun != null){
-                query.where(t_serp.runId.loe(lastRun));
+        		exp = t_rank.runId.loe(lastRun).and(exp);
             }
+
+            SubQueryExpression<Tuple> subQuery = SQLExpressions
+					.select(t_rank.runId.max().as(t_rank.runId), t_rank.googleSearchId).from(t_rank)
+					.innerJoin(t_run)
+					.on(exp)
+					.groupBy(t_run.day, t_rank.googleSearchId);
+
+            SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+                    .select(t_serp.all())
+                    .from(t_serp)
+                    .where(Expressions.list(t_serp.runId, t_serp.googleSearchId).in(subQuery))
+                    .orderBy(t_serp.runId.asc());
             
-            CloseableIterator<Tuple> iterate = query
-                .where(t_serp.googleSearchId.eq(googleSearchId))
-                .orderBy(t_serp.runId.asc())
-                .iterate();
+            CloseableIterator<Tuple> iterate = query.iterate();
             
             while(iterate.hasNext()){
                 GoogleSerp serp = fromTuple(iterate.next());
