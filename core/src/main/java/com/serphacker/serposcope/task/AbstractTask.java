@@ -23,7 +23,7 @@ public abstract class AbstractTask extends Thread {
     
     private static final Logger LOG = LoggerFactory.getLogger(AbstractTask.class);
     
-    volatile boolean abort = false;
+    public volatile boolean abort = false;
     
     @Inject
     protected BaseDB baseDB;

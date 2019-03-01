@@ -409,4 +409,10 @@ public class GoogleTask extends AbstractTask {
         		run.getCaptchas(), run.getErrors(),
         		groups, searched, totalSearch - searched, targets);
     }
+
+    @Override
+    public void interrupt() {
+    	interrupted = true;
+    	super.interrupt();
+    }
 }
