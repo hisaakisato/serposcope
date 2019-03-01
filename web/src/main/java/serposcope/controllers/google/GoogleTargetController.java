@@ -161,8 +161,8 @@ public class GoogleTargetController extends GoogleController {
             return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
         }
 
-        Run minRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, null, null);
-        Run maxRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null, null);
+        Run minRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, null);
+        Run maxRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null);
 
         if (maxRun == null || minRun == null || searches.isEmpty()) {
             String fallbackDisplay = "export".equals(display) ? "table" : display;
@@ -197,8 +197,8 @@ public class GoogleTargetController extends GoogleController {
             endDate = maxDay;
         }
 
-        Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate, null);
-        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate,  null);
+        Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate);
+        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate);
 
         List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId());
 
@@ -242,7 +242,7 @@ public class GoogleTargetController extends GoogleController {
         } catch (Exception ex) {
             return Results.json().renderRaw("[[],[],[]]");
         }
-        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, null);
+        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate);
         
         List<TargetVariation> ranksUp = new ArrayList<>();
         List<TargetVariation> ranksDown = new ArrayList<>();
@@ -535,8 +535,8 @@ public class GoogleTargetController extends GoogleController {
             return Results.json().renderRaw("[]");
         }
 
-        final Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate, null);
-        final Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, null);
+        final Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate);
+        final Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate);
         final List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId());
 
         return Results.ok()

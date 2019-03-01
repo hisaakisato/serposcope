@@ -104,16 +104,16 @@ public class RunDBIT extends AbstractDBIT {
         run7.setStatus(Run.Status.RUNNING);
         runDB.insert(run7);        
         
-        assertNull(runDB.findFirst(group.getModule(), null, LocalDate.of(2050, 10, 15), null));
-        assertEquals(run1.getId(), runDB.findFirst(group.getModule(), null, null, null).getId());
-        assertEquals(run2.getId(), runDB.findFirst(group.getModule(), STATUSES_DONE, null, null).getId());
-        assertEquals(run3.getId(), runDB.findFirst(group.getModule(), STATUSES_DONE, run3.getStarted().toLocalDate(), null).getId());
+        assertNull(runDB.findFirst(group.getModule(), null, LocalDate.of(2050, 10, 15)));
+        assertEquals(run1.getId(), runDB.findFirst(group.getModule(), null, null).getId());
+        assertEquals(run2.getId(), runDB.findFirst(group.getModule(), STATUSES_DONE, null).getId());
+        assertEquals(run3.getId(), runDB.findFirst(group.getModule(), STATUSES_DONE, run3.getStarted().toLocalDate()).getId());
         
         
-        assertNull(runDB.findLast(group.getModule(), null, LocalDate.of(2000, 10, 15), null));
-        assertEquals(run7.getId(), runDB.findLast(group.getModule(), null, null, null).getId());
-        assertEquals(run6.getId(), runDB.findLast(group.getModule(), STATUSES_DONE, null, null).getId());
-        assertEquals(run5.getId(), runDB.findLast(group.getModule(), STATUSES_DONE, run5.getStarted().toLocalDate(), null).getId());        
+        assertNull(runDB.findLast(group.getModule(), null, LocalDate.of(2000, 10, 15)));
+        assertEquals(run7.getId(), runDB.findLast(group.getModule(), null, null).getId());
+        assertEquals(run6.getId(), runDB.findLast(group.getModule(), STATUSES_DONE, null).getId());
+        assertEquals(run5.getId(), runDB.findLast(group.getModule(), STATUSES_DONE, run5.getStarted().toLocalDate()).getId());        
     }
     
     @Test

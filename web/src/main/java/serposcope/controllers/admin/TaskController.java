@@ -100,7 +100,7 @@ public class TaskController extends BaseController {
 
         Run run = null;
         if(Boolean.TRUE.equals(update)){
-            run = baseDB.run.findLast(GOOGLE, null, null, null);
+            run = baseDB.run.findLast(GOOGLE, null, null);
         }
         
         if(run == null){

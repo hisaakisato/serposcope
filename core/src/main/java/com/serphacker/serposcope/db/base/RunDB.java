@@ -365,6 +365,10 @@ public class RunDB extends AbstractDB {
         return run;
     }    
     
+    public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate){
+    	return findLast(module, statuses, untilDate, null);
+    }
+    
     public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate, User user){
         Run run = null;
         try(Connection conn = ds.getConnection()){
@@ -400,6 +404,10 @@ public class RunDB extends AbstractDB {
         return run;           
     }
     
+    public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate){
+    	return findFirst(module, statuses, fromDate, null);
+    }
+
     public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate, User user){
         Run run = null;
         try(Connection conn = ds.getConnection()){

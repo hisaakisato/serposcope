@@ -9,6 +9,17 @@ package com.serphacker.serposcope.db.google;
 
 import com.google.inject.Singleton;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.OrderSpecifier;
+import com.querydsl.core.types.Path;
+import com.querydsl.core.types.PathMetadata;
+import com.querydsl.core.types.SubQueryExpression;
+import com.querydsl.core.types.SubQueryExpressionImpl;
+import com.querydsl.core.types.dsl.DatePath;
+import com.querydsl.core.types.dsl.DateTimePath;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.sql.ColumnMetadata;
+import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLMergeClause;
@@ -16,12 +27,18 @@ import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.google.GoogleTargetSummary;
 import com.serphacker.serposcope.querybuilder.QGoogleRank;
 import com.serphacker.serposcope.querybuilder.QGoogleTargetSummary;
+import com.serphacker.serposcope.querybuilder.QRun;
+
+import static com.querydsl.core.types.PathMetadataFactory.forVariable;
+
 import java.sql.Connection;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -148,23 +165,25 @@ public class GoogleTargetSummaryDB extends AbstractDB {
     public List<GoogleTargetSummary> list(int runId){
         return list(runId, false);
     }
-    
+  
     public List<GoogleTargetSummary> list(int runId, boolean skipTop){
         List<GoogleTargetSummary> summaries = new ArrayList<>();
+        Map<Integer, GoogleTargetSummary> summaryMap = new LinkedHashMap<>();
         try(Connection con = ds.getConnection()){
             
-            List<Tuple> summaryTuples = new SQLQuery<Void>(con, dbTplConf)
-                .select(t_summary.all())
-                .from(t_summary)
-                .where(t_summary.runId.eq(runId))
-                .fetch();
-            
+			SubQueryExpression<? extends Tuple> subQuery = SQLExpressions
+					.select(t_summary.googleTargetId, t_summary.runId.max().as(t_summary.runId)).from(t_summary)
+					.where(t_summary.runId.loe(runId)).groupBy(t_summary.googleTargetId);
+
+			List<Tuple> summaryTuples = new SQLQuery<Void>(con, dbTplConf).select(t_summary.all()).from(t_summary)
+					.where(Expressions.list(t_summary.googleTargetId, t_summary.runId).in(subQuery)).fetch();
+
             for (Tuple tuple : summaryTuples) {
                 
                 GoogleTargetSummary summary = new GoogleTargetSummary(
                     tuple.get(t_summary.groupId),
                     tuple.get(t_summary.googleTargetId),
-                    runId, 
+                    tuple.get(t_summary.runId),
                     tuple.get(t_summary.previousScoreBasisPoint)
                 );
                 
@@ -201,8 +220,11 @@ public class GoogleTargetSummaryDB extends AbstractDB {
                     }
                 }
                 
-                summaries.add(summary);
+                if (!summaryMap.containsKey(summary.getTargetId())) {
+                	summaryMap.put(summary.getTargetId(), summary);
+                }
             }
+            summaries.addAll(summaryMap.values());
             
         } catch(Exception ex){
             LOG.error("SQLError", ex);
