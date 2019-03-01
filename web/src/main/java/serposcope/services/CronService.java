@@ -14,7 +14,10 @@ import com.serphacker.serposcope.models.base.Config;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.Run.Mode;
 import com.serphacker.serposcope.task.TaskManager;
+import com.serphacker.serposcope.task.google.GoogleTask;
+
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.concurrent.Executors;
@@ -77,7 +80,12 @@ public class CronService implements Runnable {
             return;
         }
         
-        
+        for (GoogleTask task : manager.listRunningGoogleTasks()) {
+        	if (task.getRun().getMode() == Mode.CRON) {
+                LOG.debug("failed to start google task via cron, this task is already running");
+        		return;
+        	}
+        }
         if(manager.startGoogleTask(new Run(Run.Mode.CRON, Module.GOOGLE, LocalDateTime.now()))){
             LOG.debug("starting google task via cron");
         } else {
@@ -85,12 +93,12 @@ public class CronService implements Runnable {
             return;
         }
         
-        try {
-            manager.joinGoogleTask();
-        }catch(InterruptedException ex){
-            LOG.debug("interrupted while waiting for google task");
-            return;
-        }
+//        try {
+//            manager.joinGoogleTask();
+//        }catch(InterruptedException ex){
+//            LOG.debug("interrupted while waiting for google task");
+//            return;
+//        }
         
         if(config.getPruneRuns() > 0){
             long pruned = pruneDB.prune(config.getPruneRuns());
