@@ -104,7 +104,7 @@ public class GoogleTargetDB extends AbstractDB {
     }
     
     public List<GoogleTarget> list(boolean cron){
-        return list(null, false);
+        return list(null, cron);
     }
 
     public boolean hasTarget(){
