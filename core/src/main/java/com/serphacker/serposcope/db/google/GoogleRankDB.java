@@ -11,7 +11,10 @@ import com.google.inject.Singleton;
 import com.mysema.commons.lang.CloseableIterator;
 import com.querydsl.core.QueryFlag;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.SubQueryExpression;
+import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.sql.SQLBindings;
+import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
@@ -23,6 +26,8 @@ import com.serphacker.serposcope.models.google.GoogleRank;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.querybuilder.QGoogleRank;
 import com.serphacker.serposcope.querybuilder.QGoogleRankBest;
+import com.serphacker.serposcope.querybuilder.QRun;
+
 import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.Timestamp;
@@ -40,6 +45,7 @@ public class GoogleRankDB extends AbstractDB {
 
     static QGoogleRank t_rank = QGoogleRank.googleRank;
     static QGoogleRankBest t_best = QGoogleRankBest.googleRankBest;
+    static QRun t_run = QRun.run;
 
     public boolean insertBest(GoogleBest best){
         boolean inserted = false;
@@ -275,17 +281,22 @@ public class GoogleRankDB extends AbstractDB {
         return rank;
     }   
     
-    public List<GoogleRank> list0(int runId, int groupId, int targetId){
+    public List<GoogleRank> list0(int runStartId, int runEndId, int groupId, int targetId){
         List<GoogleRank> ranks = new ArrayList<>();
         
         try(Connection con = ds.getConnection()){
             
-            List<Tuple> tuples = new SQLQuery<Void>(con, dbTplConf)
+			SubQueryExpression<Tuple> subQuery = SQLExpressions
+					.select(t_rank.runId.max().as(t_rank.runId), t_rank.groupId, t_rank.googleTargetId).from(t_rank)
+					.innerJoin(t_run)
+					.on(t_rank.runId.between(runStartId, runEndId).and(t_rank.groupId.eq(groupId).and(t_rank.googleTargetId.eq(targetId)))
+							.and(t_rank.runId.eq(t_run.id)))
+					.groupBy(t_run.day, t_rank.groupId, t_rank.googleTargetId);
+
+			List<Tuple> tuples = new SQLQuery<Void>(con, dbTplConf)
                 .select(t_rank.all())
                 .from(t_rank)
-                .where(t_rank.runId.eq(runId))
-                .where(t_rank.groupId.eq(groupId))
-                .where(t_rank.googleTargetId.eq(targetId))
+                .where(Expressions.list(t_rank.runId, t_rank.groupId, t_rank.googleTargetId).in(subQuery))
                 .fetch();
             
             for (Tuple tuple : tuples) {

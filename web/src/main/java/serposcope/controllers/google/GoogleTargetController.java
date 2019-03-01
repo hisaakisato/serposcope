@@ -28,6 +28,7 @@ import static com.serphacker.serposcope.models.google.GoogleRank.UNRANKED;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
+
 import static com.serphacker.serposcope.scraper.google.GoogleDevice.SMARTPHONE;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -41,8 +42,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
@@ -537,7 +541,7 @@ public class GoogleTargetController extends GoogleController {
 
         final Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate);
         final Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate);
-        final List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId());
+        final List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId(), target);
 
         return Results.ok()
             .json()
@@ -588,14 +592,18 @@ public class GoogleTargetController extends GoogleController {
             writer.append("]]],[]]");
         }
 
+        Set<LocalDate> dates = new TreeSet<>();
+        for (Run run : runs) {
+        	dates.add(run.getDay());
+        }
         // events
         List<Event> events = baseDB.event.list(group, startDate, endDate);
-        for (int i = 0; i < runs.size(); i++) {
-            Run run = runs.get(i);
+        for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {
+            LocalDate date = itr.next();
             Event event = null;
 
             for (Event candidat : events) {
-                if (run.getDay().equals(candidat.getDay())) {
+                if (date.equals(candidat.getDay())) {
                     event = candidat;
                     break;
                 }
@@ -609,7 +617,7 @@ public class GoogleTargetController extends GoogleController {
                 writer.append("0");
             }
 
-            if (i != runs.size() - 1) {
+            if (itr.hasNext()) {
                 writer.append(",");
             }
 
@@ -644,10 +652,23 @@ public class GoogleTargetController extends GoogleController {
             builder.append("[");
         }
 
-        for (int i = 0; i < runs.size(); i++) {
-            Run run = runs.get(i);
-
-            Map<Integer, GoogleRank> ranks = googleDB.rank.list0(run.getId(), group.getId(), target.getId())
+        for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {
+        	LocalDate date = itr.next();
+        	
+        	int start = -1, end = -1;
+	        for (int i = 0; i < runs.size(); i++) {
+	            Run run = runs.get(i);
+	            if (date.equals(run.getDay())) {
+	            	if (start < 1 || start > run.getId()) {
+	            		start = run.getId();
+	            	}
+	            	if (end < 1 || end < run.getId()) {
+	            		end = run.getId();
+	            	}
+	            }
+	        }
+	
+            Map<Integer, GoogleRank> ranks = googleDB.rank.list0(start, end, group.getId(), target.getId())
                 .stream().collect(Collectors.toMap((r) -> r.googleSearchId, Function.identity()));
 
             for (GoogleSearch search : searches) {
@@ -662,7 +683,7 @@ public class GoogleTargetController extends GoogleController {
                     builder.append("0,");
                 }
 
-                if (i == runs.size() - 1) {
+                if (!itr.hasNext()) {
                     builder.deleteCharAt(builder.length() - 1);
                     builder.append("]]");
                 }
@@ -677,10 +698,10 @@ public class GoogleTargetController extends GoogleController {
             }
         }
         writer.append("],[");
-        for (int i = 0; i < runs.size(); i++) {
-            Run run = runs.get(i);
-            writer.append("\"").append(run.getDay().toString()).append("\"");
-            if (i != runs.size() - 1) {
+        for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {
+        	LocalDate date = itr.next();
+            writer.append("\"").append(date.toString()).append("\"");
+            if (itr.hasNext()) {
                 writer.append(",");
             }
         }
@@ -701,13 +722,18 @@ public class GoogleTargetController extends GoogleController {
             return jsonData.toString();
         }
 
+        Set<LocalDate> dates = new TreeSet<>();
+        for (Run run : runs) {
+        	dates.add(run.getDay());
+        }
         // events
         List<Event> events = baseDB.event.list(group, startDate, endDate);
-        for (Run run : runs) {
+        for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {
+        	LocalDate date = itr.next();
             Event event = null;
 
             for (Event candidat : events) {
-                if (run.getDay().equals(candidat.getDay())) {
+                if (date.equals(candidat.getDay())) {
                     event = candidat;
                     break;
                 }
@@ -756,10 +782,23 @@ public class GoogleTargetController extends GoogleController {
             builder.append("\"days\": [");
         }
 
-        for (int i = 0; i < runs.size(); i++) {
-            Run run = runs.get(i);
-
-            Map<Integer, GoogleRank> ranks = googleDB.rank.list0(run.getId(), group.getId(), target.getId())
+        for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {
+        	LocalDate date = itr.next();
+        	
+        	int start = -1, end = -1;
+	        for (int i = 0; i < runs.size(); i++) {
+	            Run run = runs.get(i);
+	            if (date.equals(run.getDay())) {
+	            	if (start < 1 || start > run.getId()) {
+	            		start = run.getId();
+	            	}
+	            	if (end < 1 || end < run.getId()) {
+	            		end = run.getId();
+	            	}
+	            }
+	        }
+	
+            Map<Integer, GoogleRank> ranks = googleDB.rank.list0(start, end, group.getId(), target.getId())
                 .stream().collect(Collectors.toMap((r) -> r.googleSearchId, Function.identity()));
 
             for (GoogleSearch search : searches) {
@@ -774,7 +813,7 @@ public class GoogleTargetController extends GoogleController {
                     builder.append("{\"r\":32767,\"p\":null,\"u\":null},");
                 }
 
-                if (i == runs.size() - 1) {
+                if (!itr.hasNext()) {
                     builder.deleteCharAt(builder.length() - 1);
                     builder.append("]},");
                 }

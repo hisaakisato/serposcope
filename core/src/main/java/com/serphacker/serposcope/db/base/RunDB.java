@@ -19,6 +19,7 @@ import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.base.Run.Status;
+import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.models.base.User;
 
 import static com.serphacker.serposcope.models.base.Run.Status.ABORTING;
@@ -28,6 +29,7 @@ import static com.serphacker.serposcope.models.base.Run.Status.DONE_SUCCESS;
 import static com.serphacker.serposcope.models.base.Run.Status.DONE_WITH_ERROR;
 import static com.serphacker.serposcope.models.base.Run.Status.RUNNING;
 
+import com.serphacker.serposcope.querybuilder.QGoogleRank;
 import com.serphacker.serposcope.querybuilder.QGroup;
 import com.serphacker.serposcope.querybuilder.QRun;
 import com.serphacker.serposcope.querybuilder.QUser;
@@ -49,7 +51,8 @@ public class RunDB extends AbstractDB {
     QRun t_run = QRun.run;
     QUser t_user = QUser.user;
     QGroup t_group = QGroup.group;
-    
+    QGoogleRank t_rank = QGoogleRank.googleRank;
+
     public int insert(Run run) {
         int id = -1;
         try(Connection conn = ds.getConnection()){
@@ -176,11 +179,14 @@ public class RunDB extends AbstractDB {
             LOG.error("SQL error", ex);
         }        
     }
-    
     public List<Run> listDone(Integer firstId, Integer lastId){
+    	return listDone(firstId, lastId, null);
+    }
+    public List<Run> listDone(Integer firstId, Integer lastId, GoogleTarget target){
         List<Run> runs = new ArrayList<>();
         try(Connection conn = ds.getConnection()){
             SQLQuery<Tuple> query = new SQLQuery<>(conn, dbTplConf)
+            	.distinct()
                 .select(getFields())
                 .from(t_run)
                 .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
@@ -194,6 +200,10 @@ public class RunDB extends AbstractDB {
                 query = query.where(t_run.id.loe(lastId));
             }
             
+            if (target != null) {
+				query.distinct().leftJoin(t_rank).on(t_run.id.eq(t_rank.runId))
+						.where(t_rank.googleTargetId.eq(target.getId()));
+            }
             List<Tuple> tuples = query
                 .where(t_run.finished.isNotNull())
                 .orderBy(t_run.id.asc())
