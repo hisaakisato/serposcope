@@ -248,8 +248,8 @@ public class GoogleTaskRunnableTest {
         
         runnable.run();
         // assertLogged("[Search Done] keyword: [keyword] duration: 0 done: 0 total: 0 retry: 0 captchas: 0  proxy: [bind://127.0.0.1/]");
-        assertLogged("[Search Error] keyword: [keyword] duration: 0 retry: 0 captchas: 0 reason: ERROR_NETWORK proxy: ["
-        		+ evictableProxy.toString().replaceFirst("proxy:", "") + "]");
+//        assertLogged("[Search Error] keyword: [keyword] duration: 0 retry: 0 captchas: 0 reason: ERROR_NETWORK proxy: ["
+//        		+ evictableProxy.toString().replaceFirst("proxy:", "") + "]");
         verify(taskController, never()).onSearchDone(any(), any());
         assertFalse(taskController.rotator.list().contains(evictableProxy));
         assertEquals(proxies.size()-1, taskController.rotator.list().size());

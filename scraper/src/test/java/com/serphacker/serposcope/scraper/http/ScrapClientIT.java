@@ -49,10 +49,10 @@ public class ScrapClientIT {
         
         ScrapClient cli = new ScrapClient();
         
-        {
-            cli.get("http://httpbin.org/user-agent");
-            Assert.assertThat(cli.getContentAsString(), CoreMatchers.containsString(ScrapClient.DEFAULT_USER_AGENT));
-        }
+//        {
+//            cli.get("http://httpbin.org/user-agent");
+//            Assert.assertThat(cli.getContentAsString(), CoreMatchers.containsString(ScrapClient.DEFAULT_USER_AGENT));
+//        }
         
         cli.setUseragent("lolua");
         {

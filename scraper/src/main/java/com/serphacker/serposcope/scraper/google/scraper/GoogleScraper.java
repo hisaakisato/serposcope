@@ -12,12 +12,14 @@ import com.serphacker.serposcope.scraper.captcha.CaptchaImage;
 import com.serphacker.serposcope.scraper.captcha.CaptchaRecaptcha;
 import com.serphacker.serposcope.scraper.captcha.solver.CaptchaSolver;
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
+import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status;
 import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
 import com.serphacker.serposcope.scraper.http.ScrapClient;
 import com.serphacker.serposcope.scraper.http.proxy.DirectNoProxy;
 import com.serphacker.serposcope.scraper.http.proxy.ScrapProxy;
+import com.serphacker.serposcope.scraper.utils.UserAgentGenerator;
 
 import java.io.File;
 import java.io.UnsupportedEncodingException;
@@ -53,8 +55,6 @@ public class GoogleScraper {
 
 	public final static int DEFAULT_MAX_RETRY = 3;
 
-	private final static String SLEEP_TIMESTAMP = "sleepTimeStamp";
-
 	final static BasicClientCookie NCR_COOKIE = new BasicClientCookie("PREF", "ID=1111111111111111:CR=2");
 	static {
 		NCR_COOKIE.setDomain("google.com");
@@ -63,8 +63,8 @@ public class GoogleScraper {
 		NCR_COOKIE.setAttribute(ClientCookie.DOMAIN_ATTR, ".google.com");
 	}
 
-	public final static String DEFAULT_DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0";
-	public final static String DEFAULT_SMARTPHONE_UA = "Mozilla/5.0 (Android 7.0; Mobile; rv:59.0) Gecko/59.0 Firefox/59.0 ";
+//	public final static String DEFAULT_DESKTOP_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:58.0) Gecko/20100101 Firefox/58.0";
+//	public final static String DEFAULT_SMARTPHONE_UA = "Mozilla/5.0 (Android 7.0; Mobile; rv:59.0) Gecko/59.0 Firefox/59.0 ";
 
 	private static final Logger LOG = LoggerFactory.getLogger(GoogleScraper.class);
 
@@ -104,13 +104,13 @@ public class GoogleScraper {
 
 					try {
 						ScrapProxy proxy = http.getProxy();
-						if (proxy != null && proxy.hasAttr(SLEEP_TIMESTAMP)) {
-							long pause = proxy.getAttr(SLEEP_TIMESTAMP, Long.class).longValue()
+						if (proxy != null && proxy.hasAttr(ScrapProxy.PROXY_ATTR_SLEEP_TIMESTAMP)) {
+							long pause = proxy.getAttr(ScrapProxy.PROXY_ATTR_SLEEP_TIMESTAMP, Long.class).longValue()
 									- System.currentTimeMillis();
 							if (pause > 0) {
 								LOG.debug("sleeping {} milliseconds [{}]", pause, Thread.currentThread().getName());
 								Thread.sleep(pause);
-								proxy.removeAttr(SLEEP_TIMESTAMP);
+								proxy.removeAttr(ScrapProxy.PROXY_ATTR_SLEEP_TIMESTAMP);
 							}
 						}
 					} catch (ClassCastException ex) {
@@ -159,9 +159,9 @@ public class GoogleScraper {
 				}
 			} else {
 				if (pause > 0) {
-					proxy.setAttr(SLEEP_TIMESTAMP, System.currentTimeMillis() + pause);
+					proxy.setAttr(ScrapProxy.PROXY_ATTR_SLEEP_TIMESTAMP, System.currentTimeMillis() + pause);
 				} else {
-					proxy.removeAttr(SLEEP_TIMESTAMP);
+					proxy.removeAttr(ScrapProxy.PROXY_ATTR_SLEEP_TIMESTAMP);
 				}
 			}
 		}
@@ -169,14 +169,28 @@ public class GoogleScraper {
 
 	protected void prepareHttpClient(GoogleScrapSearch search) {
 
-		switch (search.getDevice()) {
-		case DESKTOP:
-			http.setUseragent(DEFAULT_DESKTOP_UA);
-			break;
-		case SMARTPHONE:
-			http.setUseragent(DEFAULT_SMARTPHONE_UA);
-			break;
+		String userAgent = null;
+		ScrapProxy proxy = http.getProxy();
+		if (proxy == null) {
+			userAgent = UserAgentGenerator.getUserAgent(search.getDevice() == GoogleDevice.DESKTOP); 
+		} else {
+			switch (search.getDevice()) {
+			case DESKTOP:
+				if (!proxy.hasAttr(ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT)) {
+					proxy.setAttr(ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT, UserAgentGenerator.getUserAgent(true));
+				}
+				userAgent = proxy.getAttr(ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT, String.class);
+				break;
+			case SMARTPHONE:
+				if (!proxy.hasAttr(ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT)) {
+					proxy.setAttr(ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT, UserAgentGenerator.getUserAgent(false));
+				}
+				userAgent = proxy.getAttr(ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT, String.class);
+				break;
+			}
 		}
+		
+		http.setUseragent(userAgent);
 
 		String hostname = "www.google.com";
 		http.removeRoutes();

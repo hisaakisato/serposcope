@@ -1,0 +1,173 @@
+[{
+	"os": "Windows 7",
+	"weight": 40,
+	"browsers": [{
+		"browser": "Internet Explorer",
+		"weight": 67,
+		"versions": [{
+			"version": 60,
+			"weight": 100,
+			"header": "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko"
+		}]
+	},{
+		"browser": "Google Chrome",
+		"weight": 33,
+		"versions": [{
+			"version": 60,
+			"weight": 33,
+			"header": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36"
+		},{
+			"version": 71,
+			"weight": 67,
+			"header": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+		}]
+	}]
+},{
+	"os": "Windows 8.1",
+	"weight": 4,
+	"browsers": [{
+		"browser": "Internet Explorer",
+		"weight": 100,
+		"versions": [{
+			"version": 11,
+			"weight": 100,
+			"header": "Mozilla/5.0 (Windows NT 6.3; WOW64; Trident/7.0; LCJB; rv:11.0) like Gecko"
+		}]
+	}]
+},{
+	"os": "Windows 10",
+	"weight": 45,
+	"browsers": [{
+		"browser": "Internet Explorer",
+		"weight": 9,
+		"versions": [{
+			"version": 11,
+			"weight": 100,
+			"header": "Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko"
+		}]
+	},{
+		"browser": "Edge",
+		"weight": 25,
+		"versions": [{
+			"version": 38,
+			"weight": 6,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393"
+		},{
+			"version": 40,
+			"weight": 6,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36 Edge/15.15063"
+		},{
+			"version": 41,
+			"weight": 28,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299"
+		},{
+			"version": 42,
+			"weight": 60,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/17.17134"
+		}]
+	},{
+		"browser": "Google Chrome",
+		"weight": 54,
+		"versions": [{
+			"version": 68,
+			"weight": 0,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36"
+		},{
+			"version": 69,
+			"weight": 6,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
+		},{
+			"version": 70,
+			"weight": 10,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"
+		},{
+			"version": 71,
+			"weight": 28,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+		},{
+			"version": 72,
+			"weight": 56,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
+		}]
+	},{
+		"browser": "Firefox",
+		"weight": 12,
+		"versions": [{
+			"version": 65,
+			"weight": 100,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"
+		}]
+	}]
+},{
+	"os": "macOS Mojave",
+	"weight": 8,
+	"browsers": [{
+		"browser": "Safari",
+		"weight": 24,
+		"versions": [{
+			"version": 12,
+			"weight": 100,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/12.0.3 Safari/605.1.15"
+		}]
+	},{
+		"browser": "Google Chrome",
+		"weight": 60,
+		"versions": [{
+			"version": 70,
+			"weight": 20,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"
+		},{
+			"version": 71,
+			"weight": 50,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+		},{
+			"version": 72,
+			"weight": 30,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
+		}]
+	},{
+		"browser": "Firefox",
+		"weight": 16,
+		"versions": [{
+			"version": 63,
+			"weight": 100,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:63.0) Gecko/20100101 Firefox/63.0"
+		}]
+	}]
+},{
+	"os": "macOS High Sierra",
+	"weight": 3,
+	"browsers": [{
+		"browser": "Safari",
+		"weight": 24,
+		"versions": [{
+			"version": 11,
+			"weight": 100,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15"
+		}]
+	},{
+		"browser": "Google Chrome",
+		"weight": 60,
+		"versions": [{
+			"version": 70,
+			"weight": 60,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"
+		},{
+			"version": 71,
+			"weight": 30,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+		},{
+			"version": 72,
+			"weight": 10,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
+		}]
+	},{
+		"browser": "Firefox",
+		"weight": 16,
+		"versions": [{
+			"version": 63,
+			"weight": 100,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:63.0) Gecko/20100101 Firefox/63.0"
+		}]
+	}]
+}]

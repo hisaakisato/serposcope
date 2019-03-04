@@ -10,6 +10,7 @@ package com.serphacker.serposcope.task.google;
 import com.serphacker.serposcope.models.google.GoogleSettings;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
+import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import static com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status.OK;
 import com.serphacker.serposcope.scraper.google.scraper.GoogleScraper;
@@ -54,13 +55,6 @@ public class GoogleTaskRunnable implements Runnable {
 					break;
 				}
 
-				if (cookiesStickToProxy && proxy != null) {
-					List<Cookie> cookies = scraper.getHttp().getCookies();
-					if (cookies != null) {
-						proxy.setAttr("cookies", cookies);
-					}
-				}
-
 				while (true) {
 					try {
 						if (proxy != null) {							
@@ -86,14 +80,6 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 				scraper.getHttp().setProxy(proxy);
 
-				if (cookiesStickToProxy) {
-					scraper.getHttp().clearCookies();
-					List<Cookie> cookies = proxy.getAttr("cookies", List.class);
-					if (cookies != null) {
-						scraper.getHttp().addCookies(proxy.getAttr("cookies", List.class));
-					}
-				}
-
 				if (search == null) {
 					try {
 						search = controller.searches.poll(1, TimeUnit.SECONDS);
@@ -109,7 +95,27 @@ public class GoogleTaskRunnable implements Runnable {
 					continue;
 				}
 
+				GoogleDevice device = search.getDevice();
+				int requestCount = 0;
+				if (cookiesStickToProxy) {
+					scraper.getHttp().clearCookies();
+					String attr = device == GoogleDevice.DESKTOP ? ScrapProxy.PROXY_ATTR_DESKTOP_COOKIES
+							: ScrapProxy.PROXY_ATTR_MOBILE_COOKIES;
+					List<Cookie> cookies = proxy
+							.getAttr(attr, List.class);
+					if (cookies != null) {
+						scraper.getHttp().addCookies(proxy.getAttr(attr, List.class));
+					}
+					attr = device == GoogleDevice.DESKTOP ? ScrapProxy.PROXY_ATTR_DESKTOP_REQUEST_COUNT
+							: ScrapProxy.PROXY_ATTR_MOBILE_REQUEST_COUNT;
+					if (!proxy.hasAttr(attr)) {
+						proxy.setAttr(attr, 0);
+					}
+					requestCount = proxy.getAttr(attr, Integer.class);					
+				}
+				
 				++searchTry;
+				++requestCount;
 				GoogleScrapResult res = null;
 				long start = System.currentTimeMillis();
 				try {
@@ -121,14 +127,38 @@ public class GoogleTaskRunnable implements Runnable {
 					break;
 				}
 				long duration = System.currentTimeMillis() - start;
+				if (requestCount > ScrapProxy.MAX_REQUEST_COUNT) {
+					// remove client info
+					if (device == GoogleDevice.DESKTOP) {
+						proxy.removeAttr(ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT);
+						proxy.removeAttr(ScrapProxy.PROXY_ATTR_DESKTOP_COOKIES);
+						proxy.removeAttr(ScrapProxy.PROXY_ATTR_DESKTOP_REQUEST_COUNT);
+					} else {
+						proxy.removeAttr(ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT);
+						proxy.removeAttr(ScrapProxy.PROXY_ATTR_MOBILE_COOKIES);
+						proxy.removeAttr(ScrapProxy.PROXY_ATTR_MOBILE_REQUEST_COUNT);
+					}
+					scraper.getHttp().clearCookies();
+				} else {
+					if (device == GoogleDevice.DESKTOP) {
+						proxy.setAttr(ScrapProxy.PROXY_ATTR_DESKTOP_REQUEST_COUNT, requestCount);
+					} else {
+						proxy.setAttr(ScrapProxy.PROXY_ATTR_MOBILE_REQUEST_COUNT, requestCount);						
+					}
+				}
 				if (res.captchas > 0) {
 					controller.incCaptchaCount(res.captchas);
 				}
 
+				String userAgent = proxy
+						.getAttr(device == GoogleDevice.DESKTOP ? ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT
+								: ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT, String.class);
+
 				if (res.status != OK) {
-					LOG.warn("[Search Error] keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}]",
+					LOG.warn("[Search Error] device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
+							device == GoogleDevice.DESKTOP ? "PC" : "SP",
 							search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
-							proxy.toString().replaceFirst("proxy:", ""));
+							proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
 					controller.removeProxy(proxy); // mark removed
 					proxy = null;
 					continue;
@@ -137,10 +167,20 @@ public class GoogleTaskRunnable implements Runnable {
 				controller.onSearchDone(search, res);
 
 				if (res.status == OK) {
-					LOG.info("[Search Done] keyword: [{}] duration: {} done: {} total: {} retry: {} captchas: {} proxy: [{}]",
-								search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), controller.getSearchDone(),
-								controller.totalSearch, searchTry - 1, res.captchas,
-								proxy.toString().replaceFirst("proxy:", ""));
+					LOG.info("[Search Done] device: {} keyword: [{}] duration: {} done: {} total: {} retry: {} captchas: {} proxy: [{}] user-agent: [{}] request_count: {}",
+							device == GoogleDevice.DESKTOP ? "PC" : "SP",
+							search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), controller.getSearchDone(),
+							controller.totalSearch, searchTry - 1, res.captchas,
+							proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
+				}
+
+				if (cookiesStickToProxy && proxy != null) {
+					List<Cookie> cookies = scraper.getHttp().getCookies();
+					if (cookies != null) {
+						String attr = device == GoogleDevice.DESKTOP ? ScrapProxy.PROXY_ATTR_DESKTOP_COOKIES
+								: ScrapProxy.PROXY_ATTR_MOBILE_COOKIES;
+						proxy.setAttr(attr, cookies);
+					}
 				}
 
 				search = null;

@@ -41,6 +41,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.serphacker.serposcope.scraper.http.proxy.ScrapProxy;
+import com.serphacker.serposcope.scraper.utils.UserAgentGenerator;
+
 import java.util.stream.Collectors;
 import com.serphacker.serposcope.di.GoogleScraperFactory;
 import com.serphacker.serposcope.models.google.GoogleBest;
@@ -96,7 +98,7 @@ public class GoogleTask extends AbstractTask {
         this.googleDB = googleDB;
         this.updateRun = run.getId() == 0 ? false : true;
         
-        httpUserAgent = ScrapClient.DEFAULT_USER_AGENT;
+        httpUserAgent = UserAgentGenerator.getUserAgent(true);
         httpTimeoutMS = ScrapClient.DEFAULT_TIMEOUT_MS;
     }
 

@@ -55,6 +55,8 @@ import org.slf4j.LoggerFactory;
 import com.serphacker.serposcope.scraper.http.proxy.ScrapProxy;
 import com.serphacker.serposcope.scraper.http.proxy.SocksProxy;
 import com.serphacker.serposcope.scraper.utils.EncodeUtils;
+import com.serphacker.serposcope.scraper.utils.UserAgentGenerator;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -93,7 +95,6 @@ public class ScrapClient implements Closeable, CredentialsProvider {
     
     private final static ObjectMapper jsonMapper = new ObjectMapper();
 
-    public final static String DEFAULT_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:42.0) Gecko/20100101 Firefox/42.0";
     public final static int DEFAULT_TIMEOUT_MS = 30000;
     public final static int DEFAULT_MAX_RESPONSE_LENGTH = (1024 * 1024 * 4) - 1;// 4MB
 
@@ -104,7 +105,7 @@ public class ScrapClient implements Closeable, CredentialsProvider {
     ScrapClientPlainConnectionFactory plainConnectionFactory = new ScrapClientPlainConnectionFactory();
     ScrapClientSSLConnectionFactory sslConnectionFactory = new ScrapClientSSLConnectionFactory(plainConnectionFactory);
 
-    String useragent = DEFAULT_USER_AGENT;
+    String useragent = UserAgentGenerator.getUserAgent(true);
     Integer timeoutMS = DEFAULT_TIMEOUT_MS;
     ScrapProxy proxy;
     int maxResponseLength;
@@ -566,7 +567,8 @@ public class ScrapClient implements Closeable, CredentialsProvider {
     }
     
     protected void initializeRequest(HttpRequestBase request, HttpClientContext context){
-        if (request.getFirstHeader("user-agent") == null) {
+
+    	if (request.getFirstHeader("user-agent") == null) {
             request.setHeader("User-Agent", useragent);
         }
 
