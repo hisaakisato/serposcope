@@ -27,6 +27,7 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -298,10 +299,32 @@ public class GoogleScraper {
 		return Status.OK;
 	}
 
+	protected Status parseSerpLayoutMainMobile(Element resElement, List<String> urls) {
+
+		Elements h3Elts = resElement.getElementsByTag("h3");
+		for (Element h3Elt : h3Elts) {
+
+			if (isSiteLinkElement(h3Elt)) {
+				continue;
+			}
+
+			String link = extractLink(h3Elt.getElementsByTag("a").first());
+			if (link != null) {
+				urls.add(link);
+			}
+		}
+
+		return Status.OK;
+	}
+
 	protected Status parseSerpLayoutMain(Element divElement, List<String> urls) {
 
-		final Elements links = divElement.select("#main > div > div:first-child > div:first-child > a:first-child,"
+		Elements links = divElement.select("#main > div > div:first-child > div:first-child > a:first-child,"
 				+ "#main > div > div:first-child > a:first-child");
+
+		if (links.isEmpty()) { // 2019-03-04 for AMP
+			links = divElement.select("#main div#rso:first-child > div.srg > div > div:first-child > div:first-child > a:first-child[class]");
+		}
 		if (links.isEmpty()) {
 			return parseSerpLayoutResLegacy(divElement, urls);
 		}
@@ -374,6 +397,11 @@ public class GoogleScraper {
 		String attr = element.attr("href");
 		if (attr == null) {
 			return null;
+		}
+
+		// for amp pages
+		if (element.hasClass("amp_r") && element.hasAttr("data-amp")) {
+			attr = element.attr("data-amp");
 		}
 
 		if ((attr.startsWith("http://www.google") || attr.startsWith("https://www.google"))) {
