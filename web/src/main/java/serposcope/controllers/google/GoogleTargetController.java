@@ -590,6 +590,7 @@ public class GoogleTargetController extends GoogleController {
         writer.append("[[[-1, 0, 0, [");
         if (runs.isEmpty() || searches.isEmpty()) {
             writer.append("]]],[]]");
+            return;
         }
 
         Set<LocalDate> dates = new TreeSet<>();
