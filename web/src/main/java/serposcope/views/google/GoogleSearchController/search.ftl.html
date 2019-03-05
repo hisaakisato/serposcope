@@ -141,7 +141,11 @@
                     <td>
                         <#if foundTarget && bestRankings?api.get(theTarget.id)??>
                             <#assign best = bestRankings?api.get(theTarget.id)>
-                            <span data-toggle="tooltip" title="${best.runDay?substring(0,10)}" style="color: darkgoldenrod; cursor: pointer;" >${best.rank}</span>
+                            <#if best.runDay??>
+                            	<span data-toggle="tooltip" title="${best.runDay?substring(0,10)}" style="color: darkgoldenrod; cursor: pointer;" >${best.rank}</span>
+                            <#else>
+                            	-
+                            </#if>
                         <#else>
                             -
                         </#if>
