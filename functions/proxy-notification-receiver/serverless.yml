@@ -7,6 +7,7 @@ provider:
   profile: dc-serps
   stackName: proxy-notification-receiver
   memorySize: 128
+  timeout: 10
   logRetentionInDays: 7
   deploymentBucket:
     name: jp.speee.dc-dev.serposcope-serverless
@@ -36,6 +37,8 @@ functions:
         - subnet-0f6e46f5017f23bed
     environment:
       SERPOSCOPE_HOST: serposcope.cluster-cndvdgoirjyt.ap-northeast-1.rds.amazonaws.com
+      EC2_ENDPOINT_AP_NORTHEAST_1: https://ec2.ap-northeast-1.amazonaws.com
+      EC2_ENDPOINT_AP_SOUTHEAST_2: https://vpce-0cd82288d1ed47fba-ypb8z8te.ec2.ap-southeast-2.vpce.amazonaws.com
     # package:
     #   include:
     #     handler.js

@@ -10,10 +10,12 @@ def lambda_handler(event:, context:)
   json = JSON.parse(event['Records'][0]['Sns']['Message'])
   availability_zone = json["Details"]['Availability Zone']
   region = availability_zone.chop
+  endpoint = ENV['EC2_ENDPOINT_' + region.upcase.gsub('-', '_')]
+
   instance_id = json['EC2InstanceId']
   cause = json['Cause']
 
-  ec2 = Aws::EC2::Resource.new({ region: region })
+  ec2 = Aws::EC2::Resource.new({ region: region, endpoint: endpoint })
   instance = ec2.instance(instance_id)
   private_ip_address = instance.private_ip_address
   public_ip_address = instance.public_ip_address
@@ -49,10 +51,9 @@ def add_proxy(instance_id, region, private_ip_address, public_ip_address)
     client = mysql_client
     client.query(
       "INSERT INTO PROXY (type, ip, port, last_check, status, remote_ip, instance_id, region) " \
-      "VALUES (1, '#{private_ip_address}', 3128, now(), 1, '#{public_ip_address}', '#{instance_id}', '#{region}')")
-    puts "Proxy addedd: instanceId: #{instance_id} region: #{region} IP: #{private_ip_address} PublicIP: #{public_ip_address}"
-  rescue
-    return 0
+      "VALUES (1, '#{private_ip_address}', 3128, now(), 1, '#{public_ip_address}', '#{instance_id}', '#{region}') " \
+      "ON DUPLICATE KEY UPDATE last_check=now(), status=1")
+    puts "Proxy addedd: instanceId: #{instance_id} IP: #{private_ip_address} PublicIP: #{public_ip_address}"
   ensure
     client.close
   end
