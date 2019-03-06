@@ -88,6 +88,7 @@ public class GoogleTaskRunnableTest {
 //        taskController.searchDone = new AtomicInteger();
         taskController.totalSearch = 0;        
         taskController.googleOptions = new GoogleSettings();
+        taskController.googleOptions.setFetchRetry(1);
         
         runnable = new GoogleTaskRunnable(taskController);
         runnable.scraper = mock(GoogleScraper.class);
@@ -252,8 +253,8 @@ public class GoogleTaskRunnableTest {
 //        		+ evictableProxy.toString().replaceFirst("proxy:", "") + "]");
         verify(taskController, never()).onSearchDone(any(), any());
         assertFalse(taskController.rotator.list().contains(evictableProxy));
-        assertEquals(proxies.size()-1, taskController.rotator.list().size());
-        assertFalse(taskController.searches.isEmpty());
+        assertEquals(proxies.size() - taskController.googleOptions.getFetchRetry() - 1, taskController.rotator.list().size());
+        assertTrue(taskController.searches.isEmpty());
     }    
     
 }

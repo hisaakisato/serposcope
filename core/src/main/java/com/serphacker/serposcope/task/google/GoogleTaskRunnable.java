@@ -48,7 +48,7 @@ public class GoogleTaskRunnable implements Runnable {
 		LOG.debug("google thread started");
 		try {
 
-			MAIN_LOOP: while (!controller.shouldStop()) {
+			MAIN_LOOP: while (search != null || !controller.shouldStop()) {
 
 				if (Thread.interrupted()) {
 					LOG.error("[Search Abort] interrupted, aborting the thread");
@@ -70,7 +70,7 @@ public class GoogleTaskRunnable implements Runnable {
 						break;
 					}
 					LOG.debug("no proxy available, wait a moment");
-					if (controller.shouldStop()) {
+					if (search == null && controller.shouldStop()) {
 						break MAIN_LOOP;
 					}
 				}
@@ -161,6 +161,9 @@ public class GoogleTaskRunnable implements Runnable {
 							proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
 					controller.removeProxy(proxy); // mark removed
 					proxy = null;
+					if (searchTry > controller.googleOptions.getFetchRetry()) {
+						search = null; // give up
+					}
 					continue;
 				}
 
