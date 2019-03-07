@@ -15,6 +15,8 @@ import com.serphacker.serposcope.scraper.http.extensions.ScrapClientSocksAuthent
 import com.serphacker.serposcope.scraper.http.proxy.BindProxy;
 import com.serphacker.serposcope.scraper.http.proxy.DirectNoProxy;
 import com.serphacker.serposcope.scraper.http.proxy.HttpProxy;
+
+import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
@@ -50,6 +52,7 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.serphacker.serposcope.scraper.http.proxy.ScrapProxy;
@@ -109,7 +112,6 @@ public class ScrapClient implements Closeable, CredentialsProvider {
     Integer timeoutMS = DEFAULT_TIMEOUT_MS;
     ScrapProxy proxy;
     int maxResponseLength;
-    byte[] buffer;
     List<Header> requestHeaders = new ArrayList<>();
     Map<HttpHost, HttpHost> routes = new HashMap<>();
     boolean proxyChangedSinceLastRequest;
@@ -275,7 +277,6 @@ public class ScrapClient implements Closeable, CredentialsProvider {
 
     public final void setMaxResponseLength(int maxResponseLength) {
         this.maxResponseLength = maxResponseLength + 1;
-        buffer = new byte[this.maxResponseLength];
     }
 
     public CloseableHttpResponse getResponse() {
@@ -529,28 +530,38 @@ public class ScrapClient implements Closeable, CredentialsProvider {
                 }
 
                 HttpEntity entity = response.getEntity();
-                long contentLength = entity.getContentLength();
-
-                if (contentLength > maxResponseLength) {
-                    throw new ResponseTooBigException(
-                        "content length (" + contentLength + ") "
-                        + "is greater than max response leength (" + maxResponseLength + ")"
-                    );
+                try {
+	                long contentLength = entity.getContentLength();
+	
+	                if (contentLength > maxResponseLength) {
+	                    throw new ResponseTooBigException(
+	                        "content length (" + contentLength + ") "
+	                        + "is greater than max response length (" + maxResponseLength + ")"
+	                    );
+	                }
+	
+	                InputStream stream = entity.getContent();
+	                int totalRead = 0;
+	                int read = 0;
+	
+	                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	                byte[] buffer = new byte[1024];
+	                while(totalRead < maxResponseLength) {
+	                    read = stream.read(buffer);
+	                    if(read < 0) {
+	                        break;
+	                    }
+	                    totalRead += read;
+	                    baos.write(buffer, 0, read);
+	                }
+	
+	                if (totalRead == maxResponseLength && read != 0) {
+	                    throw new ResponseTooBigException("already read " + totalRead + " bytes");
+	                }
+	                content = baos.toByteArray();
+                } finally {
+                	EntityUtils.consumeQuietly(entity);
                 }
-
-                InputStream stream = entity.getContent();
-                int totalRead = 0;
-                int read = 0;
-
-                while (totalRead < maxResponseLength
-                    && (read = stream.read(buffer, totalRead, maxResponseLength - totalRead)) != -1) {
-                    totalRead += read;
-                }
-
-                if (totalRead == maxResponseLength && read != 0) {
-                    throw new ResponseTooBigException("already read " + totalRead + " bytes");
-                }
-                content = Arrays.copyOfRange(buffer, 0, totalRead);
 
             } catch (Exception ex) {
                 content = null;
