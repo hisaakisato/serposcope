@@ -9,7 +9,6 @@ package com.serphacker.serposcope.db.google;
 
 import com.google.inject.Singleton;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
@@ -22,6 +21,8 @@ import com.serphacker.serposcope.querybuilder.QGoogleTarget;
 import com.serphacker.serposcope.querybuilder.QGroup;
 
 import java.sql.Connection;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -132,6 +133,10 @@ public class GoogleTargetDB extends AbstractDB {
     }
 
     public List<GoogleTarget> list(Collection<Integer> groups, boolean cron){
+    	return list(groups, cron ? LocalDate.now().getDayOfWeek() : null);
+    }
+
+    public List<GoogleTarget> list(Collection<Integer> groups, DayOfWeek dayOfWeek){
         List<GoogleTarget> targets = new ArrayList<>();
         
         try(Connection con = ds.getConnection()){
@@ -145,8 +150,30 @@ public class GoogleTargetDB extends AbstractDB {
                 query.where(t_target.groupId.in(groups));
             }
 
-            if (cron) {
-                query.where(t_group.cronDisabled.ne(true));
+            if (dayOfWeek != null) {
+            	switch (dayOfWeek) {
+            	case SUNDAY:
+                    query.where(t_group.sundayEnabled.isTrue());
+            		break;
+            	case MONDAY:
+                    query.where(t_group.mondayEnabled.isTrue());
+            		break;
+            	case TUESDAY:
+                    query.where(t_group.tuesdayEnabled.isTrue());
+            		break;
+            	case WEDNESDAY:
+                    query.where(t_group.wednesdayEnabled.isTrue());
+            		break;
+            	case THURSDAY:
+                    query.where(t_group.thursdayEnabled.isTrue());
+            		break;
+            	case FRIDAY:
+                    query.where(t_group.fridayEnabled.isTrue());
+            		break;
+            	case SATURDAY:
+                    query.where(t_group.saturdayEnabled.isTrue());
+            		break;
+            	}
             }
 
             List<Tuple> tuples = query.fetch();

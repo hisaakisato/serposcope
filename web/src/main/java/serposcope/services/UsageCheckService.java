@@ -9,6 +9,8 @@ package serposcope.services;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
+import java.time.DayOfWeek;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +24,7 @@ import com.serphacker.serposcope.db.base.BaseDB;
 import com.serphacker.serposcope.db.google.GoogleDB;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.google.GoogleSearch;
+import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import com.serphacker.serposcope.task.TaskManager;
 import com.serphacker.serposcope.task.google.GoogleTask;
@@ -95,33 +98,86 @@ public class UsageCheckService {
 
 	@Schedule(delay = 1, initialDelay = 0, timeUnit = TimeUnit.HOURS)
 	public void checkGroupStats() {
-		int cronDisabled = 0;
-		int cronEnabled = 0;
-		List<Group> groups = baseDB.group.list();		
-		for (Group group : groups) {
-			if (group.isCronDisabled()) {
-				cronDisabled++;
-			} else {
-				cronEnabled++;
+
+		String[] types = { "Total", "Sunday Scheduled", "Monday Scheduled", "Tuesday Scheduled", "Wednesday Scheduled",
+				"Thursday Scheduled", "Friday Scheduled", "Saturday Scheduled", "Non-Scheduled" };		
+		
+		List<Group> allGroups = baseDB.group.list();		
+		List<GoogleSearch> allSearches = googleDB.search.list();
+		List<GoogleTarget> allTargets = googleDB.target.list();
+
+		for (String type : types) {
+			long groupCount = 0;
+			DayOfWeek dayOfWeek = null;
+			switch (type) {
+			case "Total":
+				groupCount = allGroups.size();
+				break;
+			case "Sunday Scheduled":
+				dayOfWeek = DayOfWeek.SUNDAY;
+				groupCount = allGroups.stream().filter(Group::isSundayEnabled).count();
+				break;
+			case "Monday Scheduled":
+				dayOfWeek = DayOfWeek.MONDAY;
+				groupCount = allGroups.stream().filter(Group::isMondayEnabled).count();
+				break;
+			case "Tuesday Scheduled":
+				dayOfWeek = DayOfWeek.TUESDAY;
+				groupCount = allGroups.stream().filter(Group::isTuesdayEnabled).count();
+				break;
+			case "Wednesday Scheduled":
+				dayOfWeek = DayOfWeek.WEDNESDAY;
+				groupCount = allGroups.stream().filter(Group::isWednesdayEnabled).count();
+				break;
+			case "Thursday Scheduled":
+				dayOfWeek = DayOfWeek.THURSDAY;
+				groupCount = allGroups.stream().filter(Group::isThursdayEnabled).count();
+				break;
+			case "Friday Scheduled":
+				dayOfWeek = DayOfWeek.FRIDAY;
+				groupCount = allGroups.stream().filter(Group::isFridayEnabled).count();
+				break;
+			case "Saturday Scheduled":
+				dayOfWeek = DayOfWeek.SATURDAY;
+				groupCount = allGroups.stream().filter(Group::isSaturdayEnabled).count();
+				break;
+			case "Non-Scheduled":
+				groupCount = allGroups.stream()
+						.filter(g -> !g.isSundayEnabled() && !g.isMondayEnabled() && !g.isTuesdayEnabled()
+								&& !g.isWednesdayEnabled() && !g.isThursdayEnabled() && !g.isFridayEnabled()
+								&& !g.isSaturdayEnabled())
+						.count();
 			}
-		}
-		int desktopSearch = 0;
-		int mobileSearch = 0;
-		List<GoogleSearch> searches = googleDB.search.list();
-		for (GoogleSearch search : searches) {
-			if (search.getDevice() == GoogleDevice.DESKTOP) {
-				desktopSearch++;
+
+			List<GoogleSearch> searches;
+			if (dayOfWeek == null) {
+				searches = new ArrayList<>(allSearches);
 			} else {
-				mobileSearch++;
+				searches = googleDB.search.listByGroup(null, dayOfWeek);
+				allSearches.removeAll(searches);
+
 			}
+			int desktopSearch = 0;
+			int mobileSearch = 0;
+			for (GoogleSearch search : searches) {
+				if (search.getDevice() == GoogleDevice.DESKTOP) {
+					desktopSearch++;
+				} else {
+					mobileSearch++;
+				}
+			}
+
+			List<GoogleTarget> targets;
+			if (dayOfWeek == null) {
+				targets = new ArrayList<>(allTargets);
+			} else {
+				targets = googleDB.target.list(null, dayOfWeek);
+				allTargets.removeAll(targets);
+			}
+			int targetCount = targets.size();
+
+			LOG.info("[Group Stats: {}] groups: {} desktop: {} mobile: {} targets: {}", type, groupCount, desktopSearch,
+					mobileSearch, targetCount);
 		}
-		int targets = googleDB.target.list().size();
-		LOG.info("[Group Stats] "
-				+ "groups: {} scheduled: {} non-scheduled: {} "
-				+ "keywords: {} desktop: {} mobile: {} "
-				+ "targets: {}",
-				cronEnabled + cronDisabled, cronEnabled, cronDisabled,
-				desktopSearch + mobileSearch, desktopSearch, mobileSearch,
-				targets);
 	}
 }

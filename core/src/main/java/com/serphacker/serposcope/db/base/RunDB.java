@@ -495,8 +495,14 @@ public class RunDB extends AbstractDB {
         	Group group = new Group(
         			groupId,
         			Group.Module.values()[tuple.get(t_group.moduleId)],
-        			tuple.get(t_group.name),
-        			tuple.get(t_group.cronDisabled) == null ? false : true);
+        			tuple.get(t_group.name));
+    		group.setSundayEnabled(tuple.get(t_group.sundayEnabled) == null ? false : tuple.get(t_group.sundayEnabled));
+    		group.setMondayEnabled(tuple.get(t_group.mondayEnabled) == null ? false : tuple.get(t_group.mondayEnabled));
+    		group.setTuesdayEnabled(tuple.get(t_group.tuesdayEnabled) == null ? false : tuple.get(t_group.tuesdayEnabled));
+    		group.setWednesdayEnabled(tuple.get(t_group.wednesdayEnabled) == null ? false : tuple.get(t_group.wednesdayEnabled));
+    		group.setThursdayEnabled(tuple.get(t_group.thursdayEnabled) == null ? false : tuple.get(t_group.thursdayEnabled));
+    		group.setFridayEnabled(tuple.get(t_group.fridayEnabled) == null ? false : tuple.get(t_group.fridayEnabled));
+    		group.setSaturdayEnabled(tuple.get(t_group.saturdayEnabled) == null ? false : tuple.get(t_group.saturdayEnabled));
         	run.setGroup(group);
         }
 

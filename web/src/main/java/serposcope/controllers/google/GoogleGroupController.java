@@ -669,7 +669,14 @@ public class GoogleGroupController extends GoogleController {
     @FilterWith({
         XSRFFilter.class
     })
-    public Result rename(Context context, @Param("name") String name, @Param("cronDisabled") boolean cronDisabled) {
+    public Result rename(Context context, @Param("name") String name,
+    		@Param("sundayEnabled") boolean sundayEnabled,
+            @Param("mondayEnabled") boolean mondayEnabled,
+            @Param("tuesdayEnabled") boolean tuesdayEnabled,
+            @Param("wednesdayEnabled") boolean wednesdayEnabled,
+            @Param("thursdayEnabled") boolean thursdayEnabled,
+            @Param("fridayEnabled") boolean fridayEnabled,
+            @Param("saturdayEnabled") boolean saturdayEnabled) {
         FlashScope flash = context.getFlashScope();
         Group group = context.getAttribute("group", Group.class);
 
@@ -679,7 +686,13 @@ public class GoogleGroupController extends GoogleController {
         }
 
         group.setName(name);
-        group.setCronDisabled(cronDisabled);
+        group.setSundayEnabled(sundayEnabled);
+        group.setMondayEnabled(mondayEnabled);
+        group.setTuesdayEnabled(tuesdayEnabled);
+        group.setWednesdayEnabled(wednesdayEnabled);
+        group.setThursdayEnabled(thursdayEnabled);
+        group.setFridayEnabled(fridayEnabled);
+        group.setSaturdayEnabled(saturdayEnabled);
         baseDB.group.update(group);
 
         flash.success("google.group.groupRenamed");

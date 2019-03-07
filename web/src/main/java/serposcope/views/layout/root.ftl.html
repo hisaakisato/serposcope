@@ -144,12 +144,37 @@
                                     <option data-icon="fa fa-github-square fa-lg" value="2" >Github</option>-->
                                 </select>
                             </div>
-                            <div class="form-group" >
-                                <label for="groupCronDisabled" class="checkbox-inline" style="width: 100%; line-height: 42px; font-weight: bold">
-                                	<input type="checkbox" id="groupCronDisabled" class="form-control" name="cronDisabled" style="box-shadow: none"  value="true">
-                                	${i18n("label.cronDisabled")}
+                            <fieldset class="form-group day-of-the-week-schedule" >
+                                <legend>${i18n("label.schedule")}</legend>
+                                <label for="groupSundayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupSundayEnabled" class="form-control" name="sundayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.sunday")}
                                 </label>
-                            </div>
+                                <label for="groupMondayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupMondayEnabled" class="form-control" name="mondayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.monday")}
+                                </label>
+                                <label for="groupTuesdayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupTuesdayEnabled" class="form-control" name="tuesdayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.tuesday")}
+                                </label>
+                                <label for="groupWednesdayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupWednesdayEnabled" class="form-control" name="wednesdayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.wednesday")}
+                                </label>
+                                <label for="groupThursdayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupThursdayEnabled" class="form-control" name="thursdayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.thursday")}
+                                </label>
+                                <label for="groupFridayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupFridayEnabled" class="form-control" name="fridayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.friday")}
+                                </label>
+                                <label for="groupSaturdayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupSaturdayEnabled" class="form-control" name="saturdayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.saturday")}
+                                </label>
+                            </fieldset>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>
@@ -174,12 +199,37 @@
                                 <label for="groupName" >${i18n("label.name")}</label>
                                 <input id="groupName" class="form-control" name="name" >
                             </div>
-                            <div class="form-group" >
-                                <label for="groupCronDisabled" class="checkbox-inline" style="width: 100%; line-height: 42px; font-weight: bold">
-                                	<input type="checkbox" id="groupCronDisabled" class="form-control" name="cronDisabled" style="box-shadow: none" value="true">
-                                	${i18n("label.cronDisabled")}
+                            <fieldset class="form-group day-of-the-week-schedule" >
+                                <legend>${i18n("label.schedule")}</legend>
+                                <label for="groupSundayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupSundayEnabled" class="form-control" name="sundayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.sunday")}
                                 </label>
-                            </div>
+                                <label for="groupMondayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupMondayEnabled" class="form-control" name="mondayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.monday")}
+                                </label>
+                                <label for="groupTuesdayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupTuesdayEnabled" class="form-control" name="tuesdayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.tuesday")}
+                                </label>
+                                <label for="groupWednesdayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupWednesdayEnabled" class="form-control" name="wednesdayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.wednesday")}
+                                </label>
+                                <label for="groupThursdayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupThursdayEnabled" class="form-control" name="thursdayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.thursday")}
+                                </label>
+                                <label for="groupFridayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupFridayEnabled" class="form-control" name="fridayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.friday")}
+                                </label>
+                                <label for="groupSaturdayEnabled" class="checkbox-inline">
+                                	<input type="checkbox" id="groupSaturdayEnabled" class="form-control" name="saturdayEnabled" style="box-shadow: none" value="true">
+                                	${i18n("label.saturday")}
+                                </label>
+                            </fieldset>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>

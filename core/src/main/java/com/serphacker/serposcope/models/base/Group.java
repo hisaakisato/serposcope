@@ -27,19 +27,18 @@ public class Group {
     int id;
     Module module;
     String name;
-    boolean cronDisabled;
+    boolean sundayEnabled;
+    boolean mondayEnabled;
+    boolean tuesdayEnabled;
+    boolean WednesdayEnabled;
+    boolean thursdayEnabled;
+    boolean fridayEnabled;
+    boolean saturdayEnabled;
 
     public Group(int id, Module module, String name) {
         this.id = id;
         this.module = module;
         this.name = name;
-    }
-
-    public Group(int id, Module module, String name, boolean cronDisabled) {
-        this.id = id;
-        this.module = module;
-        this.name = name;
-        this.cronDisabled = cronDisabled;
     }
 
     public Group(Module module, String name) {
@@ -71,15 +70,63 @@ public class Group {
         this.name = name;
     }
     
-    public boolean isCronDisabled() {
-        return cronDisabled;
-    }
-    
-    public void setCronDisabled(boolean cronDisabled) {
-        this.cronDisabled = cronDisabled;
-    }
-    
-    @Override
+    public boolean isSundayEnabled() {
+		return sundayEnabled;
+	}
+
+	public void setSundayEnabled(boolean sundayEnabled) {
+		this.sundayEnabled = sundayEnabled;
+	}
+
+	public boolean isMondayEnabled() {
+		return mondayEnabled;
+	}
+
+	public void setMondayEnabled(boolean mondayEnabled) {
+		this.mondayEnabled = mondayEnabled;
+	}
+
+	public boolean isTuesdayEnabled() {
+		return tuesdayEnabled;
+	}
+
+	public void setTuesdayEnabled(boolean tuesdayEnabled) {
+		this.tuesdayEnabled = tuesdayEnabled;
+	}
+
+	public boolean isWednesdayEnabled() {
+		return WednesdayEnabled;
+	}
+
+	public void setWednesdayEnabled(boolean wednesdayEnabled) {
+		WednesdayEnabled = wednesdayEnabled;
+	}
+
+	public boolean isThursdayEnabled() {
+		return thursdayEnabled;
+	}
+
+	public void setThursdayEnabled(boolean thursdayEnabled) {
+		this.thursdayEnabled = thursdayEnabled;
+	}
+
+	public boolean isFridayEnabled() {
+		return fridayEnabled;
+	}
+
+	public void setFridayEnabled(boolean fridayEnabled) {
+		this.fridayEnabled = fridayEnabled;
+	}
+
+	public boolean isSaturdayEnabled() {
+		return saturdayEnabled;
+	}
+
+	public void setSaturdayEnabled(boolean saturdayEnabled) {
+		this.saturdayEnabled = saturdayEnabled;
+	}
+
+	@Override
     public int hashCode() {
         int hash = 7;
         hash = 97 * hash + (int) (this.id ^ (this.id >>> 32));

@@ -37,7 +37,13 @@ public class GroupDB extends AbstractDB {
             Integer key = new SQLInsertClause(con, dbTplConf, t_group)
                 .set(t_group.moduleId, group.getModule().ordinal())
                 .set(t_group.name, group.getName())
-                .set(t_group.cronDisabled, group.isCronDisabled())
+                .set(t_group.sundayEnabled, group.isSundayEnabled())
+                .set(t_group.mondayEnabled, group.isMondayEnabled())
+                .set(t_group.tuesdayEnabled, group.isTuesdayEnabled())
+                .set(t_group.wednesdayEnabled, group.isWednesdayEnabled())
+                .set(t_group.thursdayEnabled, group.isThursdayEnabled())
+                .set(t_group.fridayEnabled, group.isFridayEnabled())
+                .set(t_group.saturdayEnabled, group.isSaturdayEnabled())
                 .executeWithKey(t_group.id);
             
             if(key != null){
@@ -83,7 +89,13 @@ public class GroupDB extends AbstractDB {
         try(Connection con = ds.getConnection()){
             updated = new SQLUpdateClause(con, dbTplConf, t_group)
                 .set(t_group.name, group.getName())
-                .set(t_group.cronDisabled, group.isCronDisabled())
+                .set(t_group.sundayEnabled, group.isSundayEnabled())
+                .set(t_group.mondayEnabled, group.isMondayEnabled())
+                .set(t_group.tuesdayEnabled, group.isTuesdayEnabled())
+                .set(t_group.wednesdayEnabled, group.isWednesdayEnabled())
+                .set(t_group.thursdayEnabled, group.isThursdayEnabled())
+                .set(t_group.fridayEnabled, group.isFridayEnabled())
+                .set(t_group.saturdayEnabled, group.isSaturdayEnabled())
                 .where(t_group.id.eq(group.getId()))
                 .execute() == 1;
         }catch(Exception ex){
@@ -173,12 +185,18 @@ public class GroupDB extends AbstractDB {
             return null;
         }
         
-        return new Group(
+        Group group = new Group(
             tuple.get(t_group.id), 
             Group.Module.values()[tuple.get(t_group.moduleId)], 
-            tuple.get(t_group.name),
-            tuple.get(t_group.cronDisabled) == null ? false
-            		: tuple.get(t_group.cronDisabled));
+            tuple.get(t_group.name));
+		group.setSundayEnabled(tuple.get(t_group.sundayEnabled) == null ? false : tuple.get(t_group.sundayEnabled));
+		group.setMondayEnabled(tuple.get(t_group.mondayEnabled) == null ? false : tuple.get(t_group.mondayEnabled));
+		group.setTuesdayEnabled(tuple.get(t_group.tuesdayEnabled) == null ? false : tuple.get(t_group.tuesdayEnabled));
+		group.setWednesdayEnabled(tuple.get(t_group.wednesdayEnabled) == null ? false : tuple.get(t_group.wednesdayEnabled));
+		group.setThursdayEnabled(tuple.get(t_group.thursdayEnabled) == null ? false : tuple.get(t_group.thursdayEnabled));
+		group.setFridayEnabled(tuple.get(t_group.fridayEnabled) == null ? false : tuple.get(t_group.fridayEnabled));
+		group.setSaturdayEnabled(tuple.get(t_group.saturdayEnabled) == null ? false : tuple.get(t_group.saturdayEnabled));
+        return group;
     }
     
 }

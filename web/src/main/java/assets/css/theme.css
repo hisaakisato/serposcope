@@ -1006,3 +1006,77 @@ ul.typeahead.dropdown-menu {
 .slick-header-column {
     box-sizing: content-box;
 }
+
+.day-of-the-week {
+	position: relative;
+    display: inline-block;
+    -webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	margin-left: 4px;
+	padding: 0 4px;
+	user-select: none;   	
+    height: 16px;
+    line-height: 16px;
+    vertical-align: text-bottom;
+}
+.day-of-the-week > div {
+	position: relative;
+	font-size: 10px;
+    height: 14px;
+    min-width: 14px;
+    background-color: #d6d2d2;
+    color: #828282;
+    border-radius: 7px;
+    display: inline-block;
+    padding: 0 2px;
+    line-height: 14px;
+    text-align: center;
+    vertical-align: baseline;
+}
+.day-of-the-week > div.sunday {
+    background-color: #ffbcbc;
+    color: #ff6f6f;
+}
+.day-of-the-week > div.saturday {
+    background-color: #c6cdff;
+    color: #735fff;
+}
+
+.day-of-the-week-schedule {
+    -webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	text-align: center;
+	width: 50px;
+}
+.day-of-the-week-schedule > .glyphicon.glyphicon-ok-sign {
+	color: #51d851;
+}
+fieldset.day-of-the-week-schedule {
+	width: 100%;
+}
+fieldset.day-of-the-week-schedule > legend {	
+    text-align: left;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 0 0 6px 0;	
+}
+.day-of-the-week-schedule > label {
+	width: 100%;
+	height: 20px;
+	line-height: 20px;
+	font-weight: bold;
+	margin-left: 10px;
+	text-align: left;
+	padding: 0 30px;
+}
+.day-of-the-week-schedule > label > input {
+	height: 20px;
+	margin-top: 2px;
+	margin-left: -30px !important;
+}

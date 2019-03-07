@@ -89,7 +89,13 @@ public class GroupController extends BaseController {
     public Result create(
         Context context,
         @Param("name") String name,
-        @Param("cronDisabled") boolean cronDisabled,
+        @Param("sundayEnabled") boolean sundayEnabled,
+        @Param("mondayEnabled") boolean mondayEnabled,
+        @Param("tuesdayEnabled") boolean tuesdayEnabled,
+        @Param("wednesdayEnabled") boolean wednesdayEnabled,
+        @Param("thursdayEnabled") boolean thursdayEnabled,
+        @Param("fridayEnabled") boolean fridayEnabled,
+        @Param("saturdayEnabled") boolean saturdayEnabled,
         @Param("module") Integer moduleNum
     ){
         FlashScope flash = context.getFlashScope();
@@ -108,7 +114,13 @@ public class GroupController extends BaseController {
         }
         
         Group group = new Group(module, name);
-        group.setCronDisabled(cronDisabled);
+        group.setSundayEnabled(sundayEnabled);
+        group.setMondayEnabled(mondayEnabled);
+        group.setTuesdayEnabled(tuesdayEnabled);
+        group.setWednesdayEnabled(wednesdayEnabled);
+        group.setThursdayEnabled(thursdayEnabled);
+        group.setFridayEnabled(fridayEnabled);
+        group.setSaturdayEnabled(saturdayEnabled);
         baseDB.group.insert(group);
         User user = context.getAttribute("user", User.class);
         baseDB.user.addPerm(user, group);

@@ -23,6 +23,8 @@ import com.serphacker.serposcope.querybuilder.QGroup;
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import java.sql.Connection;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -248,6 +250,10 @@ public class GoogleSearchDB extends AbstractDB {
     }
 
     public List<GoogleSearch> listByGroup(Collection<Integer> groups, boolean cron){
+    	return listByGroup(groups, cron ? LocalDate.now().getDayOfWeek() : null);
+    }
+
+    public List<GoogleSearch> listByGroup(Collection<Integer> groups, DayOfWeek dayOfWeek){
         List<GoogleSearch> searches = new ArrayList<>();
         
         try(Connection con = ds.getConnection()){
@@ -263,8 +269,30 @@ public class GoogleSearchDB extends AbstractDB {
                 query.where(t_ggroup.groupId.in(groups));
             }
             
-            if(cron){
-                query.where(t_group.cronDisabled.ne(true));
+            if(dayOfWeek != null){
+            	switch (dayOfWeek) {
+            	case SUNDAY:
+                    query.where(t_group.sundayEnabled.isTrue());
+            		break;
+            	case MONDAY:
+                    query.where(t_group.mondayEnabled.isTrue());
+            		break;
+            	case TUESDAY:
+                    query.where(t_group.tuesdayEnabled.isTrue());
+            		break;
+            	case WEDNESDAY:
+                    query.where(t_group.wednesdayEnabled.isTrue());
+            		break;
+            	case THURSDAY:
+                    query.where(t_group.thursdayEnabled.isTrue());
+            		break;
+            	case FRIDAY:
+                    query.where(t_group.fridayEnabled.isTrue());
+            		break;
+            	case SATURDAY:
+                    query.where(t_group.saturdayEnabled.isTrue());
+            		break;
+            	}
             }
 
             List<Tuple> tuples = query.fetch();
@@ -349,7 +377,29 @@ public class GoogleSearchDB extends AbstractDB {
 	            .where(t_ggroup.googleSearchId.eq(search.getId()));
         	
         	if (cron) {
-        		query.where(t_group.cronDisabled.ne(true));
+            	switch (LocalDate.now().getDayOfWeek()) {
+            	case SUNDAY:
+                    query.where(t_group.sundayEnabled.isTrue());
+            		break;
+            	case MONDAY:
+                    query.where(t_group.mondayEnabled.isTrue());
+            		break;
+            	case TUESDAY:
+                    query.where(t_group.tuesdayEnabled.isTrue());
+            		break;
+            	case WEDNESDAY:
+                    query.where(t_group.wednesdayEnabled.isTrue());
+            		break;
+            	case THURSDAY:
+                    query.where(t_group.thursdayEnabled.isTrue());
+            		break;
+            	case FRIDAY:
+                    query.where(t_group.fridayEnabled.isTrue());
+            		break;
+            	case SATURDAY:
+                    query.where(t_group.saturdayEnabled.isTrue());
+            		break;
+            	}
         	}
 
         	List<Integer> ids = query.fetch();

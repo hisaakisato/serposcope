@@ -7,9 +7,29 @@
         <ol class="breadcrumb" >
             <li><a href="/"><i class="fa fa-home" ></i></a></li>
             <li><a href="${reverseRoute("google.GoogleGroupController","view","groupId",group.getId())}">${group.getName()}</a></li>
-            <#if (!group.isCronDisabled())>
-            <i class="glyphicon glyphicon-time" data-toggle="tooltip" title="${i18n("label.cron")}"></i>
-            </#if>
+            <div class="day-of-the-week">
+	            <#if (group.isSundayEnabled())>
+	            <div class="sunday" data-toggle="tooltip" title="${i18n("label.sunday")}">${i18n("label.short.sunday")}</div>
+	            </#if>
+	            <#if (group.isMondayEnabled())>
+	            <div class="monday" data-toggle="tooltip" title="${i18n("label.monday")}">${i18n("label.short.monday")}</div>
+	            </#if>
+	            <#if (group.isTuesdayEnabled())>
+	            <div class="tuesday" data-toggle="tooltip" title="${i18n("label.tuesday")}">${i18n("label.short.tuesday")}</div>
+	            </#if>
+	            <#if (group.isWednesdayEnabled())>
+	            <div class="wednesday" data-toggle="tooltip" title="${i18n("label.wednesday")}">${i18n("label.short.wednesday")}</div>
+	            </#if>
+	            <#if (group.isThursdayEnabled())>
+	            <div class="thursday" data-toggle="tooltip" title="${i18n("label.thursday")}">${i18n("label.short.thursday")}</div>
+	            </#if>
+	            <#if (group.isFridayEnabled())>
+	            <div class="friday" data-toggle="tooltip" title="${i18n("label.friday")}">${i18n("label.short.friday")}</div>
+	            </#if>
+	            <#if (group.isSaturdayEnabled())>
+	            <div class="saturday" data-toggle="tooltip" title="${i18n("label.saturday")}">${i18n("label.short.saturday")}</div>
+	            </#if>
+	        </div>
         </ol>        
     </div>
     <div class="col-sm-8" >

@@ -40,9 +40,18 @@
                         </div>
                         <table class="table table-condensed table-bordered" >
                             <tr>
-                                <th class="width30" style="white-space:nowrap;" >#</th>
-                                <th class="width40" style="white-space:nowrap;" >${i18n("label.module")}</th>
-                                <th style="white-space:nowrap;" >${i18n("label.name")}</th>
+                                <th class="width30" style="white-space:nowrap;tex-align:center;vertical-align:middle;" rowspan=2>#</th>
+                                <th style="white-space:nowrap;tex-align:center;vertical-align:middle;" rowspan=2>${i18n("label.name")}</th>
+                                <th class="day-of-the-week-schedule" colspan=7>${i18n("label.schedule")}</th>
+                            </tr>
+                            <tr>
+                                <th class="day-of-the-week-schedule">${i18n("label.short.sunday")}</th>
+                                <th class="day-of-the-week-schedule">${i18n("label.short.monday")}</th>
+                                <th class="day-of-the-week-schedule">${i18n("label.short.tuesday")}</th>
+                                <th class="day-of-the-week-schedule">${i18n("label.short.wednesday")}</th>
+                                <th class="day-of-the-week-schedule">${i18n("label.short.thursday")}</th>
+                                <th class="day-of-the-week-schedule">${i18n("label.short.friday")}</th>
+                                <th class="day-of-the-week-schedule">${i18n("label.short.saturday")}</th>
                             </tr>
                             <#list groups as group>
                             <tr>
@@ -54,17 +63,69 @@
                                         <i class="glyphicon glyphicon-remove" ></i>
                                     </a>
                                     <a href="${reverseRoute("google.GoogleGroupController","rename","groupId",group.getId())}" class="btn-rename-group text-normal" 
-                                       data-id="${group.getId()}" data-name="${group.getName()}" data-cron-disabled="${group.isCronDisabled()?c}"
+                                       data-id="${group.getId()}" data-name="${group.getName()}"
+                                       data-sunday-enabled="${group.isSundayEnabled()?c}"
+                                       data-monday-enabled="${group.isMondayEnabled()?c}"
+                                       data-tuesday-enabled="${group.isTuesdayEnabled()?c}"
+                                       data-wednesday-enabled="${group.isWednesdayEnabled()?c}"
+                                       data-thursday-enabled="${group.isThursdayEnabled()?c}"
+                                       data-friday-enabled="${group.isFridayEnabled()?c}"
+                                       data-saturday-enabled="${group.isSaturdayEnabled()?c}"
                                        title="${i18n("label.rename")}" data-toggle="tooltip" 
                                     >
                                         <i class="glyphicon glyphicon-edit" ></i>
                                     </a>
                                 </td>
-                                <td>${group.getModule()}</td>
                                 <td>
                                 	<a href="${fu.groupLink(group)}" >${group.getName()}</a>
-                                	<#if (!group.isCronDisabled())>
-                                	<i class="glyphicon glyphicon-time" data-toggle="tooltip" title="${i18n("label.cron")}"></i>
+                                </td>
+                                <td class="day-of-the-week-schedule">
+                                	<#if (group.isSundayEnabled())>
+                                	<i class="glyphicon glyphicon-ok-sign"></i>
+                                	<#else>
+                                	-
+                                	</#if>
+                                </td>
+                                <td class="day-of-the-week-schedule">
+                                	<#if (group.isMondayEnabled())>
+                                	<i class="glyphicon glyphicon-ok-sign"></i>
+                                	<#else>
+                                	-
+                                	</#if>
+                                </td>
+                                <td class="day-of-the-week-schedule">
+                                	<#if (group.isTuesdayEnabled())>
+                                	<i class="glyphicon glyphicon-ok-sign"></i>
+                                	<#else>
+                                	-
+                                	</#if>
+                                </td>
+                                <td class="day-of-the-week-schedule">
+                                	<#if (group.isWednesdayEnabled())>
+                                	<i class="glyphicon glyphicon-ok-sign"></i>
+                                	<#else>
+                                	-
+                                	</#if>
+                                </td>
+                                <td class="day-of-the-week-schedule">
+                                	<#if (group.isThursdayEnabled())>
+                                	<i class="glyphicon glyphicon-ok-sign"></i>
+                                	<#else>
+                                	-
+                                	</#if>
+                                </td>
+                                <td class="day-of-the-week-schedule">
+                                	<#if (group.isFridayEnabled())>
+                                	<i class="glyphicon glyphicon-ok-sign"></i>
+                                	<#else>
+                                	-
+                                	</#if>
+                                </td>
+                                <td class="day-of-the-week-schedule">
+                                	<#if (group.isSaturdayEnabled())>
+                                	<i class="glyphicon glyphicon-ok-sign"></i>
+                                	<#else>
+                                	-
                                 	</#if>
                                 </td>
                             </tr>
