@@ -141,7 +141,7 @@ public class GroupDB extends AbstractDB {
 							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
 							t_target.id)
 					.from(t_group).leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
-					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id)
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id, t_target.id)
 					.orderBy(t_group.name.asc());
             
             if(module != null){
@@ -198,10 +198,9 @@ public class GroupDB extends AbstractDB {
 					.select(t_group.id, t_group.moduleId, t_group.name, t_group.sundayEnabled, t_group.mondayEnabled,
 							t_group.tuesdayEnabled, t_group.wednesdayEnabled, t_group.thursdayEnabled,
 							t_group.fridayEnabled, t_group.saturdayEnabled,
-							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
-							t_target.id)
+							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId), t_target.id)
 					.from(t_group).leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
-					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id)
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id, t_target.id)
 					.orderBy(t_group.name.asc());
             
             if(user != null && !user.isAdmin()){
@@ -228,17 +227,17 @@ public class GroupDB extends AbstractDB {
             
         	SubQueryExpression<Tuple> subQuery = SQLExpressions
 					.select(t_target.groupId, t_target.groupId.count().castToNum(Integer.class).as(t_target.id))
-					.from(t_target).where(t_target.groupId.eq(groupId)).groupBy(t_target.groupId);
+					.from(t_target).where(t_target.groupId.eq(groupId));
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
 					.select(t_group.id, t_group.moduleId, t_group.name, t_group.sundayEnabled, t_group.mondayEnabled,
 							t_group.tuesdayEnabled, t_group.wednesdayEnabled, t_group.thursdayEnabled,
 							t_group.fridayEnabled, t_group.saturdayEnabled,
-							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
-							t_target.id)
+							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId), t_target.id)
 					.from(t_group).leftJoin(t_searchGroup)
 					.on(t_group.id.eq(groupId).and(t_group.id.eq(t_searchGroup.groupId))).leftJoin(subQuery, t_target)
-					.on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id);			
+					.on(t_group.id.eq(groupId).and(t_group.id.eq(t_target.groupId))).where(t_group.id.eq(groupId))
+					.groupBy(t_group.id, t_target.id);
 
 			Tuple tuple = query.fetchFirst();
 
