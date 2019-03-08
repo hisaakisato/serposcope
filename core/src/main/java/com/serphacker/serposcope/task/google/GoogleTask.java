@@ -48,6 +48,7 @@ import com.serphacker.serposcope.di.GoogleScraperFactory;
 import com.serphacker.serposcope.models.google.GoogleBest;
 import com.serphacker.serposcope.models.google.GoogleTargetSummary;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -63,6 +64,7 @@ public class GoogleTask extends AbstractTask {
     public volatile ProxyRotator rotator;
 
     Run previousRun;
+    int groupCount;
     final Map<Short,Integer> previousRunsByDay = new ConcurrentHashMap<>();
     final Map<Integer,List<GoogleTarget>> targetsByGroup = new ConcurrentHashMap<>();
     final Map<Integer,GoogleTargetSummary> summariesByTarget = new ConcurrentHashMap<>();
@@ -107,6 +109,10 @@ public class GoogleTask extends AbstractTask {
         solver = initializeCaptchaSolver();
         googleOptions = googleDB.options.get();
 
+		groupCount = this.getRun().getGroup() == null
+				? baseDB.group.list(null, this.getRun().getMode() == Mode.CRON ? LocalDate.now().getDayOfWeek() : null)
+						.size()
+				: 1;
         initializeSearches();
         initializePreviousRuns();
         initializeTargets();
@@ -398,7 +404,6 @@ public class GoogleTask extends AbstractTask {
     @Override
     protected void endRun(Status status) {
     	super.endRun(status);
-    	int groups = targetsByGroup.size();
     	int targets = targetsByGroup.values()
     			.stream().collect(Collectors.summingInt(List::size));
     	int searched = searchDone.intValue();
@@ -409,7 +414,7 @@ public class GoogleTask extends AbstractTask {
         		run.getStatus(),
         		String.format("%.2f", run.getDurationMs() * 1.0 / 1000),
         		run.getCaptchas(), run.getErrors(),
-        		groups, searched, totalSearch - searched, targets);
+        		groupCount, searched, totalSearch - searched, targets);
     }
 
     @Override

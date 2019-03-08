@@ -20,6 +20,7 @@ import com.serphacker.serposcope.models.base.User;
 import com.serphacker.serposcope.querybuilder.QGroup;
 import com.serphacker.serposcope.querybuilder.QUserGroup;
 import java.sql.Connection;
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -106,10 +107,18 @@ public class GroupDB extends AbstractDB {
     }    
     
     public List<Group> list(){
-        return list(null);
+        return list(null, null);
+    }
+    
+    public List<Group> list(DayOfWeek dayOfWeek){
+        return list(null, dayOfWeek);
     }
     
     public List<Group> list(Module module){
+    	return list(module, null);
+    }
+
+    public List<Group> list(Module module, DayOfWeek dayOfWeek){
         List<Group> groups = new ArrayList<>();
         try(Connection con = ds.getConnection()){
             
@@ -121,6 +130,31 @@ public class GroupDB extends AbstractDB {
                 query.where(t_group.moduleId.eq(module.ordinal()));
             }
             
+            if (dayOfWeek != null) {
+            	switch(dayOfWeek) {
+            	case SUNDAY:
+            		query.where(t_group.sundayEnabled.isTrue());
+            		break;
+            	case MONDAY:
+            		query.where(t_group.mondayEnabled.isTrue());
+            		break;
+            	case TUESDAY:
+            		query.where(t_group.tuesdayEnabled.isTrue());
+            		break;
+            	case WEDNESDAY:
+            		query.where(t_group.wednesdayEnabled.isTrue());
+            		break;
+            	case THURSDAY:
+            		query.where(t_group.thursdayEnabled.isTrue());
+            		break;
+            	case FRIDAY:
+            		query.where(t_group.fridayEnabled.isTrue());
+            		break;
+            	case SATURDAY:
+            		query.where(t_group.saturdayEnabled.isTrue());
+            		break;
+            	}
+            }
             List<Tuple> tuples = query.fetch();
 
             for (Tuple tuple : tuples) {
