@@ -379,7 +379,32 @@ serposcope.googleGroupController = function () {
         $form.appendTo(document.body).submit();
         return false;
     };
-    
+
+    var exportTargets = function(elt){
+        var $form = $('<form>', {
+            'action': $(elt.currentTarget).attr("data-action"),
+            'method': 'post',
+            'target': '_top'
+        }).append($('<input>', {
+            'name': '_xsrf',
+            'value': $('#_xsrf').attr("data-value"),
+            'type': 'hidden'
+        }));
+        
+        $('.chk-target').each(function() {
+        	var checkbox = $(this);
+            if (checkbox.prop('checked')) {
+                $form.append($('<input>', {
+                    'name': 'id[]',
+                    'value': checkbox.val(),
+                    'type': 'hidden'
+                }));
+            }
+        });
+        $form.appendTo(document.body).submit();
+        return false;
+    };
+
     var loadAsyncCanonical = function() {
         $.ajax({
             url: '/assets/js/canonical-location.js',
@@ -466,6 +491,7 @@ serposcope.googleGroupController = function () {
         $('#btn-chk-search').click(checksearch);
         $('#btn-chk-target').click(checkTarget);
         $('#btn-export-searches').click(exportSearches);
+        $('#btn-export-targets').click(exportTargets);
         $('#btn-delete-searches').click(deleteSearches);
         $('#btn-delete-targets').click(deleteTargets);
         $('#table-target').stupidtable();

@@ -576,6 +576,65 @@ public class GoogleGroupController extends GoogleController {
 		return Results.internalServerError();
     }
 
+    @FilterWith({
+        XSRFFilter.class
+    })
+    public Result exportTargets(
+        Context context,
+        @Params("id[]") String[] ids
+    ) {
+        FlashScope flash = context.getFlashScope();
+        Group group = context.getAttribute("group", Group.class);
+
+        if (ids == null || ids.length == 0) {
+            flash.error("error.noWebsiteSelected");
+            return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+        }
+
+        List<GoogleTarget> targets = new ArrayList<>();
+        for (String id : ids) {
+        	GoogleTarget target = null;
+            try {
+            	target = getTarget(context, Integer.parseInt(id));
+            } catch (Exception ex) {
+            	target = null;
+            }
+
+            if (target == null) {
+                flash.error("error.invalidWebsite");
+                return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+            }
+
+            targets.add(target);
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (GoogleTarget target : targets) {
+            builder.append(target.getType()).append(",");
+            builder.append(StringEscapeUtils.escapeCsv(target.getName())).append(",");
+            builder.append(StringEscapeUtils.escapeCsv(target.getPattern()));
+        }
+
+		try {
+			byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+			byte[] bytes = builder.toString().getBytes("UTF-8");
+			byte[] result = new byte[bom.length + bytes.length];        
+			System.arraycopy(bom, 0, result, 0, bom.length);
+			System.arraycopy(bytes, 0, result, bom.length, bytes.length);
+			
+			String encodedFilename = "websites_" +
+					URLEncoder.encode(group.getName(), "UTF-8") + ".csv";
+			return Results.ok()
+					.contentType(Result.APPLICATION_OCTET_STREAM)
+					.addHeader("Content-Disposition", "attachment; " +
+							"filename=\"keywords.csv\"; " + 
+							"filename*=\"UTF-8''" + encodedFilename)
+					.renderRaw(result);
+		} catch (UnsupportedEncodingException e) {
+		}
+		return Results.internalServerError();
+    }
+
     protected void deleteSearch(Group group, GoogleSearch search) {
         synchronized (searchLock) {
             googleDB.search.deleteFromGroup(search, group.getId());

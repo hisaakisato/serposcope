@@ -107,6 +107,8 @@
             <button class="btn btn-primary btn-add-target" >
                <i class="glyphicon glyphicon-star hidden-lg" ></i><span> ${i18n("label.addWebsite")}</span>
             </button>
+            <input id="btn-export-targets" type="button" class="btn btn-primary" value="${i18n("google.group.exportWebsites")}"
+                   data-action="${reverseRoute("google.GoogleGroupController","exportTargets","groupId",group.getId())}" />
             <input id="btn-delete-targets" type="button" class="btn btn-danger" value="${i18n("google.group.deleteWebsites")}" 
                 data-action="${reverseRoute("google.GoogleGroupController","delTarget","groupId",group.getId())}" />
         </div>                        

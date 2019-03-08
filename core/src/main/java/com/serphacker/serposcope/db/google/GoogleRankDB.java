@@ -8,37 +8,31 @@
 package com.serphacker.serposcope.db.google;
 
 import com.google.inject.Singleton;
-import com.mysema.commons.lang.CloseableIterator;
 import com.querydsl.core.QueryFlag;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.sql.SQLBindings;
 import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
-import com.querydsl.sql.dml.SQLMergeBatch;
 import com.querydsl.sql.dml.SQLMergeClause;
 import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.google.GoogleBest;
 import com.serphacker.serposcope.models.google.GoogleRank;
-import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.querybuilder.QGoogleRank;
 import com.serphacker.serposcope.querybuilder.QGoogleRankBest;
 import com.serphacker.serposcope.querybuilder.QRun;
 
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.Statement;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-import java.util.regex.Pattern;
 
 @Singleton
 public class GoogleRankDB extends AbstractDB {
@@ -279,7 +273,34 @@ public class GoogleRankDB extends AbstractDB {
         }
         
         return rank;
-    }   
+    }
+    
+    public GoogleRank getDateRank(LocalDate date, int groupId, int googleTargetId, int googleSearchId){
+        GoogleRank rank = null;
+        
+        try(Connection con = ds.getConnection()){
+            
+			SubQueryExpression<Integer> subQuery = SQLExpressions
+					.select(t_rank.runId.max().as(t_rank.runId))
+					.from(t_rank)					.innerJoin(t_run)
+					.on(t_rank.groupId.eq(groupId).and(t_rank.googleTargetId.eq(googleTargetId))
+							.and(t_rank.googleSearchId.eq(googleSearchId)).and(t_run.day.eq(Date.valueOf(date)))
+							.and(t_rank.runId.eq(t_run.id)))
+					.groupBy(t_run.day, t_rank.groupId, t_rank.googleTargetId, t_rank.googleSearchId);
+            
+			Tuple tuple = new SQLQuery<Void>(con, dbTplConf).select(t_rank.all()).from(t_rank)
+					.where(t_rank.runId.in(subQuery)).where(t_rank.groupId.eq(groupId))
+					.where(t_rank.googleTargetId.eq(googleTargetId)).where(t_rank.googleSearchId.eq(googleSearchId))
+					.fetchOne();
+
+			rank = fromTuple(tuple);
+            
+        } catch(Exception ex){
+            LOG.error("SQL error", ex);
+        }
+        
+        return rank;
+    }
     
     public List<GoogleRank> list0(int runStartId, int runEndId, int groupId, int targetId){
         List<GoogleRank> ranks = new ArrayList<>();

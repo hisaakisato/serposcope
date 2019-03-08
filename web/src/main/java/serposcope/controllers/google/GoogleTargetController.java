@@ -9,7 +9,6 @@ package serposcope.controllers.google;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.base.Functions;
 import com.google.inject.Inject;
 import ninja.Result;
 import ninja.Results;
@@ -480,27 +479,27 @@ public class GoogleTargetController extends GoogleController {
     					Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
         			byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
         			out.write(bom);
-                    writer.append("date,rank,url,target,keyword,device,country,datacenter,local,custom\n");
-                    for (Run run : runs) {
-                        String day = run.getDay().toString();
+                    writer.append("date,rank,url,target,keyword,device,country,local,custom\n");
+                    for (LocalDate date : new TreeSet<LocalDate>(runs.stream().map(Run::getDay).collect(Collectors.toSet()))) {
+                        String day = date.toString();
+                        
                         for (GoogleSearch search : searches) {
-                            GoogleRank rank = googleDB.rank.getFull(run.getId(), group.getId(), target.getId(), search.getId());
-                            writer.append(day).append(",");
-                            if (rank != null) {
-                                writer.append(Integer.toString(rank.rank)).append(",");
-                                writer.append(rank.url).append(",");
-                            } else {
-                                writer.append(",").append(",");
+                            GoogleRank rank = googleDB.rank.getDateRank(date, group.getId(), target.getId(), search.getId());
+                            if (rank == null) {
+                            	continue;
                             }
+                            writer.append(day).append(",");
+                            writer.append(rank.rank == UNRANKED ? "-" : Integer.toString(rank.rank)).append(",");
+                            writer.append(rank.url == null ? "" : rank.url).append(",");
                             writer.append(StringEscapeUtils.escapeCsv(target.getName())).append(",");
                             writer.append(StringEscapeUtils.escapeCsv(search.getKeyword())).append(",");
-                            writer.append(search.getDevice() == GoogleDevice.DESKTOP ? "D" : "M").append(",");
+                            writer.append(search.getDevice() == GoogleDevice.DESKTOP ? "PC" : "SP").append(",");
                             writer.append(search.getCountry().name()).append(",");
-                            writer.append(
-                                search.getDatacenter() != null
-                                    ? StringEscapeUtils.escapeCsv(search.getDatacenter())
-                                    : ""
-                            ).append(",");
+//                            writer.append(
+//                                search.getDatacenter() != null
+//                                    ? StringEscapeUtils.escapeCsv(search.getDatacenter())
+//                                    : ""
+//                            ).append(",");
                             writer.append(
                                 search.getLocal() != null
                                     ? StringEscapeUtils.escapeCsv(search.getLocal())
