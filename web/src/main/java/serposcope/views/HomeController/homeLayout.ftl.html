@@ -18,13 +18,14 @@
     <div class="row" >
         <div class="col-xs-6" >
     	    <#if user.isAdmin()>
+	    	    <#if diskUsage?? >
             <div>
-                ${i18n("label.dbSize")} : <#if diskUsage?? >${diskUsage}<#else>${i18n("label.unavailableOnMySQL")}</#if> 
-                [<a href="${reverseRoute("admin.SettingsController", "settings")}" class="text-warning">${i18n("label.settings")?lower_case}</a>]
+                ${i18n("label.dbSize")} : ${diskUsage}
             </div>
             <div>
                 ${i18n("label.diskFree")} : <#if diskFree?? >${diskFree}<#else>${i18n("label.unavailable")}</#if>
             </div>
+    	        </#if>
             </#if>
         </div>
         <div class="col-xs-6" >
@@ -75,9 +76,7 @@
                     </#if>
                     <span class="pull-right" >
                         <#if user.isAdmin()>
-                        <a href="${reverseRoute("admin.LogController","viewLog","log",.now?date?iso_utc + ".log")}" >${i18n("label.logs")}</a>
                         <#if currentRun?? && currentRun.isRunning() >
-                        |
                         <a href="${reverseRoute("admin.TaskController","abortTask","id",currentRun.getId(),"_xsrf", session.___AT)}" class="text-danger" >
                            ${i18n("label.abort")}</a>
                         </#if>

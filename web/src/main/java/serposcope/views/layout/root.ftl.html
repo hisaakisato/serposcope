@@ -44,6 +44,9 @@
 
                 <ul class="nav navbar-top-links navbar-left">
                     <li>
+                        <a href="${reverseRoute("HomeController","home")}" >${i18n("label.home")}</a>
+                    </li>
+                    <li>
                         <a href="${reverseRoute("GroupController","groups")}" >${i18n("label.groups")}</a>
                     </li>
                     <li>
@@ -70,12 +73,6 @@
                 </ul>      
 
                 <ul class="hidden-xs nav navbar-top-links navbar-right">
-                    <li>
-                        <a href="https://serposcope.serphacker.com/doc/?pk_campaign=serposcope" target="_blank" >docs</a>
-                    </li>                    
-                    <li>
-                        <a href="https://forum.serphacker.com/?pk_campaign=serposcope" target="_blank" >support</a>
-                    </li>
                     <li class="dropdown">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                             ${i18n("label.account")} <span class="caret"></span>
