@@ -99,6 +99,10 @@ public class GoogleTask extends AbstractTask {
         this.scrapClientFactory = scrapClientFactory;
         this.googleDB = googleDB;
         this.updateRun = run.getId() == 0 ? false : true;
+        if (this.updateRun) {
+        	this.totalSearch = run.getTotal();
+        	this.searchDone.set(run.getDone());
+        }
         
         httpUserAgent = UserAgentGenerator.getUserAgent(true);
         httpTimeoutMS = ScrapClient.DEFAULT_TIMEOUT_MS;
@@ -407,11 +411,11 @@ public class GoogleTask extends AbstractTask {
     	int targets = targetsByGroup.values()
     			.stream().collect(Collectors.summingInt(List::size));
     	int searched = searchDone.intValue();
-        LOG.info("[Task Finished] status: {} "
+        LOG.info("[Task Finished] id: {} status: {} "
         		+ "duration: {} "
         		+ "captchas: {} errors: {} "
         		+ "groups: {} searched: {} remained: {} targets: {}",
-        		run.getStatus(),
+        		run.getId(), run.getStatus(),
         		String.format("%.2f", run.getDurationMs() * 1.0 / 1000),
         		run.getCaptchas(), run.getErrors(),
         		groupCount, searched, totalSearch - searched, targets);
