@@ -9,6 +9,8 @@ package com.serphacker.serposcope.db.base;
 
 import com.google.inject.Singleton;
 import com.querydsl.core.Tuple;
+import com.querydsl.core.types.SubQueryExpression;
+import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
@@ -17,9 +19,13 @@ import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.User;
+import com.serphacker.serposcope.querybuilder.QGoogleSearch;
+import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
+import com.serphacker.serposcope.querybuilder.QGoogleTarget;
 import com.serphacker.serposcope.querybuilder.QGroup;
 import com.serphacker.serposcope.querybuilder.QUserGroup;
 import java.sql.Connection;
+import java.sql.Date;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +35,8 @@ public class GroupDB extends AbstractDB {
     
     QGroup t_group = QGroup.group;
     QUserGroup t_user_group = QUserGroup.userGroup;
+    QGoogleSearchGroup t_searchGroup = QGoogleSearchGroup.googleSearchGroup;
+    QGoogleTarget t_target = QGoogleTarget.googleTarget;
 
     public int insert(Group group){
         int id = 0;
@@ -122,9 +130,18 @@ public class GroupDB extends AbstractDB {
         List<Group> groups = new ArrayList<>();
         try(Connection con = ds.getConnection()){
             
-            SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-                .select(t_group.all())
-                .from(t_group);
+			SubQueryExpression<Tuple> subQuery = SQLExpressions
+					.select(t_target.groupId, t_target.groupId.count().castToNum(Integer.class).as(t_target.id))
+					.from(t_target).groupBy(t_target.groupId);
+
+			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+					.select(t_group.id, t_group.moduleId, t_group.name, t_group.sundayEnabled, t_group.mondayEnabled,
+							t_group.tuesdayEnabled, t_group.wednesdayEnabled, t_group.thursdayEnabled,
+							t_group.fridayEnabled, t_group.saturdayEnabled,
+							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
+							t_target.id)
+					.from(t_group).leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id);
             
             if(module != null){
                 query.where(t_group.moduleId.eq(module.ordinal()));
@@ -172,9 +189,18 @@ public class GroupDB extends AbstractDB {
         List<Group> groups = new ArrayList<>();
         try(Connection con = ds.getConnection()){
             
-            SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-                .select(t_group.all())
-                .from(t_group);
+			SubQueryExpression<Tuple> subQuery = SQLExpressions
+					.select(t_target.groupId, t_target.groupId.count().castToNum(Integer.class).as(t_target.id))
+					.from(t_target).groupBy(t_target.groupId);
+
+			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+					.select(t_group.id, t_group.moduleId, t_group.name, t_group.sundayEnabled, t_group.mondayEnabled,
+							t_group.tuesdayEnabled, t_group.wednesdayEnabled, t_group.thursdayEnabled,
+							t_group.fridayEnabled, t_group.saturdayEnabled,
+							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
+							t_target.id)
+					.from(t_group).leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id);
             
             if(user != null && !user.isAdmin()){
                 query.join(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
@@ -198,11 +224,21 @@ public class GroupDB extends AbstractDB {
         Group group = null;
         try(Connection con = ds.getConnection()){
             
-            Tuple tuple = new SQLQuery<Void>(con, dbTplConf)
-                .select(t_group.all())
-                .from(t_group)
-                .where(t_group.id.eq(groupId))
-                .fetchFirst();
+        	SubQueryExpression<Tuple> subQuery = SQLExpressions
+					.select(t_target.groupId, t_target.groupId.count().castToNum(Integer.class).as(t_target.id))
+					.from(t_target).where(t_target.groupId.eq(groupId)).groupBy(t_target.groupId);
+
+			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+					.select(t_group.id, t_group.moduleId, t_group.name, t_group.sundayEnabled, t_group.mondayEnabled,
+							t_group.tuesdayEnabled, t_group.wednesdayEnabled, t_group.thursdayEnabled,
+							t_group.fridayEnabled, t_group.saturdayEnabled,
+							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
+							t_target.id)
+					.from(t_group).leftJoin(t_searchGroup)
+					.on(t_group.id.eq(groupId).and(t_group.id.eq(t_searchGroup.groupId))).leftJoin(subQuery, t_target)
+					.on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id);			
+
+			Tuple tuple = query.fetchFirst();
 
             group = fromTuple(tuple);
             
@@ -230,6 +266,8 @@ public class GroupDB extends AbstractDB {
 		group.setThursdayEnabled(tuple.get(t_group.thursdayEnabled) == null ? false : tuple.get(t_group.thursdayEnabled));
 		group.setFridayEnabled(tuple.get(t_group.fridayEnabled) == null ? false : tuple.get(t_group.fridayEnabled));
 		group.setSaturdayEnabled(tuple.get(t_group.saturdayEnabled) == null ? false : tuple.get(t_group.saturdayEnabled));
+		group.setTargets(tuple.get(t_target.id));
+		group.setSearches(tuple.get(t_searchGroup.googleSearchId));
         return group;
     }
     

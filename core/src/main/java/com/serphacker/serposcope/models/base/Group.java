@@ -34,6 +34,8 @@ public class Group {
     boolean thursdayEnabled;
     boolean fridayEnabled;
     boolean saturdayEnabled;
+    Integer targets;
+    Integer searches;
 
     public Group(int id, Module module, String name) {
         this.id = id;
@@ -124,6 +126,22 @@ public class Group {
 
 	public void setSaturdayEnabled(boolean saturdayEnabled) {
 		this.saturdayEnabled = saturdayEnabled;
+	}
+
+	public Integer getTargets() {
+		return targets;
+	}
+
+	public void setTargets(Integer targets) {
+		this.targets = targets;
+	}
+
+	public Integer getSearches() {
+		return searches;
+	}
+
+	public void setSearches(Integer searches) {
+		this.searches = searches;
 	}
 
 	@Override

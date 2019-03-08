@@ -40,8 +40,10 @@
                         </div>
                         <table class="table table-condensed table-bordered" >
                             <tr>
-                                <th class="width30" style="white-space:nowrap;tex-align:center;vertical-align:middle;" rowspan=2>#</th>
-                                <th style="white-space:nowrap;tex-align:center;vertical-align:middle;" rowspan=2>${i18n("label.name")}</th>
+                                <th class="width30" style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>#</th>
+                                <th style="white-space:nowrap;vertical-align:middle;" rowspan=2>${i18n("label.name")}</th>
+                                <th class="width30" style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>${i18n("label.websites")}</th>
+                                <th class="width30" style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>${i18n("label.searches")}</th>
                                 <th class="day-of-the-week-schedule" colspan=7>${i18n("label.schedule")}</th>
                             </tr>
                             <tr>
@@ -79,6 +81,8 @@
                                 <td>
                                 	<a href="${fu.groupLink(group)}" >${group.getName()}</a>
                                 </td>
+                                <td style="text-align:center;">${group.targets!}</td>
+                                <td style="text-align:center;">${group.searches!}</td>
                                 <td class="day-of-the-week-schedule">
                                 	<#if (group.isSundayEnabled())>
                                 	<i class="glyphicon glyphicon-ok-sign"></i>
