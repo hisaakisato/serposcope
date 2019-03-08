@@ -141,7 +141,8 @@ public class GroupDB extends AbstractDB {
 							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
 							t_target.id)
 					.from(t_group).leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
-					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id);
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id)
+					.orderBy(t_group.name.asc());
             
             if(module != null){
                 query.where(t_group.moduleId.eq(module.ordinal()));
@@ -200,7 +201,8 @@ public class GroupDB extends AbstractDB {
 							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
 							t_target.id)
 					.from(t_group).leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
-					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id);
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id)
+					.orderBy(t_group.name.asc());
             
             if(user != null && !user.isAdmin()){
                 query.join(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
