@@ -30,9 +30,9 @@
                         class="btn-delete-target" data-id="${target.getId()}" >
                         <i class="glyphicon glyphicon-remove text-danger"></i></a>
                     <a  href="${reverseRoute("google.GoogleGroupController","renameTarget","groupId",group.getId())}" 
-                        data-toggle="tooltip" title="${i18n("label.rename")}" 
+                        data-toggle="tooltip" title="${i18n("label.edit")}" 
                         class="btn-rename-target" data-id="${target.getId()}" >
-                        <i class="glyphicon glyphicon-edit"></i></a>                                        
+                        <i class="glyphicon glyphicon-pencil"></i></a>                                        
                 </td>
                 <!--<td></td>-->                                
                 <td><a class="target-name" href="${reverseRoute("google.GoogleTargetController", "target", 
