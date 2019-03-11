@@ -24,7 +24,7 @@
 <div class="row">
     <div class="col-sm-6" >
         <ol class="breadcrumb" >
-            <li><a href="/"><i class="fa fa-home" ></i></a></li>
+            <li><a href="${reverseRoute("GroupController","groups")}"><i class="fa fa-cubes" ></i></a></li>
             <li><a href="${reverseRoute("google.GoogleGroupController","view","groupId",group.getId())}">${group.getName()}</a></li>
             <li><#noescape>${fu.gsIcoInfos(search)}</#noescape>
                 <a href="${reverseRoute("google.GoogleSearchController","search","groupId",group.getId(), "searchId", search.getId())}">${search.getKeyword()}</a></li>
