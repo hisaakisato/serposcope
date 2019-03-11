@@ -156,7 +156,7 @@ serposcope.googleTargetController = function () {
         $('#btn-add-event').click(eventCalendarClick);
 
         if ($('#csp-vars').attr('data-min-date') !== "") {
-            $('#daterange').removeAttr("disabled");
+            $('#daterange').removeAttr("disabled").attr('readonly', true).css('background-color', '#ffffff');
             var maxDate = $('#csp-vars').attr('data-max-date');
             $('#daterange').daterangepicker({
                 "ranges": {

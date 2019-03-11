@@ -285,7 +285,7 @@ serposcope.googleSearchController = function () {
         $('.btn-add-favorite').click(btnAddFavorite);
         
         if($('#csp-vars').attr('data-min-date') !== ""){
-            $('#daterange-search').removeAttr("disabled");
+            $('#daterange-search').removeAttr("disabled").attr('readonly', true).css('background-color', '#ffffff');
             var maxDate = $('#csp-vars').attr('data-max-date');
             $('#daterange-search').daterangepicker({
                 "ranges": {
