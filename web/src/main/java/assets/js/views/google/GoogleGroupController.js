@@ -51,6 +51,11 @@ serposcope.googleGroupController = function () {
         return false;
     };    
     
+    var showExportSerpsModal = function(elt){
+        $('#modal-export-serps').modal();
+        return false;
+    };    
+    
     var deleteTarget = function(elt){
         var id = $(elt.currentTarget).attr("data-id");
         var name = $("#target-" + id +" .target-name").html();
@@ -491,6 +496,7 @@ serposcope.googleGroupController = function () {
         $('#btn-chk-search').click(checksearch);
         $('#btn-chk-target').click(checkTarget);
         $('#btn-export-searches').click(exportSearches);
+        $('#btn-export-serps').click(showExportSerpsModal);
         $('#btn-export-targets').click(exportTargets);
         $('#btn-delete-searches').click(deleteSearches);
         $('#btn-delete-targets').click(deleteTargets);

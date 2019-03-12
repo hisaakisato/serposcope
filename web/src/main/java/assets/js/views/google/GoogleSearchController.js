@@ -249,6 +249,16 @@ serposcope.googleSearchController = function () {
         return false;
     };
     
+    var exportSerpsClick = function(){
+    	var drp = $('#daterange-search').data('daterangepicker');
+    	$('#daterange-serps').data('daterangepicker').setStartDate(drp.startDate);
+    	$('#daterange-serps').data('daterangepicker').setEndDate(drp.endDate);
+    	$('#daterange-serps-startdate').val(drp.startDate)
+    	$('#daterange-serps-enddate').val(drp.endDate)
+        $('#modal-export-serps').modal();
+        return false;
+    };
+    
     var renderSearch = function () {
         switch($('#csp-vars').attr("data-display-mode")){
             case "split":
@@ -278,6 +288,7 @@ serposcope.googleSearchController = function () {
             }
         });        
         $('#btn-add-event').click(eventCalendarClick);        
+        $('#btn-export-serps').click(exportSerpsClick);        
         
         $('.btn-draw-top10').click(drawTop10Click);
         $('.btn-draw-chart').click(drawDomainClick);
@@ -289,6 +300,7 @@ serposcope.googleSearchController = function () {
             var maxDate = $('#csp-vars').attr('data-max-date');
             $('#daterange-search').daterangepicker({
                 "ranges": {
+                    'Last day': [moment(maxDate), moment(maxDate)],
                     'Last 30 days': [moment(maxDate).subtract(30, 'days'), moment(maxDate)],
                     'Current Month': [moment(maxDate).startOf('month'), moment(maxDate).endOf('month')],
                     'Previous Month': [moment(maxDate).subtract(1, 'month').startOf('month'), moment(maxDate).subtract(1, 'month').endOf('month')]
@@ -302,6 +314,26 @@ serposcope.googleSearchController = function () {
                 minDate: $('#csp-vars').attr('data-min-date'),
                 maxDate: $('#csp-vars').attr('data-max-date')
             }, refreshSearch);
+            $('#daterange-serps').removeAttr("disabled").attr('readonly', true).css('background-color', '#ffffff');
+            $('#daterange-serps').daterangepicker({
+                "ranges": {
+                    'Last day': [moment(maxDate), moment(maxDate)],
+                    'Last 30 days': [moment(maxDate).subtract(30, 'days'), moment(maxDate)],
+                    'Current Month': [moment(maxDate).startOf('month'), moment(maxDate).endOf('month')],
+                    'Previous Month': [moment(maxDate).subtract(1, 'month').startOf('month'), moment(maxDate).subtract(1, 'month').endOf('month')]
+                },
+                locale: {
+                  format: 'YYYY-MM-DD'
+                },
+                showDropdowns: true,
+                startDate: $('#csp-vars').attr('data-start-date'),
+                endDate: $('#csp-vars').attr('data-end-date'),
+                minDate: $('#csp-vars').attr('data-min-date'),
+                maxDate: $('#csp-vars').attr('data-max-date')
+            }, function(startDate, endDate) {
+            	$('#daterange-serps-startdate').val(startDate)
+            	$('#daterange-serps-enddate').val(endDate)
+            });
         }
         
         var jsonData = JSON.parse($('#csp-vars').attr('data-chart'));

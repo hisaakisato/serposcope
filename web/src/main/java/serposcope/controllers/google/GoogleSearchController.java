@@ -355,5 +355,28 @@ public class GoogleSearchController extends GoogleController {
 		return Results.internalServerError();
     }    
     
-    
+    public Result export(Context context, 
+    		@Param("searchId") Integer searchId,
+            @Param("targetOnly") boolean targetOnly,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
+        ){
+    	try {
+			StringBuilder builder = new StringBuilder("export");
+			byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+			byte[] bytes = builder.toString().getBytes("UTF-8");
+			byte[] result = new byte[bom.length + bytes.length];
+			System.arraycopy(bom, 0, result, 0, bom.length);
+			System.arraycopy(bytes, 0, result, bom.length, bytes.length);
+
+			String encodedFilename = "rank.csv";
+			return Results.ok().contentType(Result.APPLICATION_OCTET_STREAM)
+					.addHeader("Content-Disposition",
+							"attachment; " + "filename=\"ranks.csv\"; " + "filename*=\"UTF-8''" + encodedFilename)
+					.renderRaw(result);
+		} catch (UnsupportedEncodingException e) {
+		}
+		return Results.internalServerError();
+
+    }
 }

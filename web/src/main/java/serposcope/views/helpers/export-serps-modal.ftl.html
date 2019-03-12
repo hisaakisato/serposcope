@@ -1,0 +1,42 @@
+<div id="modal-export-serps" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="${reverseRoute("google.GoogleSearchController","export","groupId",group.getId())}" >
+                  <@authenticityForm/>
+                  <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">${i18n("google.search.exportSERP")}</h4>
+                </div>
+
+                <div class="modal-body">
+
+                    <#if search?? >
+                        <label for="daterange-serps">${i18n("label.keyword")}</label>
+                        <div class="form-control" style="position: relative; padding-right: 80px">
+	                    	<div style="display: inline-block; width: 100%; text-overflow: ellipsis">${search.getKeyword()}</div>
+	                    	<div style="display: inline-block; position: absolute; top: 6px; right: 4px">
+		                        <#noescape>${fu.gsIcoInfos(search)}</#noescape>
+	                    	</div>
+	                    </div>
+                        <input type="hidden" name="searchId" value="${search.getId()}" />
+                    </#if>
+                    
+                    <div class="form-group" >
+                        <label for="daterange-serps">${i18n("label.date")}</label>
+		                <div class="input-group" style="width: 190px;">
+		                    <input id="daterange-serps" type="text" class="form-control" value="${i18n("label.noDataAvailable")}" disabled />
+		                </div>
+		                <input id="daterange-serps-startdate" name="startDate" type="hidden"/>		                
+		                <input id="daterange-serps-enddate" name="endDate" type="hidden"/>		                
+                    </div>                
+                    <div class="checkbox"><label><input type="checkbox" name="targetOnly" value="true" checked>${i18n("label.exportRegisteredOnly")}</label></div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.cancel")}</button>
+                    <input type="submit" class="btn btn-primary" value="${i18n("label.export")}" onclick="$(this.form).closest('.modal').modal('hide')"/>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

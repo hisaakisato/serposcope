@@ -62,6 +62,10 @@
                             data-mode="table" data-toggle="tooltip" title="serp" >
                         <span class="glyphicon glyphicon-list-alt"></span>
                     </button>
+                    <a href="#" id="btn-export-serps" class="btn btn-default" data-toggle="tooltip" data-container="body" 
+                       title="${i18n("label.export")}" >
+                       <span class="fa fa-download"></span>
+                    </a>
                 </div>
             </div>
         </div>
@@ -91,10 +95,6 @@
                         | 
                         <a href="#" class="btn-draw-top10" data-toggle="tooltip" title="${i18n("google.search.drawTop10")}" >
                              <i class="fa fa-fw fa-line-chart" ></i> TOP 10
-                        </a>
-                        |
-                        <a href="#" data-toggle="modal" data-target="#modal-export-serp" data-toggle="tooltip" title="${i18n("google.search.exportSERP")}" >
-                            <span class="glyphicon glyphicon-download-alt"></span>
                         </a>
                     </button>
                     </th>
@@ -160,6 +160,7 @@
 
 <#include "../../helpers/new-target.ftl.html" />
 <#include "../../helpers/add-event-modal.ftl.html" >
+<#include "../../helpers/export-serps-modal.ftl.html" >
 <div id="modal-export-serp" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">

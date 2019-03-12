@@ -141,6 +141,11 @@ serposcope.googleTargetController = function () {
         return false;
     };
 
+    var exportSerpsClick = function () {
+        $('#modal-export-serps').modal();
+        return false;
+    };
+
     var render = function () {
         $(window).bind("load resize", function (evt) {
             resize();
@@ -154,6 +159,7 @@ serposcope.googleTargetController = function () {
             }
         });
         $('#btn-add-event').click(eventCalendarClick);
+        $('#btn-export-serps').click(exportSerpsClick);
 
         if ($('#csp-vars').attr('data-min-date') !== "") {
             $('#daterange').removeAttr("disabled").attr('readonly', true).css('background-color', '#ffffff');
