@@ -153,6 +153,7 @@ public class GoogleSerpDB extends AbstractDB {
 					.where(Expressions.list(t_serp.runId, t_serp.googleSearchId).in(subQuery))
 					.orderBy(t_serp.runId.asc());
 
+			query.setStatementOptions(StatementOptions.builder().setFetchSize(250).build());
 			CloseableIterator<Tuple> iterate = query.iterate();
 
 			while (iterate.hasNext()) {
