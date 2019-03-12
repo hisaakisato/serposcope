@@ -253,8 +253,8 @@ serposcope.googleSearchController = function () {
     	var drp = $('#daterange-search').data('daterangepicker');
     	$('#daterange-serps').data('daterangepicker').setStartDate(drp.startDate);
     	$('#daterange-serps').data('daterangepicker').setEndDate(drp.endDate);
-    	$('#daterange-serps-startdate').val(drp.startDate)
-    	$('#daterange-serps-enddate').val(drp.endDate)
+    	$('#daterange-serps-startdate').val(drp.startDate.format('YYYY-MM-DD'))
+    	$('#daterange-serps-enddate').val(drp.endDate.format('YYYY-MM-DD'))
         $('#modal-export-serps').modal();
         return false;
     };

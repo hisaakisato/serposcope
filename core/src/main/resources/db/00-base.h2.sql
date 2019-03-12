@@ -71,6 +71,7 @@ create table `RUN` (
 create index RUN_MODULE_ID_DAY on RUN(module_id,day);
 create index RUN_USER_ID on RUN(user_id);
 create index RUN_GROUP_ID on RUN(group_id);
+create index RUN_DAY on RUN(day);
 
 drop table if exists `PROXY`;
 create table `PROXY` (

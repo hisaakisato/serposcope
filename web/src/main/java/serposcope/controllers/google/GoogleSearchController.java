@@ -10,6 +10,7 @@ package serposcope.controllers.google;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import ninja.Result;
 import ninja.Results;
@@ -25,31 +26,45 @@ import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.google.GoogleBest;
 import com.serphacker.serposcope.models.google.GoogleRank;
 import static com.serphacker.serposcope.models.google.GoogleRank.UNRANKED;
-import com.serphacker.serposcope.models.google.GoogleSettings;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleSerp;
 import com.serphacker.serposcope.models.google.GoogleSerpEntry;
 import com.serphacker.serposcope.models.google.GoogleTarget;
+import com.serphacker.serposcope.scraper.google.GoogleDevice;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import ninja.Context;
 import ninja.Router;
 import ninja.i18n.Messages;
 import ninja.params.Param;
 import ninja.params.PathParam;
+import ninja.utils.ResponseStreams;
+
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 @Singleton
 public class GoogleSearchController extends GoogleController {
     
+    private static final Logger LOG = LoggerFactory.getLogger(GoogleSearchController.class);
+
     @Inject
     GoogleDB googleDB;
     
@@ -355,28 +370,76 @@ public class GoogleSearchController extends GoogleController {
 		return Results.internalServerError();
     }    
     
-    public Result export(Context context, 
-    		@Param("searchId") Integer searchId,
+    public Result export(Context context,
+    		@Param("searchId") String[] ids,
             @Param("targetOnly") boolean targetOnly,
-            @Param("startDate") String startDate,
-            @Param("endDate") String endDate
+            @Param("startDate") String start,
+            @Param("endDate") String end
         ){
-    	try {
-			StringBuilder builder = new StringBuilder("export");
-			byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
-			byte[] bytes = builder.toString().getBytes("UTF-8");
-			byte[] result = new byte[bom.length + bytes.length];
-			System.arraycopy(bom, 0, result, 0, bom.length);
-			System.arraycopy(bytes, 0, result, bom.length, bytes.length);
+    	
+		LocalDate startDate = start == null ? LocalDate.now()
+				: LocalDate.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		LocalDate endDate = end == null ? LocalDate.now()
+				: LocalDate.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+		List<Integer> searchIds = Arrays.stream(ids).map(Integer::parseInt).collect(Collectors.toList());
+        Group group = context.getAttribute("group", Group.class);
+		List<GoogleTarget> targets = googleDB.target.list(Arrays.asList(group.getId()));
 
-			String encodedFilename = "rank.csv";
-			return Results.ok().contentType(Result.APPLICATION_OCTET_STREAM)
-					.addHeader("Content-Disposition",
-							"attachment; " + "filename=\"ranks.csv\"; " + "filename*=\"UTF-8''" + encodedFilename)
-					.renderRaw(result);
-		} catch (UnsupportedEncodingException e) {
-		}
-		return Results.internalServerError();
+        return Results.ok()
+                .text()
+                .addHeader("Content-Disposition", "attachment; filename=\"export.csv\"")
+                .render((Context ctx, Result result) -> {
+                    ResponseStreams stream = ctx.finalizeHeaders(result);
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
+                    try (OutputStream out = stream.getOutputStream();
+        					Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
+            			// BOM
+                    	byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
+            			out.write(bom);
+            			// Header
+                        writer.append("date,rank,url,target,keyword,device,country,local,custom\n");
+                        // SERP
+                        googleDB.serp.stream(startDate, endDate, group, searchIds, serp -> {                        	
+                            try {
+                            	GoogleSearch search = serp.getSearch();
+                            	if (search == null) {
+                            		return;
+                            	}
+                            	String date = serp.getRunDay().toLocalDate().format(dtf);
+                            	StringBuilder sb = new StringBuilder();
+                            	sb.append("\"").append(search.getKeyword()).append("\",");
+                            	sb.append(search.getDevice() == GoogleDevice.DESKTOP ? "PC" : "SP").append(",");
+                            	sb.append("\"").append(search.getCountry()).append("\",");
+                            	sb.append("\"").append(search.getLocal()).append("\",");
+                            	sb.append("\"").append(search.getCustomParameters()).append("\"\n");
+                            	String tailer = sb.toString();
+                            	List<GoogleSerpEntry> entries = serp.getEntries();
+                            	for (int i = 0; i < entries.size(); i++) {
+                            		GoogleSerpEntry entry = entries.get(i);
+                            		String targetName = null;
+                            		for (GoogleTarget target : targets) {
+                                        if (target.match(entry.getUrl())) {
+                                        	targetName = target.getName();
+                                        	break;
+                                        }
+                            		}
+                            		if (targetOnly && targetName == null) {
+                            			continue;
+                            		}
+                            		writer.append(date).append(",");
+                            		writer.append(String.valueOf(i + 1)).append(",");
+                            		writer.append(entry.getUnicodeUrl()).append(",");
+                            		writer.append("\"").append(targetName == null ? "" : targetName).append("\",");
+                            		writer.append(tailer);
+                            	}
+							} catch (IOException e) {
+		                        LOG.error("error while exporting csv", e);
+							}
+                        });
 
+                    } catch (IOException e) {
+                        LOG.error("error while exporting csv", e);
+                    }
+                });
     }
 }

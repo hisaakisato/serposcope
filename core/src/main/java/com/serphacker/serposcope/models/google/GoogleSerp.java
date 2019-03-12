@@ -27,6 +27,7 @@ public class GoogleSerp {
     int googleSearchId;
     LocalDateTime runDay;
     List<GoogleSerpEntry> entries = new ArrayList<>();
+    GoogleSearch search;
 
     public GoogleSerp(int runId, int googleSearchId, LocalDateTime runDay) {
         this.runId = runId;
@@ -57,7 +58,16 @@ public class GoogleSerp {
         this.runDay = runDay;
     }
     
-    public void setSerializedEntries(byte[] data) throws IOException{
+    
+    public GoogleSearch getSearch() {
+		return search;
+	}
+
+	public void setSearch(GoogleSearch search) {
+		this.search = search;
+	}
+
+	public void setSerializedEntries(byte[] data) throws IOException{
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
         DataInputStream dis = new DataInputStream(bais);
         
