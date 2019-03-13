@@ -135,22 +135,23 @@ public class GoogleSerpDB extends AbstractDB {
 	public void stream(Integer firstRun, Integer lastRun, int googleSearchId, Consumer<GoogleSerp> callback) {
 		try (Connection con = ds.getConnection()) {
 
-			BooleanExpression exp = t_rank.googleSearchId.eq(googleSearchId).and(t_rank.runId.eq(t_run.id));
-
-			if (firstRun != null) {
-				exp = t_rank.runId.goe(firstRun).and(exp);
+			BooleanExpression exp = t_serp.googleSearchId.eq(googleSearchId);
+			if (firstRun != null && lastRun != null) {
+				exp = exp.and(t_run.id.between(firstRun, lastRun));
+			} else if (firstRun != null) {
+				exp = exp.and(t_run.id.goe(firstRun));
+			} else if (lastRun != null) {
+				exp = exp.and(t_run.id.loe(lastRun));
 			}
 
-			if (lastRun != null) {
-				exp = t_rank.runId.loe(lastRun).and(exp);
-			}
-
-			SubQueryExpression<Tuple> subQuery = SQLExpressions
-					.select(t_rank.runId.max().as(t_rank.runId), t_rank.googleSearchId).from(t_rank).innerJoin(t_run)
-					.on(exp).groupBy(t_run.day, t_rank.googleSearchId);
+			SubQueryExpression<Integer> subQuery = SQLExpressions
+					.select(t_serp.runId.max().as(t_serp.runId)).from(t_serp).innerJoin(t_run)
+					.on(t_serp.runId.eq(t_run.id).and(exp))
+					.innerJoin(t_ggroup).on(t_ggroup.groupId.eq(t_ggroup.groupId))
+					.groupBy(t_run.day);
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf).select(t_serp.all()).from(t_serp)
-					.where(Expressions.list(t_serp.runId, t_serp.googleSearchId).in(subQuery))
+					.where(t_serp.runId.in(subQuery).and(t_serp.googleSearchId.eq(googleSearchId)))
 					.orderBy(t_serp.runId.asc());
 
 			query.setStatementOptions(StatementOptions.builder().setFetchSize(250).build());

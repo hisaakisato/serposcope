@@ -40,10 +40,12 @@ import java.io.Writer;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -190,9 +192,32 @@ public class GoogleSearchController extends GoogleController {
         
         final int[] maxRank = new int[1];
         
+        LinkedList<LocalDate> stack = new LinkedList<>();
         googleDB.serp.stream(firstRun.getId(), lastRun.getId(), searchId, (GoogleSerp serp) -> {
             
-            builder.append('[').append(serp.getRunDay().toEpochSecond(ZoneOffset.UTC)*1000l).append(',');
+        	if (stack.isEmpty()) {
+        		stack.push(serp.getRunDay().toLocalDate());
+        	}
+        	LocalDate date = stack.pop();
+        	while (date.isBefore(serp.getRunDay().toLocalDate())) {
+    			builder.append('[')
+				.append(date.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000l)
+				.append(',');
+                // calendar
+                builder.append("null").append(",");
+                for (int i = 0; i < targets.size(); i++) {
+                    builder.append("null,");
+                }
+                if(builder.charAt(builder.length()-1) == ','){
+                    builder.setCharAt(builder.length()-1, ']');
+                }
+                builder.append(',');
+                date = date.plusDays(1);
+    		}
+			builder.append('[')
+			.append(date.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000l)
+			.append(',');
+            stack.push(date.plusDays(1));
             
             // calendar
             builder.append("null").append(",");
@@ -206,7 +231,7 @@ public class GoogleSearchController extends GoogleController {
                     }
                 }
                 
-                builder.append(position == UNRANKED ? "null" : position).append(',');
+                builder.append(position == UNRANKED ? "NaN" : position).append(',');
                 if(position != UNRANKED && position > maxRank[0]){
                     maxRank[0] = position;
                 }
