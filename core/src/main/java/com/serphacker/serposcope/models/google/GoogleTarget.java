@@ -10,6 +10,7 @@ package com.serphacker.serposcope.models.google;
 import static com.serphacker.serposcope.models.google.GoogleTarget.PatternType.DOMAIN;
 import static com.serphacker.serposcope.models.google.GoogleTarget.PatternType.SUBDOMAIN;
 import java.util.Objects;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -23,6 +24,8 @@ public class GoogleTarget {
     };
     
     protected final static Pattern PATTERN_DOMAIN = Pattern.compile("^[a-zA-Z0-9-.]{1,61}\\.[a-zA-Z]{2,}$");
+
+    protected final static Pattern PATTERN_SCHEME = Pattern.compile("^(https?://)(.*)");
 
     int id;
     int groupId;
@@ -83,6 +86,10 @@ public class GoogleTarget {
         }
         
         if(DOMAIN.equals(type) || SUBDOMAIN.equals(type)){
+        	Matcher m = PATTERN_SCHEME.matcher(pattern);
+        	if (m.find()) {
+        		return PATTERN_DOMAIN.matcher(m.group(2)).find();
+        	}
             return PATTERN_DOMAIN.matcher(pattern).find();
         }
         
@@ -97,11 +104,19 @@ public class GoogleTarget {
     }
     
     public static Pattern compile(PatternType type, String pattern) throws PatternSyntaxException {
+    	String scheme = "https?://";
+    	if (type != PatternType.REGEX) {
+    		Matcher m = PATTERN_SCHEME.matcher(pattern);
+    		if (m.find()) {
+    			scheme = m.group(1);
+    			pattern = m.group(2);
+    		}
+    	}
         switch(type){
             case DOMAIN:
-                return Pattern.compile("^https?://" + Pattern.quote(pattern) + "(/|$)");
+                return Pattern.compile("^" + scheme + Pattern.quote(pattern) + "(/|$)");
             case SUBDOMAIN:
-                return Pattern.compile("^https?://([^/]+\\.)?" + Pattern.quote(pattern) + "(/|$)");
+                return Pattern.compile("^" + scheme + "([^/]+\\.)?" + Pattern.quote(pattern) + "(/|$)");
             default:
                 return Pattern.compile(pattern);
         }
