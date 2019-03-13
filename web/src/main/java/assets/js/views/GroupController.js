@@ -16,23 +16,15 @@ serposcope.GroupController = function () {
     };
     
     var deleteGroup = function(elt) {
-        var name = $(elt.currentTarget).attr("data-name");
-        var href= $(elt.currentTarget).attr("href");
-        
-        if(!confirm("Delete group \"" + name + "\" ?\nAll history will be erased.")){
-            return false;
-        }
-        
-        $('<form>', {
-            'action': href,
-            'method': 'post',
-            'target': '_top'
-        }).append($('<input>', {
-            'name': '_xsrf',
-            'value': $('#_xsrf').attr("data-value"),
-            'type': 'hidden'
-        })).appendTo(document.body).submit();
-        
+        $('.modal').modal('hide');
+        var target = $(elt.currentTarget);
+        var href = target.attr("href");
+        var name = target.attr("data-name");
+        var dialog = $('#modal-delete-group');
+        dialog.find('form').attr('action', target.attr("href"));
+        dialog.find('#delete-group-name').text(target.attr("data-name"));
+        dialog.find('[name=_xsrf]').val($('#_xsrf').attr("data-value"));
+        dialog.modal();
         return false;
     };
     

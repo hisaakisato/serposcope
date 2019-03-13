@@ -1007,6 +1007,14 @@ ul.typeahead.dropdown-menu {
     box-sizing: content-box;
 }
 
+.no-user-select {
+    -webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+}
+
 .day-of-the-week {
 	position: relative;
     display: inline-block;

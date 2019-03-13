@@ -142,6 +142,29 @@
     </div>
 </div>
 
+<div id="modal-delete-group" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title no-user-select">${i18n("google.group.deleteGroup")} [ <span id="delete-group-name"></span> ]</h4>                  
+                  <input type="hidden" name="_xsrf">
+                </div>
+
+                <div class="modal-body">
+                   <label for="deleteGroupName">${i18n("label.name")}</label>
+                   <input id="deleteGroupName" name="name" class="form-control">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>
+                    <input type="submit" class="btn btn-primary" value="${i18n("label.delete")}" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <div class="csp-script" data-src="GroupController.render" ></div>
 
 </@>

@@ -480,14 +480,22 @@ public class GoogleGroupController extends GoogleController {
     @FilterWith({
         XSRFFilter.class
     })
-    public Result delete(Context context) {
+    public Result delete(Context context, @Param("name") String name) {
         FlashScope flash = context.getFlashScope();
         Group group = context.getAttribute("group", Group.class);
+        if (name == null || name.isEmpty()) {
+            flash.error("admin.google.groupNameMissing");
+            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+        }
+        if (!name.equals(group.getName())) {
+            flash.error("admin.google.groupNameNotMatch");
+            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+        }
 
         // TODO FIX ME locking until database modification done
         if (taskManager.isGoogleRunning()) {
             flash.error("admin.google.errorTaskRunning");
-            return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
         }
 
         List<GoogleTarget> targets = googleDB.target.list(Arrays.asList(group.getId()));
@@ -506,11 +514,10 @@ public class GoogleGroupController extends GoogleController {
         baseDB.user.delPerm(group);
         if (!baseDB.group.delete(group)) {
             flash.error("admin.google.failedDeleteGroup");
-            return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
         } else {
             flash.success("admin.google.groupDeleted");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
         }
+        return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
 
     }
 
