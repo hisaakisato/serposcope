@@ -11,14 +11,14 @@
                 <div class="modal-body">
 
                     <#if search?? >
-                        <label for="daterange-serps">${i18n("label.keyword")}</label>
+                        <label>${i18n("label.keyword")}</label>
                         <div class="form-control" style="position: relative; padding-right: 80px">
 	                    	<div style="display: inline-block; width: 100%; text-overflow: ellipsis">${search.getKeyword()}</div>
 	                    	<div style="display: inline-block; position: absolute; top: 6px; right: 4px">
 		                        <#noescape>${fu.gsIcoInfos(search)}</#noescape>
 	                    	</div>
 	                    </div>
-                        <input type="hidden" name="searchId" value="${search.getId()}" />
+                        <input type="hidden" name="searchIds" value="${search.getId()}" />
                     </#if>
                     
                     <div class="form-group" >

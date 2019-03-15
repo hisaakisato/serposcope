@@ -52,6 +52,16 @@ serposcope.googleGroupController = function () {
     };    
     
     var showExportSerpsModal = function(elt){
+        var form = $('#modal-export-serps').find('form');
+        form.find('[name=searchIds]').remove();
+        var ids = serposcope.googleGroupControllerGrid.getSelection();
+        for(var i=0; i <ids.length; i++){
+           form.append($('<input>', {
+                'name': 'searchIds',
+                'value': ids[i],
+                'type': 'hidden'
+            }));
+        }
         $('#modal-export-serps').modal();
         return false;
     };    
@@ -495,6 +505,26 @@ serposcope.googleGroupController = function () {
         $('#table-target').stupidtable();
 
         //$('.btn-start-task').click(showNewTargetModal);
+
+        var today = new Date().format('yyyy-mm-dd');
+        $('#daterange-serps').removeAttr("disabled").attr('readonly', true).css('background-color', '#ffffff');
+        $('#daterange-serps').daterangepicker({
+            "ranges": {
+                'Last day': [moment(today), moment(today)],
+                'Last 30 days': [moment(today).subtract(30, 'days'), moment(today)],
+                'Current Month': [moment(today).startOf('month'), moment(today).endOf('month')],
+                'Previous Month': [moment(today).subtract(1, 'month').startOf('month'), moment(today).subtract(1, 'month').endOf('month')]
+            },
+            locale: {
+              format: 'YYYY-MM-DD'
+            },
+            showDropdowns: true,
+            startDate: today,
+            endDate: today
+        }, function(startDate, endDate) {
+        	$('#daterange-serps-startdate').val(startDate.format('YYYY-MM-DD'))
+        	$('#daterange-serps-enddate').val(endDate.format('YYYY-MM-DD'))
+        });
 
         renderScoreHistory();
         configureTabs();

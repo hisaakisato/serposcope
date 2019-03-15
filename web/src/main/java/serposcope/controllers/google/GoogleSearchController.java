@@ -54,7 +54,9 @@ import ninja.Context;
 import ninja.Router;
 import ninja.i18n.Messages;
 import ninja.params.Param;
+import ninja.params.Params;
 import ninja.params.PathParam;
+import ninja.session.FlashScope;
 import ninja.utils.ResponseStreams;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -396,15 +398,24 @@ public class GoogleSearchController extends GoogleController {
     }    
     
     public Result export(Context context,
-    		@Param("searchId") String[] ids,
+    		@Params("searchIds") String[] ids,
             @Param("targetOnly") boolean targetOnly,
             @Param("startDate") String start,
             @Param("endDate") String end
         ){
-    	
-		LocalDate startDate = start == null ? LocalDate.now()
+
+        if (ids == null || ids.length == 0) {
+            FlashScope flash = context.getFlashScope();
+            Group group = context.getAttribute("group", Group.class);
+            flash.error("error.noSearchSelected");
+			return Results
+					.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId())
+							+ "#tab-searches");
+        }
+
+		LocalDate startDate = start == null || start.isEmpty() ? LocalDate.now()
 				: LocalDate.parse(start, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-		LocalDate endDate = end == null ? LocalDate.now()
+		LocalDate endDate = end == null || end.isEmpty() ? LocalDate.now()
 				: LocalDate.parse(end, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 		List<Integer> searchIds = Arrays.stream(ids).map(Integer::parseInt).collect(Collectors.toList());
         Group group = context.getAttribute("group", Group.class);

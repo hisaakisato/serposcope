@@ -333,8 +333,8 @@ serposcope.googleSearchController = function () {
                 minDate: $('#csp-vars').attr('data-min-date'),
                 maxDate: $('#csp-vars').attr('data-max-date')
             }, function(startDate, endDate) {
-            	$('#daterange-serps-startdate').val(startDate)
-            	$('#daterange-serps-enddate').val(endDate)
+            	$('#daterange-serps-startdate').val(startDate.format('YYYY-MM-DD'))
+            	$('#daterange-serps-enddate').val(endDate.format('YYYY-MM-DD'))
             });
         }
         
