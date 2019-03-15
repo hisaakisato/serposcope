@@ -43,6 +43,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -450,11 +451,13 @@ public class GoogleSearchController extends GoogleController {
                             	sb.append("\"").append(search.getCustomParameters()).append("\"\n");
                             	String tailer = sb.toString();
                             	List<GoogleSerpEntry> entries = serp.getEntries();
+                            	List<GoogleTarget> founds = new ArrayList<>();
                             	for (int i = 0; i < entries.size(); i++) {
                             		GoogleSerpEntry entry = entries.get(i);
                             		String targetName = null;
                             		for (GoogleTarget target : targets) {
                                         if (target.match(entry.getUrl())) {
+                                        	founds.add(target);
                                         	targetName = target.getName();
                                         	break;
                                         }
@@ -464,10 +467,18 @@ public class GoogleSearchController extends GoogleController {
                             		}
                             		writer.append(date).append(",");
                             		writer.append(String.valueOf(i + 1)).append(",");
-                            		writer.append(entry.getUnicodeUrl()).append(",");
+                            		writer.append("\"").append(entry.getUnicodeUrl()).append("\",");
                             		writer.append("\"").append(targetName == null ? "" : targetName).append("\",");
                             		writer.append(tailer);
                             	}
+                            	// check out of ranks
+                        		for (GoogleTarget target : targets) {
+                        			if (!founds.contains(target)) {
+	                            		writer.append(date).append(",-,,");
+	                            		writer.append(target.getName()).append(",");
+	                            		writer.append(tailer);
+                        			}
+                        		}
 							} catch (IOException e) {
 		                        LOG.error("error while exporting csv", e);
 							}
