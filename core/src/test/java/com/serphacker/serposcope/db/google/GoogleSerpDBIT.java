@@ -15,6 +15,8 @@ import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleSerp;
 import com.serphacker.serposcope.models.google.GoogleSerpEntry;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
+
 import it.unimi.dsi.fastutil.shorts.Short2ShortArrayMap;
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -60,7 +62,7 @@ public class GoogleSerpDBIT extends AbstractDBIT {
 
         GoogleSerp serp = new GoogleSerp(run.getId(), search.getId(), run.getStarted());
         for (int i = 0; i < 10; i++) {
-            GoogleSerpEntry entry = new GoogleSerpEntry("url-" + i);
+            GoogleSerpEntry entry = new GoogleSerpEntry(new GoogleScrapLinkEntry("url-" + i));
             entry.getMap().put((short) 1, (short) r.nextInt(Short.MAX_VALUE));
             entry.getMap().put((short) 7, (short) r.nextInt(Short.MAX_VALUE));
             entry.getMap().put((short) 30, (short) r.nextInt(Short.MAX_VALUE));
@@ -96,7 +98,7 @@ public class GoogleSerpDBIT extends AbstractDBIT {
 
             GoogleSerp serp = new GoogleSerp(run.getId(), search.getId(), run.getStarted());
             for (int i = 0; i < 10; i++) {
-                GoogleSerpEntry entry = new GoogleSerpEntry("url-" + i);
+                GoogleSerpEntry entry = new GoogleSerpEntry(new GoogleScrapLinkEntry("url-" + i));
                 entry.getMap().put((short) 1, (short) r.nextInt(Short.MAX_VALUE));
                 entry.getMap().put((short) 7, (short) r.nextInt(Short.MAX_VALUE));
                 entry.getMap().put((short) 30, (short) r.nextInt(Short.MAX_VALUE));
@@ -173,7 +175,7 @@ public class GoogleSerpDBIT extends AbstractDBIT {
 
         String[] lines = raw.split("\n");
         for (String line : lines) {
-            serp.addEntry(new GoogleSerpEntry(line));
+            serp.addEntry(new GoogleSerpEntry(new GoogleScrapLinkEntry(line)));
         }
 
         byte[] data = serp.getSerializedEntries();

@@ -23,27 +23,27 @@ public class GoogleScrapResult {
     };
     
     public Status status;
-    public List<String> urls;
+    public List<GoogleScrapLinkEntry> entries;
     public int captchas;
     public long googleResults;    
 
     public GoogleScrapResult() {
     }
     
-    public GoogleScrapResult(Status status, List<String> urls) {
+    public GoogleScrapResult(Status status, List<GoogleScrapLinkEntry> entries) {
         this.status = status;
-        this.urls = urls;
+        this.entries = entries;
     }
 
-    public GoogleScrapResult(Status status, List<String> urls, int captchas) {
+    public GoogleScrapResult(Status status, List<GoogleScrapLinkEntry> entries, int captchas) {
         this.status = status;
-        this.urls = urls;
+        this.entries = entries;
         this.captchas = captchas;
     }
 
-    public GoogleScrapResult(Status status, List<String> urls, int captchas, long googleResults) {
+    public GoogleScrapResult(Status status, List<GoogleScrapLinkEntry> entries, int captchas, long googleResults) {
         this.status = status;
-        this.urls = urls;
+        this.entries = entries;
         this.captchas = captchas;
         this.googleResults = googleResults;
     }
@@ -52,7 +52,7 @@ public class GoogleScrapResult {
     public int hashCode() {
         int hash = 5;
         hash = 73 * hash + (this.status == null ? 0 : (this.status.ordinal()+1) );
-        hash = 73 * hash + Objects.hashCode(this.urls);
+        hash = 73 * hash + Objects.hashCode(this.entries);
         hash = 73 * hash + this.captchas;
         hash = 73 * hash + (int) (this.googleResults ^ (this.googleResults >>> 32));
         return hash;
@@ -79,7 +79,7 @@ public class GoogleScrapResult {
         if (this.status != other.status) {
             return false;
         }
-        if (!Objects.equals(this.urls, other.urls)) {
+        if (!Objects.equals(this.entries, other.entries)) {
             return false;
         }
         return true;

@@ -29,6 +29,8 @@ import com.serphacker.serposcope.models.google.GoogleSettings;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
+
 import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.JDBCType;
@@ -180,7 +182,7 @@ public class ExportDBIT {
         
         
         GoogleSerp serp = new GoogleSerp(run.getId(), search1.getId(), ldt);
-        GoogleSerpEntry gse = new GoogleSerpEntry("url'");
+        GoogleSerpEntry gse = new GoogleSerpEntry(new GoogleScrapLinkEntry("url'"));
         gse.fillPreviousPosition(new HashMap<>());
         serp.addEntry(gse);
         googleDB.serp.insert(serp);

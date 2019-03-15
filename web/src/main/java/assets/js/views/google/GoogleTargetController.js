@@ -188,7 +188,7 @@ serposcope.googleTargetController = function () {
         serposcope.googleTargetControllerGrid.render();
         serposcope.googleTargetControllerVariation.render();
 
-        var jsonData = JSON.parse($('#csp-vars').attr('data-chart'));
+        var jsonData = JSON.parse($('#csp-vars').attr('data-chart').replace(/NaN/g, '"__NaN__"'), function(key, val) { return val === '__NaN__' ? NaN : val; });
         chartData = [];
         if (jsonData != null && typeof (jsonData.ranks) != "undefined" && typeof (jsonData.searches) != "undefined") {
             chartData = jsonData.ranks;

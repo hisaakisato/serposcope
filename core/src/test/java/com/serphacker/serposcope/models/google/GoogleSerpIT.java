@@ -14,6 +14,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.unitils.reflectionassert.ReflectionAssert;
 
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
+
 /**
  *
  * @author admin
@@ -30,7 +32,7 @@ public class GoogleSerpIT {
         GoogleSerp serp = new GoogleSerp(1, 2, null);
         
         for (int i = 0; i < r.nextInt(10, 20); i++) {
-            GoogleSerpEntry entry = new GoogleSerpEntry("url-" + i);
+            GoogleSerpEntry entry = new GoogleSerpEntry(new GoogleScrapLinkEntry("url-" + i));
             entry.map.put((short)r.nextInt(Short.MAX_VALUE), (short)r.nextInt(Short.MAX_VALUE));
             serp.addEntry(entry);
         }

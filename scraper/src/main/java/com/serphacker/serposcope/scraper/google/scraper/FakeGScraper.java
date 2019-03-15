@@ -9,6 +9,7 @@ package com.serphacker.serposcope.scraper.google.scraper;
 
 import com.serphacker.serposcope.scraper.captcha.solver.CaptchaSolver;
 import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import com.serphacker.serposcope.scraper.http.ScrapClient;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ public class FakeGScraper extends GoogleScraper {
     
     @Override
     public GoogleScrapResult scrap(GoogleScrapSearch options) throws InterruptedException {
-        List<String> urls = new ArrayList<>();
+        List<GoogleScrapLinkEntry> entries = new ArrayList<>();
         for (int page = 0; page < options.getPages(); page++) {
 
             if (Thread.interrupted()) {
@@ -38,7 +39,7 @@ public class FakeGScraper extends GoogleScraper {
 
             for (int result = 0; result < options.getResultPerPage(); result++) {
                 int position = result + (page * options.getResultPerPage());
-                urls.add("http://www.site" + (position + 1) + ".com/" + options.getKeyword() + ".html");
+                entries.add(new GoogleScrapLinkEntry("http://www.site" + (position + 1) + ".com/" + options.getKeyword() + ".html"));
             }
 
             long pauseMS = options.getRandomPagePauseMS();
@@ -49,7 +50,7 @@ public class FakeGScraper extends GoogleScraper {
                 Thread.sleep(pauseMS);
             }
         }
-        return new GoogleScrapResult(GoogleScrapResult.Status.OK, urls);
+        return new GoogleScrapResult(GoogleScrapResult.Status.OK, entries);
     }
 
 }

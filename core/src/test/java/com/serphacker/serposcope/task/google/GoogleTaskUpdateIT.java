@@ -33,6 +33,7 @@ import com.serphacker.serposcope.di.GoogleScraperFactory;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.base.Run.Status;
 import com.serphacker.serposcope.models.google.GoogleTargetSummary;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import static org.junit.Assert.assertEquals;
 
@@ -160,13 +161,13 @@ public class GoogleTaskUpdateIT extends AbstractDBIT {
         }
         GoogleScrapResult res = new GoogleScrapResult(GoogleScrapResult.Status.OK, new ArrayList<>());
         for (int i = 0; i < Math.max(t1, t2); i++) {
-            res.urls.add("http://www.example.com");
+            res.entries.add(new GoogleScrapLinkEntry("http://www.example.com"));
         }
         if (t1 > 0) {
-            res.urls.set(t1 - 1, "http://" + tagert1.getPattern());
+            res.entries.set(t1 - 1, new GoogleScrapLinkEntry("http://" + tagert1.getPattern()));
         }
         if (t2 > 0) {
-            res.urls.set(t2 - 1, "http://" + tagert2.getPattern());
+            res.entries.set(t2 - 1, new GoogleScrapLinkEntry("http://" + tagert2.getPattern()));
         }
         return res;
     }

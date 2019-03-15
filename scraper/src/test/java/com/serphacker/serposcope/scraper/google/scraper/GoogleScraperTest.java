@@ -9,6 +9,7 @@ package com.serphacker.serposcope.scraper.google.scraper;
 
 import com.serphacker.serposcope.scraper.ResourceHelper;
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 
 import static com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status.ERROR_NETWORK;
 import static com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status.OK;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.CoreMatchers.is;
 
@@ -123,11 +125,11 @@ public class GoogleScraperTest {
             ScrapClient http = mock(ScrapClient.class);
             when(http.getContentAsString()).thenReturn(serpHtml);
             GoogleScraper scraper = new GoogleScraper(http, null);
-            List<String> urls = new ArrayList<>();
-            assertEquals(OK, scraper.parseSerp(urls));
+            List<GoogleScrapLinkEntry> entries = new ArrayList<>();
+            assertEquals(OK, scraper.parseSerp(entries));
             assertTrue(scraper.hasNextPage());
 
-            assertEquals(serpTop10, urls);
+            assertEquals(serpTop10, entries.stream().map(GoogleScrapLinkEntry::getUrl).collect(Collectors.toList()));
         }
 
     }

@@ -9,6 +9,7 @@ package com.serphacker.serposcope.scraper.google.scraper;
 
 import com.serphacker.serposcope.scraper.captcha.solver.CaptchaSolver;
 import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import com.serphacker.serposcope.scraper.http.ScrapClient;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class RandomGScraper extends GoogleScraper {
     @Override
     public GoogleScrapResult scrap(GoogleScrapSearch options) throws InterruptedException {
         
-        List<String> urls = new ArrayList<>();
+        List<GoogleScrapLinkEntry> entries = new ArrayList<>();
         for (int page = 0; page < options.getPages(); page++) {
 
             if (Thread.interrupted()) {
@@ -51,7 +52,7 @@ public class RandomGScraper extends GoogleScraper {
 //                    LOG.trace("skip ranking for {}", url);
                     continue;
                 }                
-                urls.add(url);
+                entries.add(new GoogleScrapLinkEntry(url));
             }
             
 //            long pauseMS = options.getRandomPagePauseMS();
@@ -63,8 +64,8 @@ public class RandomGScraper extends GoogleScraper {
 //            }
         }
         
-        Collections.shuffle(urls, random);
-        return new GoogleScrapResult(GoogleScrapResult.Status.OK, urls, random.nextInt(5) + 5);
+        Collections.shuffle(entries, random);
+        return new GoogleScrapResult(GoogleScrapResult.Status.OK, entries, random.nextInt(5) + 5);
     }
 
 }

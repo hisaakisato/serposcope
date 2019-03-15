@@ -24,6 +24,7 @@ import com.serphacker.serposcope.models.google.GoogleSerp;
 import com.serphacker.serposcope.models.google.GoogleSerpEntry;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.captcha.solver.CaptchaSolver;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import com.serphacker.serposcope.scraper.google.scraper.GoogleScraper;
 import com.serphacker.serposcope.scraper.http.ScrapClient;
@@ -228,8 +229,8 @@ public class GoogleTask extends AbstractTask {
         Map<Short, GoogleSerp> history = getHistory(search);
 
         GoogleSerp serp = new GoogleSerp(run.getId(), search.getId(), run.getStarted());
-        for (String url : res.urls) {
-            GoogleSerpEntry entry = new GoogleSerpEntry(url);
+        for (GoogleScrapLinkEntry linkEntry : res.entries) {
+            GoogleSerpEntry entry = new GoogleSerpEntry(linkEntry);
             entry.fillPreviousPosition(history);
             serp.addEntry(entry);
         }
@@ -245,9 +246,9 @@ public class GoogleTask extends AbstractTask {
                 int best = googleDB.rank.getBest(group, target.getId(), search.getId()).getRank();
                 int rank = GoogleRank.UNRANKED;
                 String rankedUrl = null;
-                for (int i = 0; i < res.urls.size(); i++) {
-                    if (target.match(res.urls.get(i))) {
-                        rankedUrl = res.urls.get(i);
+                for (int i = 0; i < res.entries.size(); i++) {
+                    if (target.match(res.entries.get(i).getUrl())) {
+                        rankedUrl = res.entries.get(i).getUrl();
                         rank = i + 1;
                         break;
                     }
@@ -340,6 +341,7 @@ public class GoogleTask extends AbstractTask {
     protected Map<Short,GoogleSerp> getHistory(GoogleSearch search){
         Map<Short,GoogleSerp> history = new HashMap<>();
         
+        // TODO
         for (Map.Entry<Short, Integer> entry : previousRunsByDay.entrySet()) {
             GoogleSerp serp = googleDB.serp.get(entry.getValue(), search.getId());
             if(serp != null){

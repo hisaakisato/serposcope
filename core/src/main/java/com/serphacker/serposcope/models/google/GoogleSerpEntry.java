@@ -15,13 +15,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
+
 public class GoogleSerpEntry {
     
-    String url;
+    protected final static byte SERIAL_VERSION = 0;
+
+	GoogleScrapLinkEntry entry;
+	String url;
+	String title;
+	String ampUrl;
     Short2ShortArrayMap map = new Short2ShortArrayMap();
 
-    public GoogleSerpEntry(String url) {
-        this.url = url;
+    public GoogleSerpEntry(GoogleScrapLinkEntry entry) {
+    	this.entry = entry;
+        this.url = entry.getUrl();
+        this.title = entry.getTitle();
+        this.ampUrl = entry.getAmpUrl();
     }
     
     public void fillPreviousPosition(Map<Short,GoogleSerp> history){
@@ -69,7 +79,23 @@ public class GoogleSerpEntry {
         this.map = map;
     }
 
-    @Override
+    public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getAmpUrl() {
+		return ampUrl;
+	}
+
+	public void setAmpUrl(String ampUrl) {
+		this.ampUrl = ampUrl;
+	}
+
+	@Override
     public int hashCode() {
         int hash = 7;
         hash = 73 * hash + Objects.hashCode(this.url);

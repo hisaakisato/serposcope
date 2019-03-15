@@ -9,11 +9,11 @@ package com.serphacker.serposcope.scraper.google.scraper;
 
 import com.serphacker.serposcope.scraper.captcha.solver.SwingUICaptchaSolver;
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import static com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status.OK;
 import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
 import com.serphacker.serposcope.scraper.http.ScrapClient;
-import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.runner.RunWith;
@@ -66,9 +66,9 @@ public class GoogleScraperIT {
             GoogleScrapResult result = scraper.scrap(search);
             assertEquals(OK, result.status);
             boolean success = false;
-            for (String url : result.urls) {
-                System.out.println(url);
-                if (url.toLowerCase().contains(place.toLowerCase())) {
+            for (GoogleScrapLinkEntry entry : result.entries) {
+                System.out.println(entry.getUrl());
+                if (entry.getUrl().toLowerCase().contains(place.toLowerCase())) {
                     success = true;
                     break;
                 }

@@ -13,6 +13,7 @@ import com.serphacker.serposcope.scraper.captcha.CaptchaRecaptcha;
 import com.serphacker.serposcope.scraper.captcha.solver.CaptchaSolver;
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status;
 import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
@@ -86,7 +87,7 @@ public class GoogleScraper {
 	public GoogleScrapResult scrap(GoogleScrapSearch search) throws InterruptedException {
 		lastSerpHtml = null;
 		captchas = 0;
-		List<String> urls = new ArrayList<>();
+		List<GoogleScrapLinkEntry> entries = new ArrayList<>();
 		prepareHttpClient(search);
 		long resultsNumber = 0;
 
@@ -123,7 +124,7 @@ public class GoogleScraper {
 
 					status = downloadSerp(url, referrer, search, retry);
 					if (status == Status.OK) {
-						status = parseSerp(urls);
+						status = parseSerp(entries);
 						if (status == Status.OK) {
 							break;
 						}
@@ -135,7 +136,7 @@ public class GoogleScraper {
 				}
 
 				if (status != Status.OK) {
-					return new GoogleScrapResult(status, urls, captchas);
+					return new GoogleScrapResult(status, entries, captchas);
 				}
 
 				if (page == 0) {
@@ -149,7 +150,7 @@ public class GoogleScraper {
 				}
 
 			}
-			return new GoogleScrapResult(Status.OK, urls, captchas, resultsNumber);
+			return new GoogleScrapResult(Status.OK, entries, captchas, resultsNumber);
 		} finally {
 			long pause = search.getRandomPagePauseMS();
 			ScrapProxy proxy = http.getProxy();
@@ -237,7 +238,7 @@ public class GoogleScraper {
 		return Status.ERROR_NETWORK;
 	}
 
-	protected Status parseSerp(List<String> urls) {
+	protected Status parseSerp(List<GoogleScrapLinkEntry> entries) {
 		String html = http.getContentAsString();
 		if (html == null || html.isEmpty()) {
 			return Status.ERROR_NETWORK;
@@ -250,38 +251,38 @@ public class GoogleScraper {
 
 		Element resDiv = lastSerpHtml.getElementById("res");
 		if (resDiv != null) {
-			return parseSerpLayoutRes(resDiv, urls);
+			return parseSerpLayoutRes(resDiv, entries);
 		}
 
 		final Element mainDiv = lastSerpHtml.getElementById("main");
 		if (mainDiv != null) {
-			return parseSerpLayoutMain(mainDiv, urls);
+			return parseSerpLayoutMain(mainDiv, entries);
 		}
 
 		return Status.ERROR_PARSING;
 	}
 
-	protected Status parseSerpLayoutRes(Element resElement, List<String> urls) {
+	protected Status parseSerpLayoutRes(Element resElement, List<GoogleScrapLinkEntry> entries) {
 
 		Elements h3Elts = resElement.select("a > h3:first-child");
 		if (h3Elts.isEmpty()) {
-			return parseSerpLayoutResLegacy(resElement, urls);
+			return parseSerpLayoutResLegacy(resElement, entries);
 		}
 
 		for (Element h3Elt : h3Elts) {
 
-			String link = extractLink(h3Elt.parent());
-			if (link == null) {
+			GoogleScrapLinkEntry entry = extractLink(h3Elt.parent());
+			if (entry == null) {
 				continue;
 			}
 
-			urls.add(link);
+			entries.add(entry);
 		}
 
 		return Status.OK;
 	}
 
-	protected Status parseSerpLayoutResLegacy(Element resElement, List<String> urls) {
+	protected Status parseSerpLayoutResLegacy(Element resElement, List<GoogleScrapLinkEntry> entries) {
 
 		Elements h3Elts = resElement.getElementsByTag("h3");
 		for (Element h3Elt : h3Elts) {
@@ -290,16 +291,16 @@ public class GoogleScraper {
 				continue;
 			}
 
-			String link = extractLink(h3Elt.getElementsByTag("a").first());
-			if (link != null) {
-				urls.add(link);
+			GoogleScrapLinkEntry entry = extractLink(h3Elt.getElementsByTag("a").first());
+			if (entry != null) {
+				entries.add(entry);
 			}
 		}
 
 		return Status.OK;
 	}
 
-	protected Status parseSerpLayoutMainMobile(Element resElement, List<String> urls) {
+	protected Status parseSerpLayoutMainMobile(Element resElement, List<GoogleScrapLinkEntry> entries) {
 
 		Elements h3Elts = resElement.getElementsByTag("h3");
 		for (Element h3Elt : h3Elts) {
@@ -308,16 +309,16 @@ public class GoogleScraper {
 				continue;
 			}
 
-			String link = extractLink(h3Elt.getElementsByTag("a").first());
-			if (link != null) {
-				urls.add(link);
+			GoogleScrapLinkEntry entry = extractLink(h3Elt.getElementsByTag("a").first());
+			if (entry != null) {
+				entries.add(entry);
 			}
 		}
 
 		return Status.OK;
 	}
 
-	protected Status parseSerpLayoutMain(Element divElement, List<String> urls) {
+	protected Status parseSerpLayoutMain(Element divElement, List<GoogleScrapLinkEntry> entries) {
 
 		Elements links = divElement.select("#main > div > div:first-child > div:first-child > a:first-child,"
 				+ "#main > div > div:first-child > a:first-child");
@@ -326,7 +327,7 @@ public class GoogleScraper {
 			links = divElement.select("#main div#rso:first-child > div.srg > div > div:first-child > div:first-child > a:first-child[class]");
 		}
 		if (links.isEmpty()) {
-			return parseSerpLayoutResLegacy(divElement, urls);
+			return parseSerpLayoutResLegacy(divElement, entries);
 		}
 
 		for (Element link : links) {
@@ -334,12 +335,12 @@ public class GoogleScraper {
 				continue;
 			}
 
-			String url = extractLink(link);
-			if (url == null) {
+			GoogleScrapLinkEntry entry = extractLink(link);
+			if (entry == null) {
 				continue;
 			}
 
-			urls.add(url);
+			entries.add(entry);
 		}
 
 		return Status.OK;
@@ -389,7 +390,7 @@ public class GoogleScraper {
 		return false;
 	}
 
-	protected String extractLink(Element element) {
+	protected GoogleScrapLinkEntry extractLink(Element element) {
 		if (element == null) {
 			return null;
 		}
@@ -399,9 +400,12 @@ public class GoogleScraper {
 			return null;
 		}
 
+		GoogleScrapLinkEntry entry = new GoogleScrapLinkEntry(attr);
 		// for amp pages
 		if (element.hasClass("amp_r") && element.hasAttr("data-amp")) {
 			attr = element.attr("data-amp");
+			entry.setAmpUrl(attr);
+			entry.setUrl(attr); //TODO original url
 		}
 
 		if ((attr.startsWith("http://www.google") || attr.startsWith("https://www.google"))) {
@@ -410,8 +414,11 @@ public class GoogleScraper {
 			}
 		}
 
+		//TODO check featured snippets
+		// $$('.kp-blk .mod:first-child')
+		//TODO get LP title
 		if (attr.startsWith("http://") || attr.startsWith("https://")) {
-			return attr;
+			return entry;
 		}
 
 		if (attr.startsWith("/url?")) {
@@ -419,7 +426,8 @@ public class GoogleScraper {
 				List<NameValuePair> parse = URLEncodedUtils.parse(attr.substring(5), Charset.forName("utf-8"));
 				Map<String, String> map = parse.stream()
 						.collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue));
-				return map.get("q");
+				entry.setUrl(map.get("q"));
+				return entry;
 			} catch (Exception ex) {
 				return null;
 			}

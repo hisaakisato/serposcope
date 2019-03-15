@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
+
 
 public class GoogleSerp {
     
@@ -80,8 +82,20 @@ public class GoogleSerp {
         entries = new ArrayList<>(entrySize);
         
         for (int i = 0; i < entrySize; i++) {
-            GoogleSerpEntry entry = new GoogleSerpEntry(dis.readUTF());
+        	GoogleScrapLinkEntry linkEntry = new GoogleScrapLinkEntry(dis.readUTF());
+            GoogleSerpEntry entry = new GoogleSerpEntry(linkEntry);
             byte mapSize = dis.readByte();
+            if (mapSize < 0) {
+            	// check version
+            	int linkEntryVersion = mapSize * -1;
+            	switch (linkEntryVersion) {
+            	case 1:
+            		linkEntry.setTitle(dis.readUTF());
+            		linkEntry.setAmpUrl(dis.readUTF());
+            		//linkEntry.setFeaturedRank(dis.readInt());
+            	}
+                mapSize = dis.readByte();
+            }
             for (int j = 0; j < mapSize; j++) {
                 short key = dis.readShort();
                 short value = dis.readShort();
@@ -99,6 +113,10 @@ public class GoogleSerp {
         dos.writeShort(entries.size());
         for (GoogleSerpEntry entry : entries) {
             dos.writeUTF(entry.url);
+            // FIXME
+//            dos.writeByte(-1 * GoogleScrapLinkEntry.SERIAL_VERSION);
+//            dos.writeUTF(entry.title);
+//            dos.writeUTF(entry.ampUrl);
             dos.writeByte(entry.map.size());
             for (Map.Entry<Short, Short> mapEntry : entry.map.entrySet()) {
                 dos.writeShort(mapEntry.getKey());
