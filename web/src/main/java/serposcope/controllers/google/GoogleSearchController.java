@@ -436,54 +436,58 @@ public class GoogleSearchController extends GoogleController {
             			// Header
                         writer.append("date,rank,url,target,keyword,device,country,local,custom\n");
                         // SERP
-                        googleDB.serp.stream(startDate, endDate, group, searchIds, serp -> {                        	
-                            try {
-                            	GoogleSearch search = serp.getSearch();
-                            	if (search == null) {
-                            		return;
-                            	}
-                            	String date = serp.getRunDay().toLocalDate().format(dtf);
-                            	StringBuilder sb = new StringBuilder();
-                            	sb.append("\"").append(search.getKeyword()).append("\",");
-                            	sb.append(search.getDevice() == GoogleDevice.DESKTOP ? "PC" : "SP").append(",");
-                            	sb.append("\"").append(search.getCountry()).append("\",");
-                            	sb.append("\"").append(search.getLocal()).append("\",");
-                            	sb.append("\"").append(search.getCustomParameters()).append("\"\n");
-                            	String tailer = sb.toString();
-                            	List<GoogleSerpEntry> entries = serp.getEntries();
-                            	List<GoogleTarget> founds = new ArrayList<>();
-                            	for (int i = 0; i < entries.size(); i++) {
-                            		GoogleSerpEntry entry = entries.get(i);
-                            		String targetName = null;
-                            		for (GoogleTarget target : targets) {
-                                        if (target.match(entry.getUrl())) {
-                                        	founds.add(target);
-                                        	targetName = target.getName();
-                                        	break;
-                                        }
-                            		}
-                            		if (targetOnly && targetName == null) {
-                            			continue;
-                            		}
-                            		writer.append(date).append(",");
-                            		writer.append(String.valueOf(i + 1)).append(",");
-                            		writer.append("\"").append(entry.getUnicodeUrl()).append("\",");
-                            		writer.append("\"").append(targetName == null ? "" : targetName).append("\",");
-                            		writer.append(tailer);
-                            	}
-                            	// check out of ranks
-                        		for (GoogleTarget target : targets) {
-                        			if (!founds.contains(target)) {
-	                            		writer.append(date).append(",-,,");
-	                            		writer.append(target.getName()).append(",");
+                        LocalDate date = startDate;
+                        while (!date.isAfter(endDate)) {
+	                        googleDB.serp.stream(date, date, group, searchIds, serp -> {                        	
+	                            try {
+	                            	GoogleSearch search = serp.getSearch();
+	                            	if (search == null) {
+	                            		return;
+	                            	}
+	                            	String dateString = serp.getRunDay().toLocalDate().format(dtf);
+	                            	StringBuilder sb = new StringBuilder();
+	                            	sb.append("\"").append(search.getKeyword()).append("\",");
+	                            	sb.append(search.getDevice() == GoogleDevice.DESKTOP ? "PC" : "SP").append(",");
+	                            	sb.append("\"").append(search.getCountry()).append("\",");
+	                            	sb.append("\"").append(search.getLocal()).append("\",");
+	                            	sb.append("\"").append(search.getCustomParameters()).append("\"\n");
+	                            	String tailer = sb.toString();
+	                            	List<GoogleSerpEntry> entries = serp.getEntries();
+	                            	List<GoogleTarget> founds = new ArrayList<>();
+	                            	for (int i = 0; i < entries.size(); i++) {
+	                            		GoogleSerpEntry entry = entries.get(i);
+	                            		String targetName = null;
+	                            		for (GoogleTarget target : targets) {
+	                                        if (target.match(entry.getUrl())) {
+	                                        	founds.add(target);
+	                                        	targetName = target.getName();
+	                                        	break;
+	                                        }
+	                            		}
+	                            		if (targetOnly && targetName == null) {
+	                            			continue;
+	                            		}
+	                            		writer.append(dateString).append(",");
+	                            		writer.append(String.valueOf(i + 1)).append(",");
+	                            		writer.append("\"").append(entry.getUnicodeUrl()).append("\",");
+	                            		writer.append("\"").append(targetName == null ? "" : targetName).append("\",");
 	                            		writer.append(tailer);
-                        			}
-                        		}
-							} catch (IOException e) {
-		                        LOG.error("error while exporting csv", e);
-							}
-                        });
-
+	                            	}
+	                            	// check out of ranks
+	                        		for (GoogleTarget target : targets) {
+	                        			if (!founds.contains(target)) {
+		                            		writer.append(dateString).append(",-,,");
+		                            		writer.append(target.getName()).append(",");
+		                            		writer.append(tailer);
+	                        			}
+	                        		}
+	                        		writer.flush();
+								} catch (IOException e) {
+			                        LOG.error("error while exporting csv", e);
+								}
+	                        });
+	                        date = date.plusDays(1);
+                        }
                     } catch (IOException e) {
                         LOG.error("error while exporting csv", e);
                     }
