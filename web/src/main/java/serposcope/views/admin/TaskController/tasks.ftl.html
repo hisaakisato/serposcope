@@ -8,22 +8,20 @@
             <h2 class="styled-h2">${i18n("admin.task.runningTasks")}</h2>
             <table class="table table-bordered table-condensed table-striped table-task">
                 <tr>
-                    <th style="width: 50px;">#</th>
-                    <th style="width: 75px;">${i18n("label.mode")}</th>
-                    <th style="width: 100px;">${i18n("label.user")}</th>
-                    <th style="width: 100px;">${i18n("label.group")}</th>
-                    <th style="width: 180px;">${i18n("label.started")}</th>
-                    <th>${i18n("label.progress")}</th>
-                    <th style="width: 100px;">${i18n("label.done")}</th>
-                    <th style="width: 100px;">${i18n("label.total")}</th>
-                    <th style="width: 100px;">${i18n("label.captchas")}</th>
-                    <th style="width: 100px;">${i18n("label.errors")}</th>
-                    <th style="width: 150px;">${i18n("label.actions")}</th>
+                    <th style="width: 50px">#</th>
+                    <th style="width: 200px;text-align:left">${i18n("label.user")}</th>
+                    <th style="text-align:left">${i18n("label.group")}</th>
+                    <th style="width: 150px">${i18n("label.started")}</th>
+                    <th style="width: 200px">${i18n("label.progress")}</th>
+                    <th style="width: 30px">${i18n("label.done")}</th>
+                    <th style="width: 30px">${i18n("label.total")}</th>
+                    <th style="width: 30px">${i18n("label.captchas")}</th>
+                    <th style="width: 30px">${i18n("label.errors")}</th>
+                    <th style="width: 100px">${i18n("label.actions")}</th>
                 </tr>
                 <#list running as task>
                 <tr>
                     <td>${task.getId()}</td>
-                    <td>${task.getMode()}</td>
                     <td>${(task.user.name)!(task.user.email)!}</td>
                     <td>
 	                    <#if task.getGroup()??>
@@ -55,7 +53,7 @@
                     <td>${task.getErrors()}</td>
                     <td>
                         <#if user.isAdmin() || user.email == (task.user.email)!>
-                        <a href="${reverseRoute("admin.TaskController","abortTask","id",task.getId(),"_xsrf", session.___AT)}" class="text-danger" >abort</a>
+                        <a href="${reverseRoute("admin.TaskController","abortTask","id",task.getId(),"_xsrf", session.___AT)}" class="text-danger" >${i18n("label.abort")}</a>
                         <#else>
                         &nbsp;
                         </#if>
@@ -68,33 +66,37 @@
             <h2 class="styled-h2">${i18n("admin.task.doneTasks")}</h2>
             <table class="table table-bordered table-condensed table-task">
                 <tr>
-                    <th style="width: 30px;">#</th>
-                    <th style="width: 50px;">ID</th>
-                    <th style="width: 75px;">${i18n("label.mode")}</th>
-                    <th style="width: 100px;">${i18n("label.user")}</th>
-                    <th style="width: 100px;">${i18n("label.group")}</th>
-                    <th style="width: 150px;">${i18n("label.started")}</th>
-                    <th style="width: 150px;">${i18n("label.finished")}</th>
-                    <th>${i18n("label.duration")}</th>
-                    <th style="width: 100px;">${i18n("label.total")}</th>
-                    <th style="width: 100px;">${i18n("label.captchas")}</th>
-                    <th style="width: 100px;">${i18n("label.errors")}</th>
-                    <th>${i18n("label.status")}</th>
+                    <th style="width: 30px">#</th>
+                    <th style="width: 50px">ID</th>
+                    <th style="width: 200px;text-align:left">${i18n("label.user")}</th>
+                    <th style="text-align:left">${i18n("label.group")}</th>
+                    <th style="width: 150px">${i18n("label.started")}</th>
+                    <th style="width: 150px">${i18n("label.finished")}</th>
+                    <th style="width: 50px">${i18n("label.duration")}</th>
+                    <th style="width: 30px">${i18n("label.total")}</th>
+                    <th style="width: 30px">${i18n("label.captchas")}</th>
+                    <th style="width: 30px">${i18n("label.errors")}</th>
+                    <th style="width: 100px">${i18n("label.status")}</th>
                     <#if user.isAdmin()>
-                    <th style="width: 150px;">${i18n("label.actions")}</th>
+                    <th style="width: 100px">${i18n("label.actions")}</th>
                     </#if>
                 </tr>            
                 <#list done as task>
                 <#if task.getStatus() == "DONE_SUCCESS" >
                     <tr class="success" >
+                <#elseif task.getStatus() == "DONE_ABORTED" >
+                    <tr class="warning" >
                 <#else>
                     <tr class="danger" >
                 </#if>
                 
                     <td></td>
-                    <td>${task.getId()}</td>
-                    <td>${task.getMode()}</td>
+                    <td style="text-align:center;">${task.getId()}</td>
+                <#if task.getMode() == "CRON" >
+                    <td>&lt;&lt;${i18n("label.cron")}&gt;&gt;</td>
+                <#else>
                     <td>${(task.user.name)!(task.user.email)!}</td>
+                </#if>
                     <td>
 	                    <#if task.getGroup()??>
 	                    <a href="${reverseRoute("google.GoogleGroupController","view","groupId",task.getGroup().getId())}" >
@@ -105,12 +107,22 @@
                     <td>${global.ldtf.format(task.getStarted())}</td>
                     <td>${global.ldtf.format(task.getFinished())}</td>
                     <td>${task.getDurationFormated()}</td>
-                    <td>${task.getTotal()}</td>
-                    <td>${task.getCaptchas()}</td>
-                    <td>${task.getErrors()}</td>
-                    <td>${task.getStatus()}</td>
+                    <td style="text-align:center;">${task.getTotal()}</td>
+                    <td style="text-align:center;">${task.getCaptchas()}</td>
+                    <td style="text-align:center;">${task.getErrors()}</td>
+                    <td style="text-align:center;">
+                	<#if task.getStatus() == "DONE_SUCCESS" >
+                    	${i18n("label.statusSuccess")}
+                	<#elseif task.getStatus() == "DONE_ABORTED" >
+                    	${i18n("label.statusAborted")}
+                	<#elseif task.getStatus() == "DONE_WITH_ERROR" >
+                    	${i18n("label.statusWithError")}
+                	<#else>
+                    	${i18n("label.statusCrashed")}
+                	</#if>
+                	</td>
                     <#if user.isAdmin()>
-                    <td>
+                    <td style="text-align:center;">
                         <a href="${reverseRoute("admin.TaskController","deleteRun","runId",task.getId())}" 
                            class="btn-delete-run text-danger" data-date="${task.getDay()}" 
                            data-toggle="tooltip" title="${i18n("label.delete")}" >
