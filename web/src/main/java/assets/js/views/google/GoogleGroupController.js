@@ -212,14 +212,11 @@ serposcope.googleGroupController = function () {
             if(params.length > 1){
                 switch(params[1].toLowerCase()){
                     case "desktop":
-                        device[i] = 0;
-                        break;
                     case "pc":
                         device[i] = 0;
                         break;
+                    case "smartphone":
                     case "mobile":
-                        device[i] = 1;
-                        break;  
                     case "sp":
                         device[i] = 1;
                         break;  

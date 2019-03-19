@@ -99,7 +99,7 @@
                         <label for="searchDevice" >${i18n("label.device")}</label>
                         <div>
                             <div class="btn-group" data-toggle="buttons">
-                                <#if default.getDefaultDevice() == "MOBILE" >
+                                <#if default.getDefaultDevice() == "SMARTPHONE" >
                                 <label class="btn btn-default">
                                     <input type="radio" name="device[]" value="0"> 
                                     <i class="fa fa-desktop fa-bigger fa-lg fa-fw" ></i> ${i18n("label.desktop")}
@@ -295,7 +295,7 @@
 <div id="csp-vars"
      data-default-country="${default.getDefaultCountry()}"
      data-default-datacenter="${default.getDefaultDatacenter()!""}"
-     <#if default.getDefaultDevice() == "MOBILE" >
+     <#if default.getDefaultDevice() == "SMARTPHONE" >
      data-default-device="1"
      <#else>
      data-default-device="0"
