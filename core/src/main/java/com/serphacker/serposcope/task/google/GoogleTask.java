@@ -71,6 +71,7 @@ public class GoogleTask extends AbstractTask {
     final Map<Integer,GoogleTargetSummary> summariesByTarget = new ConcurrentHashMap<>();
     
     LinkedBlockingQueue<GoogleSearch> searches;
+    Map<GoogleSearch, AtomicInteger> failedSearches = new HashMap<>();
     GoogleSettings googleOptions;
     protected final AtomicInteger searchDone = new AtomicInteger();
     final AtomicInteger captchaCount = new AtomicInteger();

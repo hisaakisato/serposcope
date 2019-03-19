@@ -19,6 +19,7 @@ import com.serphacker.serposcope.scraper.http.proxy.BindProxy;
 import com.serphacker.serposcope.scraper.http.proxy.ProxyRotator;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -234,6 +235,7 @@ public class GoogleTaskRunnableTest {
         List<ScrapProxy> proxies = Arrays.asList(evictableProxy, new BindProxy("127.0.0.2"), new BindProxy("127.0.0.3"));
         taskController.rotator.addAll(proxies);
         taskController.searches = new LinkedBlockingQueue<>();
+        taskController.failedSearches = new HashMap<>();
         GoogleSearch theSearch = new GoogleSearch("keyword");
         taskController.searches.add(theSearch);
 
@@ -254,7 +256,7 @@ public class GoogleTaskRunnableTest {
         verify(taskController, never()).onSearchDone(any(), any());
         assertFalse(taskController.rotator.list().contains(evictableProxy));
         assertEquals(proxies.size() - taskController.googleOptions.getFetchRetry() - 1, taskController.rotator.list().size());
-        assertTrue(taskController.searches.isEmpty());
+        assertFalse(taskController.failedSearches.isEmpty());
     }    
     
 }

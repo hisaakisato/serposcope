@@ -15,6 +15,8 @@ import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import static com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status.OK;
 import com.serphacker.serposcope.scraper.google.scraper.GoogleScraper;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.serphacker.serposcope.scraper.http.proxy.ScrapProxy;
@@ -25,7 +27,7 @@ import org.apache.http.cookie.Cookie;
 public class GoogleTaskRunnable implements Runnable {
 
 	protected static final Logger LOG = LoggerFactory.getLogger(GoogleTaskRunnable.class);
-//    public final static int MAX_FETCH_TRY = 3;
+    public final static int MAX_REQUEUE_TRY = 3;
 
 	GoogleTask controller;
 
@@ -155,15 +157,24 @@ public class GoogleTaskRunnable implements Runnable {
 								: ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT, String.class);
 
 				if (res.status != OK) {
-					LOG.warn("[Search Error] device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
-							device == GoogleDevice.DESKTOP ? "PC" : "SP",
-							search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
-							proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
+					if (searchTry > controller.googleOptions.getFetchRetry()) {
+						LOG.error("[Search Failed] device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
+								device == GoogleDevice.DESKTOP ? "PC" : "SP",
+								search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
+								proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
+						controller.failedSearches.putIfAbsent(search, new AtomicInteger(0));
+						if (controller.failedSearches.get(search).incrementAndGet() < MAX_REQUEUE_TRY) {							
+							controller.searches.offer(search); // re-queue
+						}
+						search = null; // next
+					} else {
+						LOG.warn("[Search Error] device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
+								device == GoogleDevice.DESKTOP ? "PC" : "SP",
+								search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
+								proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
+					}
 					controller.removeProxy(proxy); // mark removed
 					proxy = null;
-					if (searchTry > controller.googleOptions.getFetchRetry()) {
-						search = null; // give up
-					}
 					continue;
 				}
 
