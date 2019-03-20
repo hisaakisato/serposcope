@@ -459,11 +459,9 @@ public class GoogleScraper {
 	protected String buildRequestUrl(GoogleScrapSearch search, int page) {
 		String url = "https://";
 		try {
-			String keyword = URLEncoder.encode(search.getKeyword(), "utf-8");
-			url += buildHost(search) + "/search?q=" + keyword + "&oq=" + keyword;
+			url += buildHost(search) + "/search?q=" + URLEncoder.encode(search.getKeyword(), "utf-8");
 		} catch (UnsupportedEncodingException ex) {
-			String keyword = search.getKeyword();
-			url += buildHost(search) + "/search?q=" + keyword + "&oq=" + keyword;
+			url += buildHost(search) + "/search?q=" + search.getKeyword();
 		}
 
 		if (search.getCountry() != null && !GoogleCountryCode.__.equals(search.getCountry())) {
