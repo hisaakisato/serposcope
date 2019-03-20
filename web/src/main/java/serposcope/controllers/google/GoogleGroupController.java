@@ -311,11 +311,6 @@ public class GoogleGroupController extends GoogleController {
                 pattern = pattern.replaceAll("(^\\s+)|(\\s+$)", "");
             }
 
-            if (Validator.isEmpty(name)) {
-                flash.error("error.invalidName");
-                return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
-            }
-
             PatternType type = null;
             try {
                 type = PatternType.valueOf(targetType);
@@ -335,6 +330,10 @@ public class GoogleGroupController extends GoogleController {
             if (!GoogleTarget.isValidPattern(type, pattern)) {
                 flash.error("error.invalidPattern");
                 return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+            }
+
+            if (Validator.isEmpty(name)) {
+                name = pattern;
             }
 
             targets.add(new GoogleTarget(group.getId(), name, type, pattern));
