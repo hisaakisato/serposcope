@@ -25,7 +25,7 @@ public class GoogleTarget {
     
     protected final static Pattern PATTERN_DOMAIN = Pattern.compile("^[a-zA-Z0-9-.]{1,61}\\.[a-zA-Z]{2,}$");
 
-    protected final static Pattern PATTERN_SCHEME = Pattern.compile("^(https?://)(.*)");
+    protected final static Pattern PATTERN_SCHEME = Pattern.compile("^(https?://)(.*[^/])(/|$)");
 
     int id;
     int groupId;
