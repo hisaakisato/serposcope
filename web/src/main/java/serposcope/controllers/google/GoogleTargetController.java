@@ -40,6 +40,7 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -652,24 +653,17 @@ public class GoogleTargetController extends GoogleController {
             builder.append("[");
         }
 
+    	int start = runs.stream().min(Comparator.comparingInt(Run::getId)).get().getId();
+    	int end = runs.stream().max(Comparator.comparingInt(Run::getId)).get().getId();
+        List<GoogleRank> allRanks = googleDB.rank.list0(start, end, group.getId(), target.getId());
+
         for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {
         	LocalDate date = itr.next();
         	
-        	int start = -1, end = -1;
-	        for (int i = 0; i < runs.size(); i++) {
-	            Run run = runs.get(i);
-	            if (date.equals(run.getDay())) {
-	            	if (start < 1 || start > run.getId()) {
-	            		start = run.getId();
-	            	}
-	            	if (end < 1 || end < run.getId()) {
-	            		end = run.getId();
-	            	}
-	            }
-	        }
-	
-            Map<Integer, GoogleRank> ranks = googleDB.rank.list0(start, end, group.getId(), target.getId())
-                .stream().collect(Collectors.toMap((r) -> r.googleSearchId, Function.identity()));
+        	List<Integer> runIds = runs.stream().filter(r -> date.equals(r.getDay()))
+        			.map(Run::getId).collect(Collectors.toList());
+	        Map<Integer, GoogleRank> ranks = allRanks.stream().filter(r -> runIds.contains(r.runId))
+	        		.collect(Collectors.toMap((r) -> r.googleSearchId, Function.identity()));
 
             for (GoogleSearch search : searches) {
                 StringBuilder builder = builders.get(search.getId());

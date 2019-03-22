@@ -314,11 +314,11 @@ public class GoogleRankDB extends AbstractDB {
 							.and(t_rank.runId.eq(t_run.id)))
 					.groupBy(t_run.day, t_rank.groupId, t_rank.googleTargetId);
 
-			List<Tuple> tuples = new SQLQuery<Void>(con, dbTplConf)
+			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
                 .select(t_rank.all())
                 .from(t_rank)
-                .where(Expressions.list(t_rank.runId, t_rank.groupId, t_rank.googleTargetId).in(subQuery))
-                .fetch();
+                .where(Expressions.list(t_rank.runId, t_rank.groupId, t_rank.googleTargetId).in(subQuery));
+            List<Tuple> tuples = query.fetch();
             
             for (Tuple tuple : tuples) {
                 ranks.add(fromTuple(tuple));
