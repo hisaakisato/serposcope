@@ -196,7 +196,7 @@ public class GoogleSearchController extends GoogleController {
         final int[] maxRank = new int[1];
         
         LinkedList<LocalDate> stack = new LinkedList<>();
-        googleDB.serp.stream(firstRun.getId(), lastRun.getId(), searchId, (GoogleSerp serp) -> {
+        googleDB.serp.stream(firstRun.getDay(), lastRun.getDay(), group, Arrays.asList(searchId), (GoogleSerp serp) -> {
             
         	if (stack.isEmpty()) {
         		stack.push(serp.getRunDay().toLocalDate());

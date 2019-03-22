@@ -50,8 +50,9 @@ public class GoogleSerpRescanDB {
     @Inject
     RunDB runDB;
     
+    /*
     public void rescanNonBulk(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,  boolean updateSummary) {
-        LOG.debug("SERP rescan (non-bulk) : starting");
+        LOG.info("SERP rescan started (non-bulk)");
         long _start = System.currentTimeMillis();
         Run specPrevRun = null;
         Map<Integer, GoogleTargetSummary> specPrevRunSummaryByTarget = new HashMap<>();
@@ -149,11 +150,12 @@ public class GoogleSerpRescanDB {
                 }
             }
         }
-        LOG.debug("SERP rescan : done, duration = {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-_start));
+        LOG.info("SERP rescan done: duration: {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-_start));
     }
+    */
     
     public void rescan(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,  boolean updateSummary) {
-        LOG.debug("SERP rescan (bulk) : starting");
+        LOG.info("SERP rescan is started.");
         long _start = System.currentTimeMillis();
         Map<Integer, Integer> searchCountByGroup = searchDB.countByGroup();
         Run specPrevRun = null;
@@ -265,7 +267,7 @@ public class GoogleSerpRescanDB {
             ranks.clear();
         }
         
-        LOG.debug("SERP rescan : done, duration = {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-_start));
+        LOG.info("SERP rescan was finished: duration: {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-_start));
     }    
     
     /*

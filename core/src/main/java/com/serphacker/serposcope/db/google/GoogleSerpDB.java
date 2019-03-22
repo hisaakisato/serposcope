@@ -147,7 +147,6 @@ public class GoogleSerpDB extends AbstractDB {
 			SubQueryExpression<Integer> subQuery = SQLExpressions
 					.select(t_serp.runId.max().as(t_serp.runId)).from(t_serp).innerJoin(t_run)
 					.on(t_serp.runId.eq(t_run.id).and(exp))
-					.innerJoin(t_ggroup).on(t_ggroup.groupId.eq(t_ggroup.groupId))
 					.groupBy(t_run.day);
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf).select(t_serp.all()).from(t_serp)
