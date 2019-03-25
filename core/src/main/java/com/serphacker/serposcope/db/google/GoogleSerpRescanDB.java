@@ -19,6 +19,7 @@ import com.serphacker.serposcope.models.google.GoogleTargetSummary;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -52,7 +53,7 @@ public class GoogleSerpRescanDB {
     
     /*
     public void rescanNonBulk(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,  boolean updateSummary) {
-        LOG.info("SERP rescan started (non-bulk)");
+        LOG.debug("[SERP rescan] non-bulk started.");
         long _start = System.currentTimeMillis();
         Run specPrevRun = null;
         Map<Integer, GoogleTargetSummary> specPrevRunSummaryByTarget = new HashMap<>();
@@ -155,7 +156,7 @@ public class GoogleSerpRescanDB {
     */
     
     public void rescan(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,  boolean updateSummary) {
-        LOG.info("SERP rescan is started.");
+        LOG.debug("[SERP rescan] started.");
         long _start = System.currentTimeMillis();
         Map<Integer, Integer> searchCountByGroup = searchDB.countByGroup();
         Run specPrevRun = null;
@@ -178,61 +179,67 @@ public class GoogleSerpRescanDB {
                 summaryByRunId.put(specPrevRun.getId(), specificPreviousSummary);
             }
             
+            final Map<Integer, GoogleBest> bests = new LinkedHashMap<>();
+            final Map<Integer, MutableInt> previousRunIds = new HashMap<>();
+            final Map<Integer, MutableInt> previousRanks = new HashMap<>();
             for (GoogleSearch search : searches) {
-                final MutableInt previousRunId = new MutableInt(0);
-                final MutableInt previousRank = new MutableInt(GoogleRank.UNRANKED);
-                GoogleBest searchBest = new GoogleBest(target.getGroupId(), target.getId(), search.getId(), GoogleRank.UNRANKED, null, null);
+            	int searchId = search.getId();
+            	previousRunIds.putIfAbsent(searchId, new MutableInt(0));
+            	previousRanks.putIfAbsent(searchId, new MutableInt(GoogleRank.UNRANKED));
+            	bests.putIfAbsent(searchId, new GoogleBest(target.getGroupId(), target.getId(), searchId, GoogleRank.UNRANKED, null, null));
                 
                 if(specPrevRun != null){
-                    previousRunId.setValue(specPrevRun.getId());
-                    previousRank.setValue(rankDB.get(specPrevRun.getId(), target.getGroupId(), target.getId(), search.getId()));
+                    previousRunIds.get(searchId).setValue(specPrevRun.getId());
+                    previousRanks.get(searchId).setValue(rankDB.get(specPrevRun.getId(), target.getGroupId(), target.getId(), search.getId()));
                     GoogleBest specificBest = rankDB.getBest(target.getGroupId(), target.getId(), search.getId());
                     if(specificBest != null){
-                        searchBest = specificBest;
+                    	bests.put(searchId, specificBest);
+                    }
+                }                
+            }
+
+            serpDB.stream(specificRunId, specificRunId, new ArrayList<Integer>(bests.keySet()), (GoogleSerp res) -> {
+                
+            	final GoogleSearch search = res.getSearch();
+            	int searchId = search.getId();
+                final MutableInt previousRunId = previousRunIds.get(searchId);
+                final MutableInt previousRank = previousRanks.get(searchId);
+                final GoogleBest best = bests.get(searchId);
+                int rank = GoogleRank.UNRANKED;
+                String rankedUrl = null;
+                for (int i = 0; i < res.getEntries().size(); i++) {
+                    if (target.match(res.getEntries().get(i).getUrl())) {
+                        rankedUrl = res.getEntries().get(i).getUrl();
+                        rank = i + 1;
+                        break;
                     }
                 }
-                final GoogleBest best = searchBest;
 
-                serpDB.stream(specificRunId, specificRunId, search.getId(), (GoogleSerp res) -> {
-                    
-                    int rank = GoogleRank.UNRANKED;
-                    String rankedUrl = null;
-                    for (int i = 0; i < res.getEntries().size(); i++) {
-                        if (target.match(res.getEntries().get(i).getUrl())) {
-                            rankedUrl = res.getEntries().get(i).getUrl();
-                            rank = i + 1;
-                            break;
-                        }
-                    }
-
-                    // only update last run
-                    GoogleRank gRank = new GoogleRank(res.getRunId(), target.getGroupId(), target.getId(), search.getId(),
-                        rank, previousRank.shortValue(), rankedUrl);
-                    ranks.add(gRank);
-                    if(ranks.size() > 2000){
-                        rankDB.insert(ranks);
-                        ranks.clear();
-                    }
-                    
-                    if(updateSummary){
-                        GoogleTargetSummary summary = summaryByRunId.get(res.getRunId());
-                        if (summary == null) {
-                            summaryByRunId.put(res.getRunId(), summary = new GoogleTargetSummary(target.getGroupId(),
-                                target.getId(), res.getRunId(), 0));
-                        }
-                        summary.addRankCandidat(gRank);
-                    }                    
-
-                    if (rank != GoogleRank.UNRANKED && rank <= best.getRank()) {
-                        best.setRank((short) rank);
-                        best.setUrl(rankedUrl);
-                        best.setRunDay(res.getRunDay());
-                    }
-
-                    previousRunId.setValue(res.getRunId());
-                    previousRank.setValue(rank);
-                });
+                // only update last run
+                GoogleRank gRank = new GoogleRank(res.getRunId(), target.getGroupId(), target.getId(), searchId,
+                    rank, previousRank.shortValue(), rankedUrl);
+                ranks.add(gRank);
                 
+                if(updateSummary){
+                    GoogleTargetSummary summary = summaryByRunId.get(res.getRunId());
+                    if (summary == null) {
+                        summaryByRunId.put(res.getRunId(), summary = new GoogleTargetSummary(target.getGroupId(),
+                            target.getId(), res.getRunId(), 0));
+                    }
+                    summary.addRankCandidat(gRank);
+                }                    
+
+                if (rank != GoogleRank.UNRANKED && rank <= best.getRank()) {
+                    best.setRank((short) rank);
+                    best.setUrl(rankedUrl);
+                    best.setRunDay(res.getRunDay());
+                }
+
+                previousRunId.setValue(res.getRunId());
+                previousRank.setValue(rank);
+            });
+
+            for (GoogleBest best : bests.values()) {
                 if (best.getRank() != GoogleRank.UNRANKED) {
                     rankDB.insertBest(best);
                 }
@@ -262,12 +269,13 @@ public class GoogleSerpRescanDB {
             }
         }
         
-        if(!ranks.isEmpty()){
-            rankDB.insert(ranks);
-            ranks.clear();
+        int len = ranks.size();
+        int bulksize = 2000;
+        for (int i = 0; i * bulksize < len; i++) {
+        	rankDB.insert(ranks.subList(i * bulksize, Math.min((i + 1) * bulksize, len)));
         }
         
-        LOG.info("SERP rescan was finished: duration: {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-_start));
+        LOG.info("[SERP rescan] rescan was finished: duration: {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-_start));
     }    
     
     /*

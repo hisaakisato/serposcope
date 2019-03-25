@@ -35,6 +35,7 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.sql.rowset.serial.SerialBlob;
@@ -133,9 +134,13 @@ public class GoogleSerpDB extends AbstractDB {
 //    }    
 
 	public void stream(Integer firstRun, Integer lastRun, int googleSearchId, Consumer<GoogleSerp> callback) {
+		stream(firstRun, lastRun, Arrays.asList(googleSearchId), callback);
+	}
+
+	public void stream(Integer firstRun, Integer lastRun, List<Integer> googleSearchIds, Consumer<GoogleSerp> callback) {
 		try (Connection con = ds.getConnection()) {
 
-			BooleanExpression exp = t_serp.googleSearchId.eq(googleSearchId);
+			BooleanExpression exp = t_serp.googleSearchId.in(googleSearchIds);
 			if (firstRun != null && lastRun != null) {
 				exp = exp.and(t_run.id.between(firstRun, lastRun));
 			} else if (firstRun != null) {
@@ -149,8 +154,12 @@ public class GoogleSerpDB extends AbstractDB {
 					.on(t_serp.runId.eq(t_run.id).and(exp))
 					.groupBy(t_run.day);
 
-			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf).select(t_serp.all()).from(t_serp)
-					.where(t_serp.runId.in(subQuery).and(t_serp.googleSearchId.eq(googleSearchId)))
+			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.serp, t_gsearch.id,
+							t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter, t_gsearch.device,
+							t_gsearch.local, t_gsearch.customParameters)
+					.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
+					.where(t_serp.runId.in(subQuery).and(t_serp.googleSearchId.in(googleSearchIds)))
 					.orderBy(t_serp.runId.asc());
 
 			query.setStatementOptions(StatementOptions.builder().setFetchSize(250).build());
