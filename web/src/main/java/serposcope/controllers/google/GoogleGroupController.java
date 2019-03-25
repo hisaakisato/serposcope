@@ -93,7 +93,7 @@ public class GoogleGroupController extends GoogleController {
         Map<Integer, GoogleTargetSummary> summaryByTagetId = new HashMap<>();
         Map<Integer, List<Integer>> scoreHistoryByTagetId = new HashMap<>();
 
-        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null);
+        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null, group, null);
         if (lastRun != null) {
             List<GoogleTargetSummary> summaries = googleDB.targetSummary.list(lastRun.getId());
             for (GoogleTargetSummary summary : summaries) {
@@ -272,7 +272,7 @@ public class GoogleGroupController extends GoogleController {
             googleDB.search.insert(searches, group.getId());
         }
 
-        googleDB.serpRescan.rescan(null, getTargets(context), knownSearches, false);
+        taskManager.rescan(null, getTargets(context), knownSearches, false);
 
         flash.success("google.group.searchInserted");
         return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()) + "#tab-searches");
@@ -343,7 +343,7 @@ public class GoogleGroupController extends GoogleController {
             flash.error("error.internalError");
             return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
         }
-        googleDB.serpRescan.rescan(null, targets, getSearches(context), true);
+        taskManager.rescan(null, targets, getSearches(context), true);
 
         Run runningGoogleTask = taskManager.getRunningGoogleTask();
         if (runningGoogleTask != null) {

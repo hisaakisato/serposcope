@@ -98,8 +98,8 @@ public class GoogleSearchController extends GoogleController {
             return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
         }
         
-        Run minRun = baseDB.run.findFirst(Module.GOOGLE, STATUSES_DONE, null);
-        Run maxRun = baseDB.run.findLast(Module.GOOGLE, STATUSES_DONE, null);
+        Run minRun = baseDB.run.findFirst(Module.GOOGLE, STATUSES_DONE, null, group, null, Arrays.asList(searchId), null);
+        Run maxRun = baseDB.run.findLast(Module.GOOGLE, STATUSES_DONE, null, group, null, Arrays.asList(searchId), null);
         if(maxRun == null || minRun == null){
             return Results.ok()
                 .render("search", search);
@@ -122,8 +122,8 @@ public class GoogleSearchController extends GoogleController {
             endDate = maxDay;
         }
         
-        Run firstRun = baseDB.run.findFirst(Module.GOOGLE, STATUSES_DONE, startDate);
-        Run lastRun = baseDB.run.findLast(Module.GOOGLE, STATUSES_DONE, endDate);
+        Run firstRun = baseDB.run.findFirst(Module.GOOGLE, STATUSES_DONE, startDate, group, null, Arrays.asList(searchId), null);
+        Run lastRun = baseDB.run.findLast(Module.GOOGLE, STATUSES_DONE, endDate, group, null, Arrays.asList(searchId), null);
         
         if(firstRun == null || lastRun == null || firstRun.getDay().isAfter(lastRun.getDay())){
             return Results.ok()
@@ -281,8 +281,8 @@ public class GoogleSearchController extends GoogleController {
             try {endDate = LocalDate.parse(endDateStr);} catch(Exception ex){}
         }        
         
-        Run firstRun = baseDB.run.findFirst(Module.GOOGLE, STATUSES_DONE, startDate);
-        Run lastRun = baseDB.run.findLast(Module.GOOGLE, STATUSES_DONE, endDate);
+        Run firstRun = baseDB.run.findFirst(Module.GOOGLE, STATUSES_DONE, startDate, group, null, Arrays.asList(searchId), null);
+        Run lastRun = baseDB.run.findLast(Module.GOOGLE, STATUSES_DONE, endDate, group, null, Arrays.asList(searchId), null);
         
         if(url == null || firstRun == null || lastRun == null){
             return Results.badRequest().text();

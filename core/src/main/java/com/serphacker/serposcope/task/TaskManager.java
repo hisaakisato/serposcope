@@ -10,17 +10,25 @@ package com.serphacker.serposcope.task;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.serphacker.serposcope.db.base.BaseDB;
+import com.serphacker.serposcope.db.google.GoogleDB;
 import com.serphacker.serposcope.di.TaskFactory;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.base.User;
+import com.serphacker.serposcope.models.google.GoogleSearch;
+import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.http.proxy.ProxyRotator;
 import com.serphacker.serposcope.task.google.GoogleTask;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +44,9 @@ public class TaskManager {
     @Inject
     BaseDB db;
     
+    @Inject
+    GoogleDB googleDB;
+
     public final ProxyRotator rotator = new ProxyRotator(Collections.emptySet());
 
     final Object googleTaskLock = new Object();
@@ -43,6 +54,19 @@ public class TaskManager {
     
     final Map<String, Object> googleTaskLocks = new ConcurrentHashMap<String, Object>();
     final Map<String, GoogleTask> googleTasks = new ConcurrentHashMap<String, GoogleTask>();
+
+    ExecutorService executor = Executors.newFixedThreadPool(4, new ThreadFactory() {
+    	
+    	private ThreadGroup threadGroup = new ThreadGroup("rescan");    	
+    	private AtomicInteger count = new AtomicInteger();
+
+    	@Override
+		public Thread newThread(Runnable r) {
+			Thread t = new Thread(threadGroup, r, threadGroup.getName()
+					+ "-" + count.incrementAndGet());
+			return t;
+		}
+	});
 
     public boolean isGoogleRunning(){
         synchronized(googleTaskLock){
@@ -196,4 +220,13 @@ public class TaskManager {
         return tasks;
     }
 
+	public void rescan(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,
+			boolean updateSummary) {
+		executor.execute(new Runnable() {
+			@Override
+			public void run() {
+				googleDB.serpRescan.rescan(specificRunId, targets, searches, updateSummary);
+			}
+		});
+    }
 }

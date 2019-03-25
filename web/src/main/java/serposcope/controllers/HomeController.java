@@ -82,7 +82,7 @@ public class HomeController extends BaseController {
         }
         User user = context.getAttribute("user", User.class);
         List<Group> groups = (List<Group>) context.getAttribute("groups");
-        Run currentRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_RUNNING, null, user);
+        Run currentRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_RUNNING, null, null, user);
         Run lastRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_DONE, null);
         if(lastRun == null){
             return Results

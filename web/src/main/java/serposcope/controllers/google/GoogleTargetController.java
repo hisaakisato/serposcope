@@ -39,6 +39,7 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -165,8 +166,8 @@ public class GoogleTargetController extends GoogleController {
             return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
         }
 
-        Run minRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, null);
-        Run maxRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null);
+        Run minRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, null, group, null, null, Arrays.asList(targetId));
+        Run maxRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null, group, null, null, Arrays.asList(targetId));
 
         if (maxRun == null || minRun == null || searches.isEmpty()) {
             String fallbackDisplay = "export".equals(display) ? "table" : display;
@@ -201,8 +202,8 @@ public class GoogleTargetController extends GoogleController {
             endDate = maxDay;
         }
 
-        Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate);
-        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate);
+        Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate, group, null, null, Arrays.asList(targetId));
+        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, group, null, null, Arrays.asList(targetId));
 
         List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId());
 
@@ -246,7 +247,7 @@ public class GoogleTargetController extends GoogleController {
         } catch (Exception ex) {
             return Results.json().renderRaw("[[],[],[]]");
         }
-        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate);
+        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, group, null, null, Arrays.asList(targetId));
         
         List<TargetVariation> ranksUp = new ArrayList<>();
         List<TargetVariation> ranksDown = new ArrayList<>();
@@ -539,8 +540,8 @@ public class GoogleTargetController extends GoogleController {
             return Results.json().renderRaw("[]");
         }
 
-        final Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate);
-        final Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate);
+        final Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate, group, null, null, Arrays.asList(targetId));
+        final Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, group, null, null, Arrays.asList(targetId));
         final List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId(), target);
 
         return Results.ok()

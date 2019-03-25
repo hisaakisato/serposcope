@@ -10,6 +10,9 @@ package com.serphacker.serposcope.db.base;
 import com.google.inject.Singleton;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Path;
+import com.querydsl.core.types.SubQueryExpression;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.sql.SQLExpressions;
 import com.querydsl.sql.SQLQuery;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
@@ -30,6 +33,8 @@ import static com.serphacker.serposcope.models.base.Run.Status.DONE_WITH_ERROR;
 import static com.serphacker.serposcope.models.base.Run.Status.RUNNING;
 
 import com.serphacker.serposcope.querybuilder.QGoogleRank;
+import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
+import com.serphacker.serposcope.querybuilder.QGoogleSerp;
 import com.serphacker.serposcope.querybuilder.QGroup;
 import com.serphacker.serposcope.querybuilder.QRun;
 import com.serphacker.serposcope.querybuilder.QUser;
@@ -49,6 +54,8 @@ import java.util.stream.Collectors;
 public class RunDB extends AbstractDB {
     
     QRun t_run = QRun.run;
+    QGoogleSerp t_serp = QGoogleSerp.googleSerp;
+    QGoogleSearchGroup t_searchgroup = QGoogleSearchGroup.googleSearchGroup;
     QUser t_user = QUser.user;
     QGroup t_group = QGroup.group;
     QGoogleRank t_rank = QGoogleRank.googleRank;
@@ -376,34 +383,67 @@ public class RunDB extends AbstractDB {
     }    
     
     public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate){
-    	return findLast(module, statuses, untilDate, null);
+    	return findLast(module, statuses, untilDate, null, null, null, null);
     }
-    
-    public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate, User user){
+
+	public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate, Group group, User user) {
+		return findLast(module, statuses, untilDate, group, user, null, null);
+	}
+
+	public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate, Group group, User user,
+			Collection<Integer> searchIds, Collection<Integer> targetIds) {
         Run run = null;
         try(Connection conn = ds.getConnection()){
+
+            boolean sub = group != null || (searchIds != null && !searchIds.isEmpty())
+					|| (targetIds != null && !targetIds.isEmpty());
 
             SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
                 .select(getFields())
                 .from(t_run)
-	            .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
-	            .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
+                .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+                .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
                 .where(t_run.moduleId.eq(module.ordinal()));
             
-            if( statuses != null){
-                query.where(t_run.status.in(statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList())));
+            BooleanExpression cond = null;
+
+            if(statuses != null){
+            	cond = t_run.status.in(statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList()));
             }
             
             if(untilDate != null){
-                query.where(t_run.day.loe(Date.valueOf(untilDate)));
+            	cond = t_run.day.loe(Date.valueOf(untilDate)).and(cond);
             }
         
         	if (user != null) {
-        		query.where(t_run.userId.eq(user.getId()));
+            	cond = t_run.userId.eq(user.getId()).and(cond);
+        	}
+
+        	if (group != null) {
+        		cond = t_rank.groupId.eq(group.getId()).and(cond);
+            }
+
+        	if (searchIds != null) {
+        		cond = t_rank.googleSearchId.in(searchIds).and(cond);
+            }
+
+        	if (targetIds != null) {
+        		cond = t_rank.googleTargetId.in(targetIds).and(cond);
+            }
+
+        	if (cond != null) {
+            	if (sub) {
+					SubQueryExpression<Integer> subQuery = SQLExpressions.select(t_run.id.max().as(t_run.id))
+							.from(t_run).innerJoin(t_rank).on(t_run.id.eq(t_rank.runId).and(cond)).groupBy(t_run.day);
+    				query.where(t_run.id.in(subQuery));
+            	} else {
+            		query.where(cond);
+            	}
         	}
 
         	Tuple tuple = query
                 .orderBy(t_run.id.desc())
+                .limit(1)
                 .fetchFirst();
 
             run = fromTuple(tuple);
@@ -415,32 +455,64 @@ public class RunDB extends AbstractDB {
     }
     
     public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate){
-    	return findFirst(module, statuses, fromDate, null);
+    	return findFirst(module, statuses, fromDate, null, null);
     }
 
-    public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate, User user){
+	public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate, Group group, User user) {
+		return findFirst(module, statuses, fromDate, group, user, null, null);
+	}
+
+	public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate, Group group, User user,
+			Collection<Integer> searchIds, Collection<Integer> targetIds) {
         Run run = null;
         try(Connection conn = ds.getConnection()){
+
+            boolean sub = group != null || (searchIds != null && !searchIds.isEmpty())
+					|| (targetIds != null && !targetIds.isEmpty());
 
             SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
                 .select(getFields())
                 .from(t_run)
-	            .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
-	            .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
+                .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+                .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
                 .where(t_run.moduleId.eq(module.ordinal()));
             
-            if( statuses != null){
-                query.where(t_run.status.in(statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList())));
+            BooleanExpression cond = null;
+
+            if(statuses != null){
+            	cond = t_run.status.in(statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList()));
             }
             
             if(fromDate != null){
-                query.where(t_run.day.goe(Date.valueOf(fromDate)));
+            	cond = t_run.day.goe(Date.valueOf(fromDate)).and(cond);
             }
         
         	if (user != null) {
-        		query.where(t_run.userId.eq(user.getId()));
+            	cond = t_run.userId.eq(user.getId()).and(cond);
         	}
 
+        	if (group != null) {
+        		cond = t_rank.groupId.eq(group.getId()).and(cond);
+            }
+
+        	if (searchIds != null) {
+        		cond = t_rank.googleSearchId.in(searchIds).and(cond);
+            }
+
+        	if (targetIds != null) {
+        		cond = t_rank.googleTargetId.in(targetIds).and(cond);
+            }
+
+        	if (cond != null) {
+            	if (sub) {
+					SubQueryExpression<Integer> subQuery = SQLExpressions.select(t_run.id.max().as(t_run.id))
+							.from(t_run).innerJoin(t_rank).on(t_run.id.eq(t_rank.runId).and(cond)).groupBy(t_run.day);
+    				query.where(t_run.id.in(subQuery));
+            	} else {
+            		query.where(cond);
+            	}
+        	}
+        	
         	Tuple tuple = query
                 .orderBy(t_run.id.asc())
                 .fetchFirst();

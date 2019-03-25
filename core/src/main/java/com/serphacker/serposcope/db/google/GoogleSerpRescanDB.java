@@ -156,7 +156,7 @@ public class GoogleSerpRescanDB {
     */
     
     public void rescan(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,  boolean updateSummary) {
-        LOG.debug("[SERP rescan] started.");
+        LOG.info("[SERP rescan] started.");
         long _start = System.currentTimeMillis();
         Map<Integer, Integer> searchCountByGroup = searchDB.countByGroup();
         Run specPrevRun = null;

@@ -212,7 +212,7 @@ public class TaskController extends BaseController {
                 for (Group group : groups) {
                     List<GoogleTarget> targets = googleDB.target.list(Arrays.asList(group.getId()));
                     List<GoogleSearch> searches = googleDB.search.listByGroup(Arrays.asList(group.getId()));
-                    googleDB.serpRescan.rescan(run.getId(), targets, searches, true);
+                    taskManager.rescan(run.getId(), targets, searches, true);
                 }
                 
                 /*
