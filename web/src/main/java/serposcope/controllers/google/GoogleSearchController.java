@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import ninja.Context;
@@ -191,21 +192,18 @@ public class GoogleSearchController extends GoogleController {
         } else {
             builder.append(']');
         }
+        LocalDate firstDate = firstRun.getDay();
         builder.append(",\"ranks\":[");
         
         final int[] maxRank = new int[1];
         
-        LinkedList<LocalDate> stack = new LinkedList<>();
+        AtomicInteger ai = new AtomicInteger(0);
         googleDB.serp.stream(firstRun.getDay(), lastRun.getDay(), group, Arrays.asList(searchId), (GoogleSerp serp) -> {
             
-        	if (stack.isEmpty()) {
-        		stack.push(serp.getRunDay().toLocalDate());
-        	}
-        	LocalDate date = stack.pop();
-        	while (date.isBefore(serp.getRunDay().toLocalDate())) {
+			while (firstDate.plusDays(ai.get()).isBefore(serp.getRunDay().toLocalDate())) {
     			builder.append('[')
-				.append(date.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000l)
-				.append(',');
+					.append(ai.getAndIncrement())
+					.append(',');
                 // calendar
                 builder.append("null").append(",");
                 for (int i = 0; i < targets.size(); i++) {
@@ -215,12 +213,10 @@ public class GoogleSearchController extends GoogleController {
                     builder.setCharAt(builder.length()-1, ']');
                 }
                 builder.append(',');
-                date = date.plusDays(1);
     		}
 			builder.append('[')
-			.append(date.atStartOfDay(ZoneOffset.UTC).toEpochSecond() * 1000l)
-			.append(',');
-            stack.push(date.plusDays(1));
+				.append(ai.getAndIncrement())
+				.append(',');
             
             // calendar
             builder.append("null").append(",");

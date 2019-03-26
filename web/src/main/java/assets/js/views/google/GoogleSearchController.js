@@ -65,6 +65,7 @@ serposcope.googleSearchController = function () {
     var minRankOffset = -5;
     var chart = null;
     var chartData = [];
+    var chartStartDate = null;
     var chartOptions = {
         labels: ["Date", "###CALENDAR###"],
         legend: "always",
@@ -83,10 +84,10 @@ serposcope.googleSearchController = function () {
                 pixelsPerLabel: 80,
                 axisLabelFontSize: 12,
                 axisLabelFormatter: function (d, gran) {
-                    return new Date(d).format("yyyy-mm-dd");
+                    return new Date(chartStartDate.getTime() + d * 24 * 60 * 60 * 1000).format("yyyy-mm-dd");
                 },
-                valueFormatter: function (ms) {
-                    return "<strong>" + new Date(ms).format("yyyy-mm-dd") + "</strong>";
+                valueFormatter: function (d) {
+                    return "<strong>" + new Date(chartStartDate.getTime() + d * 24 * 60 * 60 * 1000).format("yyyy-mm-dd") + "</strong>";
                 }
             },
             y: {
@@ -112,12 +113,13 @@ serposcope.googleSearchController = function () {
         chart = new Dygraph(document.getElementById("google-search-chart"),chartData,chartOptions);
         chart.ready(function() {
             var events = JSON.parse($("#csp-vars").attr("data-events"));
+            var labelFormatter = chart.getOption('axes').x.axisLabelFormatter;
             var annotations = [];
             for(var i=0;i<chartData.length;i++){
                 for(var j=0;j<events.length;j++){
                     var event = events[j];
                     var eventDate = serposcope.utils.eventDate(event);
-                    if(eventDate == moment(chartData[i][0]).format("YYYY-MM-DD")){
+                    if(eventDate == labelFormatter(chartData[i][0])){
                         annotations.push({
                             series: "###CALENDAR###",
                             x: chartData[i][0],
@@ -340,6 +342,7 @@ serposcope.googleSearchController = function () {
         
         var jsonData = JSON.parse($('#csp-vars').attr('data-chart').replace(/NaN/g, '"__NaN__"'), function(key, val) { return val === '__NaN__' ? NaN : val; });
         chartData = [];
+        chartStartDate = new Date($('#csp-vars').attr('data-start-date'));
         if(jsonData != null && typeof(jsonData.ranks) != "undefined" && typeof(jsonData.targets) != "undefined"){
             chartData = jsonData.ranks;
             maxRank = jsonData.maxRank > maxRank ? jsonData.maxRank : maxRank;

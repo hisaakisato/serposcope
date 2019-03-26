@@ -58,11 +58,13 @@ Dygraph.Plugins.Serposcope = (function () {
             return;
         }
         
+        var labelFormatter = e.dygraph.getOption('axes').x.axisLabelFormatter;
+
         var div = elements[0];
         
         div.style.display = "block";
         div.innerHTML = 
-            '<span>' +  moment(point.xval).format('YYYY-MM-DD') + '</span><br/>' + 
+        	'<span>' + labelFormatter(point.xval) + '</span><br/>' + 
             '<strong>' + serposcope.utils.escapeHTML(point.name) + " : " + serposcope.utils.escapeHTML(point.yval) + '</strong>';
         div.style.left = (parseInt(point.canvasx - (div.offsetWidth+10))) + 'px';
         div.style.top = (parseInt(point.canvasy) - 10) + 'px';        
