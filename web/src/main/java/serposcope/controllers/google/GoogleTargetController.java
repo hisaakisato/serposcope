@@ -205,7 +205,7 @@ public class GoogleTargetController extends GoogleController {
         Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate, group, null, null, Arrays.asList(targetId));
         Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, group, null, null, Arrays.asList(targetId));
 
-        List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId());
+        List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId(), target);
 
         startDate = firstRun.getDay();
         endDate = lastRun.getDay();
@@ -412,8 +412,9 @@ public class GoogleTargetController extends GoogleController {
         builder.append(",\"ranks\": [");
 
         int maxRank = 0;
-        for (Run run : runs) {
-            builder.append("\n\t[").append(run.getStarted().toEpochSecond(ZoneOffset.UTC) * 1000l).append(",");
+        for (int i = 0; i < runs.size(); i++) {
+        	Run run = runs.get(i);
+            builder.append("\n\t[").append(i).append(",");
             // calendar
             builder.append("null,");
 

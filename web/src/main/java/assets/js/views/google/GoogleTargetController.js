@@ -27,28 +27,30 @@ serposcope.googleTargetController = function () {
     var minRankOffset = -5;
     var chart = null;
     var chartData = [];
+    var chartStartDate = null;
     var chartOptions = {
         labels: ["Date", "###CALENDAR###"],
-        visibility: [true],
         legend: "always",
+        visibility: [true],
         labelsDivWidth: "100%",
         labelsDiv: "google-target-legend",
+        labelsUTC: true,
         drawPoints: true,
+        connectSeparatedPoints: true,
         pointSize: 2,
         highlightSeriesBackgroundAlpha: 0.8,
         highlightSeriesOpts: {strokeWidth: 2},
         drawHighlightPointCallback: function (g, seriesName, canvasContext, cx, cy, color, pointSize) {},
         axes: {
             x: {
-                drawGrid: false,
                 axisLabelWidth: 120,
                 pixelsPerLabel: 80,
                 axisLabelFontSize: 12,
                 axisLabelFormatter: function (d, gran) {
-                    return new Date(d).format("yyyy-mm-dd");
+                    return new Date(chartStartDate.getTime() + d * 24 * 60 * 60 * 1000).format("yyyy-mm-dd");
                 },
-                valueFormatter: function (ms) {
-                    return "<strong>" + new Date(ms).format("yyyy-mm-dd") + "</strong>";
+                valueFormatter: function (d) {
+                    return "<strong>" + new Date(chartStartDate.getTime() + d * 24 * 60 * 60 * 1000).format("yyyy-mm-dd") + "</strong>";
                 }
             },
             y: {
@@ -78,6 +80,7 @@ serposcope.googleTargetController = function () {
         chart = new Dygraph(document.getElementById("google-target-chart"), chartData, chartOptions);
         chart.ready(function () {
             var events = JSON.parse($("#csp-vars").attr("data-events"));
+            var labelFormatter = chart.getOption('axes').x.axisLabelFormatter;
             var annotations = [];
             for (var i = 0; i < chartData.length; i++) {
                 for (var j = 0; j < events.length; j++) {
@@ -190,6 +193,7 @@ serposcope.googleTargetController = function () {
 
         var jsonData = JSON.parse($('#csp-vars').attr('data-chart').replace(/NaN/g, '"__NaN__"'), function(key, val) { return val === '__NaN__' ? NaN : val; });
         chartData = [];
+        chartStartDate = new Date($('#csp-vars').attr('data-start-date'));
         if (jsonData != null && typeof (jsonData.ranks) != "undefined" && typeof (jsonData.searches) != "undefined") {
             chartData = jsonData.ranks;
             maxRank = jsonData.maxRank > maxRank ? jsonData.maxRank : maxRank;

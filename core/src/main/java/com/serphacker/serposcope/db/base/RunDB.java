@@ -199,18 +199,26 @@ public class RunDB extends AbstractDB {
                 .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
                 .leftJoin(t_group).on(t_run.groupId.eq(t_group.id));
             
-            if(firstId != null){
-                query = query.where(t_run.id.goe(firstId));
-            }
-            
-            if(lastId != null){
-                query = query.where(t_run.id.loe(lastId));
-            }
-            
+            BooleanExpression exp = null;
+			if (firstId != null && lastId != null) {
+				exp = t_run.id.between(firstId, lastId);
+			} else if (firstId != null) {
+				exp = t_run.id.goe(firstId);
+			} else if (lastId != null) {
+				exp = t_run.id.loe(lastId);
+			}
+			
             if (target != null) {
-				query.distinct().leftJoin(t_rank).on(t_run.id.eq(t_rank.runId))
-						.where(t_rank.googleTargetId.eq(target.getId()));
+            	exp = t_rank.googleTargetId.eq(target.getId()).and(exp);
+				query.leftJoin(t_rank).on(t_run.id.eq(t_rank.runId).and(t_rank.googleTargetId.eq(target.getId())));
             }
+
+			SubQueryExpression<Integer> subQuery = SQLExpressions.select(t_run.id.max().as(t_run.id))
+					.from(t_run).innerJoin(t_rank).on(t_run.id.eq(t_rank.runId).and(exp)).groupBy(t_run.day);
+            
+			query.where(t_run.id.in(subQuery).and(exp));
+
+            
             List<Tuple> tuples = query
                 .where(t_run.finished.isNotNull())
                 .orderBy(t_run.id.asc())
