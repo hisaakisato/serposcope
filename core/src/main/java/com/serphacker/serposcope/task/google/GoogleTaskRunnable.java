@@ -158,8 +158,8 @@ public class GoogleTaskRunnable implements Runnable {
 
 				if (res.status != OK) {
 					if (searchTry > controller.googleOptions.getFetchRetry()) {
-						LOG.error("[Search Failed] device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
-								device == GoogleDevice.DESKTOP ? "PC" : "SP",
+						LOG.error("[Search Failed] id: {} device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
+								search.getId(), device == GoogleDevice.DESKTOP ? "PC" : "SP",
 								search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
 								proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
 						controller.failedSearches.putIfAbsent(search, new AtomicInteger(0));
@@ -168,8 +168,8 @@ public class GoogleTaskRunnable implements Runnable {
 						}
 						search = null; // next
 					} else {
-						LOG.warn("[Search Error] device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
-								device == GoogleDevice.DESKTOP ? "PC" : "SP",
+						LOG.warn("[Search Error] id: {} device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
+								search.getId(), device == GoogleDevice.DESKTOP ? "PC" : "SP",
 								search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
 								proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
 					}
@@ -181,8 +181,8 @@ public class GoogleTaskRunnable implements Runnable {
 				controller.onSearchDone(search, res);
 
 				if (res.status == OK) {
-					LOG.info("[Search Done] device: {} keyword: [{}] duration: {} done: {} total: {} retry: {} captchas: {} proxy: [{}] user-agent: [{}] request_count: {}",
-							device == GoogleDevice.DESKTOP ? "PC" : "SP",
+					LOG.info("[Search Done] id: {} device: {} keyword: [{}] duration: {} done: {} total: {} retry: {} captchas: {} proxy: [{}] user-agent: [{}] request_count: {}",
+							search.getId(), device == GoogleDevice.DESKTOP ? "PC" : "SP",
 							search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), controller.getSearchDone(),
 							controller.totalSearch, searchTry - 1, res.captchas,
 							proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
@@ -218,6 +218,7 @@ public class GoogleTaskRunnable implements Runnable {
 		GoogleScrapSearch scrapSearch = new GoogleScrapSearch();
 
 		// options.getFetchRetry(); // TODO
+		scrapSearch.setSearchId(search.getId());
 		scrapSearch.setPagePauseMS(options.getMinPauseBetweenPageSec() * 1000l,
 				options.getMaxPauseBetweenPageSec() * 1000l);
 		scrapSearch.setPages(options.getPages());

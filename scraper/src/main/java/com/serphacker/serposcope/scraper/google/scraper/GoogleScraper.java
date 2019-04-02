@@ -20,6 +20,7 @@ import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
 import com.serphacker.serposcope.scraper.http.ScrapClient;
 import com.serphacker.serposcope.scraper.http.proxy.DirectNoProxy;
 import com.serphacker.serposcope.scraper.http.proxy.ScrapProxy;
+import com.serphacker.serposcope.scraper.utils.S3Utilis;
 import com.serphacker.serposcope.scraper.utils.UserAgentGenerator;
 
 import java.io.File;
@@ -27,13 +28,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.http.HttpHost;
@@ -57,7 +59,13 @@ public class GoogleScraper {
 
 	public final static int DEFAULT_MAX_RETRY = 3;
 
+	private static final String TAG_BASE = "<base href=\"http://www.google.com/\">";
+	private static final String TAG_HEAD = "<head>";
+
+	private static final String STYLE_ENTRY_MARK = "<style type=\"text/css\">[data-serposcope-entry] h3,[data-serposcope-entry] div[role=heading] {border:1px solid red;}</style>";
+
 	final static BasicClientCookie NCR_COOKIE = new BasicClientCookie("PREF", "ID=1111111111111111:CR=2");
+
 	static {
 		NCR_COOKIE.setDomain("google.com");
 		NCR_COOKIE.setPath("/");
@@ -76,21 +84,24 @@ public class GoogleScraper {
 	Random random = new Random();
 
 	Document lastSerpHtml = null;
+	String lastHtml = null;
 	int captchas = 0;
+	GoogleDevice device;
 
 	public GoogleScraper(ScrapClient client, CaptchaSolver solver) {
-//        this.search = search;
 		this.http = client;
 		this.solver = solver;
 	}
 
 	public GoogleScrapResult scrap(GoogleScrapSearch search) throws InterruptedException {
+		device = search.getDevice();
 		lastSerpHtml = null;
 		captchas = 0;
 		List<GoogleScrapLinkEntry> entries = new ArrayList<>();
 		prepareHttpClient(search);
 		long resultsNumber = 0;
 
+		LocalDate today = LocalDate.now();
 		try {
 			String referrer = "https://" + buildHost(search) + "/";
 			for (int page = 0; page < search.getPages(); page++) {
@@ -142,6 +153,9 @@ public class GoogleScraper {
 				if (page == 0) {
 					resultsNumber = parseResultsNumberOnFirstPage();
 				}
+				
+				// upload s3
+				S3Utilis.upload(today, search, page, this.lastHtml);
 
 				if (hasNextPage()) {
 					Thread.sleep(2500);
@@ -249,17 +263,56 @@ public class GoogleScraper {
 			return Status.ERROR_NETWORK;
 		}
 
+		Status status = null;
+		List<GoogleScrapLinkEntry> list = new ArrayList<>();
 		Element resDiv = lastSerpHtml.getElementById("res");
 		if (resDiv != null) {
-			return parseSerpLayoutRes(resDiv, entries);
+			status = parseSerpLayoutRes(resDiv, list);
 		}
 
-		final Element mainDiv = lastSerpHtml.getElementById("main");
-		if (mainDiv != null) {
-			return parseSerpLayoutMain(mainDiv, entries);
+		if (status == null) {
+			final Element mainDiv = lastSerpHtml.getElementById("main");
+			if (mainDiv != null) {
+				status = parseSerpLayoutMain(mainDiv, list);
+			}
 		}
-
-		return Status.ERROR_PARSING;
+		
+		if (status == Status.OK) {
+			StringBuilder sb = new StringBuilder();
+			Matcher m = Pattern.compile(TAG_HEAD).matcher(html);
+			if (m.find()) {
+				int nextIdx = m.end();
+				sb.append(html.substring(0, nextIdx)).append(TAG_BASE).append(STYLE_ENTRY_MARK);
+				// mark serp html
+				for (int i = 0; i < list.size(); i++) {
+					GoogleScrapLinkEntry entry = list.get(i);
+					entries.add(entry);
+					m.usePattern(Pattern.compile(
+							String.format("(<a ([^>]* )?href=\"%s\"[^>]*>)(.*?)(</a>)", Pattern.quote(entry.getUrl()))));
+					if (m.find(nextIdx)) {
+						String inner = null;
+						while(!(inner = html.substring(m.start(), m.end())).contains(entry.getTitle())) {
+							if (!m.find()) {
+								break;
+							}
+						}
+						if (inner != null && inner.contains(entry.getTitle())) {
+							sb.append(html.subSequence(nextIdx, m.start())).append(inner.replaceFirst("href",
+									String.format(" data-serposcope-entry=%d title=%d href", entries.size(),
+											entries.size())));
+							nextIdx = m.end();
+						}
+					}
+				}
+				if (nextIdx < html.length()) {
+					sb.append(html.substring(nextIdx));
+				}
+			} else {
+				sb.append(html);
+			}
+			lastHtml = sb.toString(); // keep for upload		
+		}
+		return status == null ? Status.ERROR_PARSING : status;
 	}
 
 	protected Status parseSerpLayoutRes(Element resElement, List<GoogleScrapLinkEntry> entries) {
@@ -416,8 +469,8 @@ public class GoogleScraper {
 
 		//TODO check featured snippets
 		// $$('.kp-blk .mod:first-child')
-		//TODO get LP title
 		if (attr.startsWith("http://") || attr.startsWith("https://")) {
+			entry.setTitle(element.select("h3, div[role=heading]").text());
 			return entry;
 		}
 
@@ -427,6 +480,7 @@ public class GoogleScraper {
 				Map<String, String> map = parse.stream()
 						.collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue));
 				entry.setUrl(map.get("q"));
+				entry.setTitle(element.select("h3, div[role=heading]").text());
 				return entry;
 			} catch (Exception ex) {
 				return null;

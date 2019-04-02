@@ -10,7 +10,6 @@ package com.serphacker.serposcope.models.google;
 import it.unimi.dsi.fastutil.shorts.Short2ShortArrayMap;
 import java.net.IDN;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -19,12 +18,13 @@ import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 
 public class GoogleSerpEntry {
     
-    protected final static byte SERIAL_VERSION = 0;
+    protected final static byte SERIAL_VERSION = 1;
 
 	GoogleScrapLinkEntry entry;
 	String url;
 	String title;
 	String ampUrl;
+	Integer featuredRank;
     Short2ShortArrayMap map = new Short2ShortArrayMap();
 
     public GoogleSerpEntry(GoogleScrapLinkEntry entry) {
@@ -32,6 +32,7 @@ public class GoogleSerpEntry {
         this.url = entry.getUrl();
         this.title = entry.getTitle();
         this.ampUrl = entry.getAmpUrl();
+        this.featuredRank = entry.getFeaturedRank();
     }
     
     public void fillPreviousPosition(Map<Short,GoogleSerp> history){
@@ -93,6 +94,14 @@ public class GoogleSerpEntry {
 
 	public void setAmpUrl(String ampUrl) {
 		this.ampUrl = ampUrl;
+	}
+
+	public Integer getFeaturedRank() {
+		return featuredRank;
+	}
+
+	public void setFeaturedRank(Integer rank) {
+		this.featuredRank = rank;
 	}
 
 	@Override

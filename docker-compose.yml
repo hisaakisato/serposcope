@@ -12,10 +12,12 @@ services:
             - "8000:8000"
         volumes:
             - "~/serposcope/logs:/var/log/serposcope"
+            - "~/.aws/credentials:/root/.aws/credentials"
         links:
             - mysql
         environment:
             SERPOSCOPE_DB_PASSWORD: secret
+            SERPOSCOPE_UPLOAD_BUCKET: jp.markeship.serposcope.serps-dev
     mysql:
         image: mysql:5.7
         environment:

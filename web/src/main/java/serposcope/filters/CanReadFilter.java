@@ -51,7 +51,8 @@ public class CanReadFilter extends AbstractFilter {
         
         Result result = filterChain.next(context);
         
-        if(canRender(result)){
+        Boolean suppress = context.getAttribute(SUPPRESS_EXTRA_RENDER, Boolean.class);
+        if((suppress == null || !suppress) && canRender(result)){
             result.render("group", group);
         }
         

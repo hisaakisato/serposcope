@@ -123,6 +123,7 @@ public class Routes implements ApplicationRoutes {
         router.GET().route("/google/{groupId: [0-9]+}/search/{searchId: [0-9]+}").with(GoogleSearchController.class, "search");
         router.GET().route("/google/{groupId: [0-9]+}/search/{searchId: [0-9]+}/url-ranks").with(GoogleSearchController.class, "urlRanks");
         router.GET().route("/google/{groupId: [0-9]+}/search/{searchId: [0-9]+}/export-serp").with(GoogleSearchController.class, "exportSerp");
+        router.GET().route("/google/{groupId: [0-9]+}/search/{searchId: [0-9]+}/show-serp").with(GoogleSearchController.class, "showSerp");
         router.POST().route("/google/{groupId: [0-9]+}/search/export").with(GoogleSearchController.class, "export");
         
         router.GET().route("/google/{groupId: [0-9]+}/target/{targetId: [0-9]+}/ranks").with(GoogleTargetController.class, "jsonRanks");

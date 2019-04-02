@@ -92,9 +92,11 @@
                     <th class="rank" >#</th>
                     <th>
                         URL [<#if serp??>${serp.getRunDay().toLocalDate()}</#if>] 
-                        | 
-                        <a href="#" class="btn-draw-top10" data-toggle="tooltip" title="${i18n("google.search.drawTop10")}" >
+                        <a href="#" class="btn-draw-top10" data-toggle="tooltip" title="${i18n("google.search.drawTop10")}" style="margin-left:10px" >
                              <i class="fa fa-fw fa-line-chart" ></i> TOP 10
+                        </a>
+                        <a href="${reverseRoute("google.GoogleSearchController","showSerp","groupId",group.getId(), "searchId", search.getId())}?date=${serp.getRunDay().toLocalDate()}" class="btn-show-serp" data-toggle="tooltip" title="${i18n("google.search.showSERP")}" target="_blank" style="margin-left:10px" >
+                             <i class="fa fa-fw fa-search" ></i>
                         </a>
                     </button>
                     </th>

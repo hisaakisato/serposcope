@@ -7,7 +7,6 @@
  */
 package com.serphacker.serposcope.models.google;
 
-import it.unimi.dsi.fastutil.shorts.Short2ShortArrayMap;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
@@ -91,8 +90,14 @@ public class GoogleSerp {
             	switch (linkEntryVersion) {
             	case 1:
             		linkEntry.setTitle(dis.readUTF());
-            		linkEntry.setAmpUrl(dis.readUTF());
-            		//linkEntry.setFeaturedRank(dis.readInt());
+            		String url = dis.readUTF();
+            		if (url != null && !url.isEmpty()) {
+            			linkEntry.setAmpUrl(url);
+            		}
+            		int rank = dis.readInt();
+            		if (rank >= 0) {
+            			linkEntry.setFeaturedRank(rank);
+            		}
             	}
                 mapSize = dis.readByte();
             }
@@ -113,10 +118,10 @@ public class GoogleSerp {
         dos.writeShort(entries.size());
         for (GoogleSerpEntry entry : entries) {
             dos.writeUTF(entry.url);
-            // FIXME
-//            dos.writeByte(-1 * GoogleScrapLinkEntry.SERIAL_VERSION);
-//            dos.writeUTF(entry.title);
-//            dos.writeUTF(entry.ampUrl);
+            dos.writeByte(-1 * GoogleScrapLinkEntry.SERIAL_VERSION);
+            dos.writeUTF(entry.title);
+            dos.writeUTF(entry.ampUrl == null ? "" : entry.ampUrl);
+            dos.writeInt(entry.featuredRank == null ? -1 : entry.featuredRank.intValue());
             dos.writeByte(entry.map.size());
             for (Map.Entry<Short, Short> mapEntry : entry.map.entrySet()) {
                 dos.writeShort(mapEntry.getKey());

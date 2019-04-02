@@ -257,7 +257,7 @@ serposcope.googleTargetControllerGrid = function () {
         if (event === 0) {
             return null;
         }
-        return  '<div class="text-center pointer" rel="popover" data-toggle="tooltip" ' +
+        return  '<div class="text-center pointer" rel="popover"" ' +
             'title="' + serposcope.utils.escapeHTMLQuotes(event[COL_EVENTS_TITLE]) + '" ' +
             'data-content="' + serposcope.utils.escapeHTMLQuotes(event[COL_EVENTS_DESCRIPTION]) + '" >' +
             '<i class="fa fa-calendar" ></i>' +
@@ -265,6 +265,7 @@ serposcope.googleTargetControllerGrid = function () {
     };
 
     var formatRankCell = function (row, col, unk, colDef, rowData) {
+    	var groupId = $('#csp-vars').attr('data-group-id');
         var rank = rowData[COL_RANK][col - 1];
         var diffText = "", diffClass = "";
         var bestClass = "", bestText = "";
@@ -297,9 +298,11 @@ serposcope.googleTargetControllerGrid = function () {
         
         var rankUrl = rank[COL_RANK_URL] == null ? "not provided" : serposcope.utils.escapeHTMLQuotes(rank[COL_RANK_URL]);
         return '<div class="pointer diff-' + diffClass + ' ' + bestClass + '" ' +
-            'rel="popover" data-toggle="tooltip" ' +
-            'data-tt="' + diffText + bestText + '" ' +
-            'data-pt="' + days[col - 1] + '" ' +
+            'rel="popover"" ' +
+            'data-pt="' +
+            	days[col - 1] + 
+            	(isNaN(rankText) ? '' : serposcope.utils.escapeHTMLQuotes('<a class="fa fa-search fa-fw" target="_blank" style="position:absolute;right:10px" href="/google/' + groupId + "/search/" + rowData[COL_ID] + '/show-serp?date=' + days[col - 1] + '"/>')) +            
+            '" ' +
             'data-content="' + rankUrl + '" ' +
             '>' + rankText + '</div>';
     };
@@ -311,7 +314,7 @@ serposcope.googleTargetControllerGrid = function () {
         var best = rowData[COL_BEST];
         var rankText = (best[COL_BEST_RANK] == UNRANKED ? "-" : best[COL_BEST_RANK]);
         return '<div class="pointer best-cell" ' +
-            'rel="popover" data-toggle="tooltip" ' +
+            'rel="popover"" ' +
             'title="' + best[COL_BEST_DAY] + '" ' +
             'data-content="' + serposcope.utils.escapeHTMLQuotes(best[COL_BEST_URL]) + '" ' +
             '>' + rankText + '</div>';

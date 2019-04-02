@@ -109,7 +109,8 @@ public class BaseFilter extends AbstractFilter {
         result.addHeader("X-XSS-Protection", "1; mode=block"); // inurl xss
         result.addHeader("X-Content-Type-Options", "nosniff"); // prevent mime sniffing
 
-        if (canRender(result)) {
+        Boolean suppress = context.getAttribute(SUPPRESS_EXTRA_RENDER, Boolean.class);
+        if((suppress == null || !suppress) && canRender(result)) {
             User user = context.getAttribute("user", User.class);
             if (user != null) {
                 result.render("user", user);

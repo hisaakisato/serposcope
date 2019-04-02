@@ -58,6 +58,7 @@ serposcope.theme = function () {
         $('body').popover({
             selector: '[rel="popover"]',
             placement: 'auto',
+            trigger: 'click focus',
             container: 'body',
             title: function (elt) {return $(this).attr("data-pt");},
             html: true

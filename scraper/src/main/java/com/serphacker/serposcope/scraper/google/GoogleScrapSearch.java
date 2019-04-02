@@ -18,6 +18,7 @@ public class GoogleScrapSearch {
     public GoogleScrapSearch() {
     }
     
+    int searchId = 0;
     int resultPerPage = 10;
     int pages = 5;
     long minPauseBetweenPageMS = 0l;
@@ -29,6 +30,14 @@ public class GoogleScrapSearch {
     String local;
     String customParameters;
 
+    public int getSearchId() {
+        return searchId;
+    }
+
+    public void setSearchId(int searchId) {
+        this. searchId = searchId;
+    }
+    
     public int getResultPerPage() {
         return resultPerPage;
     }
