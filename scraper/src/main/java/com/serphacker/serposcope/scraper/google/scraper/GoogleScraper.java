@@ -17,6 +17,9 @@ import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status;
 import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
+import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleMainDesktopScrapParser;
+import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleMainMobileScrapParser;
+import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleResScrapParser;
 import com.serphacker.serposcope.scraper.http.ScrapClient;
 import com.serphacker.serposcope.scraper.http.proxy.DirectNoProxy;
 import com.serphacker.serposcope.scraper.http.proxy.ScrapProxy;
@@ -26,7 +29,6 @@ import com.serphacker.serposcope.scraper.utils.UserAgentGenerator;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -37,10 +39,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.apache.http.HttpHost;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.cookie.ClientCookie;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.jsoup.Jsoup;
@@ -267,13 +266,17 @@ public class GoogleScraper {
 		List<GoogleScrapLinkEntry> list = new ArrayList<>();
 		Element resDiv = lastSerpHtml.getElementById("res");
 		if (resDiv != null) {
-			status = parseSerpLayoutRes(resDiv, list);
+			status = new GoogleResScrapParser().parse(resDiv, list);
 		}
 
 		if (status == null) {
 			final Element mainDiv = lastSerpHtml.getElementById("main");
 			if (mainDiv != null) {
-				status = parseSerpLayoutMain(mainDiv, list);
+				if (device == GoogleDevice.DESKTOP) {
+					status = new GoogleMainDesktopScrapParser().parse(mainDiv, list);
+				} else {
+					status = new GoogleMainMobileScrapParser().parse(mainDiv, list);
+				}
 			}
 		}
 		
@@ -315,90 +318,6 @@ public class GoogleScraper {
 		return status == null ? Status.ERROR_PARSING : status;
 	}
 
-	protected Status parseSerpLayoutRes(Element resElement, List<GoogleScrapLinkEntry> entries) {
-
-		Elements h3Elts = resElement.select("a > h3:first-child");
-		if (h3Elts.isEmpty()) {
-			return parseSerpLayoutResLegacy(resElement, entries);
-		}
-
-		for (Element h3Elt : h3Elts) {
-
-			GoogleScrapLinkEntry entry = extractLink(h3Elt.parent());
-			if (entry == null) {
-				continue;
-			}
-
-			entries.add(entry);
-		}
-
-		return Status.OK;
-	}
-
-	protected Status parseSerpLayoutResLegacy(Element resElement, List<GoogleScrapLinkEntry> entries) {
-
-		Elements h3Elts = resElement.getElementsByTag("h3");
-		for (Element h3Elt : h3Elts) {
-
-			if (isSiteLinkElement(h3Elt)) {
-				continue;
-			}
-
-			GoogleScrapLinkEntry entry = extractLink(h3Elt.getElementsByTag("a").first());
-			if (entry != null) {
-				entries.add(entry);
-			}
-		}
-
-		return Status.OK;
-	}
-
-	protected Status parseSerpLayoutMainMobile(Element resElement, List<GoogleScrapLinkEntry> entries) {
-
-		Elements h3Elts = resElement.getElementsByTag("h3");
-		for (Element h3Elt : h3Elts) {
-
-			if (isSiteLinkElement(h3Elt)) {
-				continue;
-			}
-
-			GoogleScrapLinkEntry entry = extractLink(h3Elt.getElementsByTag("a").first());
-			if (entry != null) {
-				entries.add(entry);
-			}
-		}
-
-		return Status.OK;
-	}
-
-	protected Status parseSerpLayoutMain(Element divElement, List<GoogleScrapLinkEntry> entries) {
-
-		Elements links = divElement.select("#main > div > div:first-child > div:first-child > a:first-child,"
-				+ "#main > div > div:first-child > a:first-child");
-
-		if (links.isEmpty()) { // 2019-03-04 for AMP
-			links = divElement.select("#main div#rso:first-child > div.srg > div > div:first-child > div:first-child > a:first-child[class]");
-		}
-		if (links.isEmpty()) {
-			return parseSerpLayoutResLegacy(divElement, entries);
-		}
-
-		for (Element link : links) {
-			if (!link.children().isEmpty() && "img".equals(link.child(0).tagName())) {
-				continue;
-			}
-
-			GoogleScrapLinkEntry entry = extractLink(link);
-			if (entry == null) {
-				continue;
-			}
-
-			entries.add(entry);
-		}
-
-		return Status.OK;
-	}
-
 	protected long parseResultsNumberOnFirstPage() {
 		if (lastSerpHtml == null) {
 			return 0;
@@ -422,72 +341,6 @@ public class GoogleScraper {
 			return Long.parseLong(html);
 		}
 		return 0;
-	}
-
-	protected boolean isSiteLinkElement(Element element) {
-		if (element == null) {
-			return false;
-		}
-
-		Elements parents = element.parents();
-		if (parents == null || parents.isEmpty()) {
-			return false;
-		}
-
-		for (Element parent : parents) {
-			if (parent.hasClass("mslg") || parent.hasClass("nrg") || parent.hasClass("nrgw")) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	protected GoogleScrapLinkEntry extractLink(Element element) {
-		if (element == null) {
-			return null;
-		}
-
-		String attr = element.attr("href");
-		if (attr == null) {
-			return null;
-		}
-
-		GoogleScrapLinkEntry entry = new GoogleScrapLinkEntry(attr);
-		// for amp pages
-		if (element.hasClass("amp_r") && element.hasAttr("data-amp")) {
-			attr = element.attr("data-amp");
-			entry.setAmpUrl(attr);
-			entry.setUrl(attr); //TODO original url
-		}
-
-		if ((attr.startsWith("http://www.google") || attr.startsWith("https://www.google"))) {
-			if (attr.contains("/aclk?")) {
-				return null;
-			}
-		}
-
-		//TODO check featured snippets
-		// $$('.kp-blk .mod:first-child')
-		if (attr.startsWith("http://") || attr.startsWith("https://")) {
-			entry.setTitle(element.select("h3, div[role=heading]").text());
-			return entry;
-		}
-
-		if (attr.startsWith("/url?")) {
-			try {
-				List<NameValuePair> parse = URLEncodedUtils.parse(attr.substring(5), Charset.forName("utf-8"));
-				Map<String, String> map = parse.stream()
-						.collect(Collectors.toMap(NameValuePair::getName, NameValuePair::getValue));
-				entry.setUrl(map.get("q"));
-				entry.setTitle(element.select("h3, div[role=heading]").text());
-				return entry;
-			} catch (Exception ex) {
-				return null;
-			}
-		}
-
-		return null;
 	}
 
 	protected boolean hasNextPage() {

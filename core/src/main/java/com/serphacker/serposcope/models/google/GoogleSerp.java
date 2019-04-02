@@ -90,9 +90,9 @@ public class GoogleSerp {
             	switch (linkEntryVersion) {
             	case 1:
             		linkEntry.setTitle(dis.readUTF());
-            		String url = dis.readUTF();
-            		if (url != null && !url.isEmpty()) {
-            			linkEntry.setAmpUrl(url);
+            		String nonAmpUrl = dis.readUTF();
+            		if (nonAmpUrl != null && !nonAmpUrl.isEmpty()) {
+            			linkEntry.setNonAmpUrl(nonAmpUrl);
             		}
             		int rank = dis.readInt();
             		if (rank >= 0) {
@@ -120,7 +120,7 @@ public class GoogleSerp {
             dos.writeUTF(entry.url);
             dos.writeByte(-1 * GoogleScrapLinkEntry.SERIAL_VERSION);
             dos.writeUTF(entry.title);
-            dos.writeUTF(entry.ampUrl == null ? "" : entry.ampUrl);
+            dos.writeUTF(entry.nonAmpUrl == null ? "" : entry.nonAmpUrl);
             dos.writeInt(entry.featuredRank == null ? -1 : entry.featuredRank.intValue());
             dos.writeByte(entry.map.size());
             for (Map.Entry<Short, Short> mapEntry : entry.map.entrySet()) {

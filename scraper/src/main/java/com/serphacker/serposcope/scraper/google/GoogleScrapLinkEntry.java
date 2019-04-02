@@ -8,7 +8,7 @@ public class GoogleScrapLinkEntry {
 
 	private String title;
 	
-	private String ampUrl;
+	private String nonAmpUrl;
 	
 	private Integer featuredRank;
 
@@ -35,12 +35,12 @@ public class GoogleScrapLinkEntry {
 		this.title = title;
 	}
 
-	public String getAmpUrl() {
-		return ampUrl;
+	public String getNonAmpUrl() {
+		return nonAmpUrl;
 	}
 
-	public void setAmpUrl(String ampUrl) {
-		this.ampUrl = ampUrl;
+	public void setNonAmpUrl(String nonAmpUrl) {
+		this.nonAmpUrl = nonAmpUrl;
 	}
 
 	public Integer getFeaturedRank() {

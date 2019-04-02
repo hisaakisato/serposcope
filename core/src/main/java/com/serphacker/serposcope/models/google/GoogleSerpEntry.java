@@ -23,7 +23,7 @@ public class GoogleSerpEntry {
 	GoogleScrapLinkEntry entry;
 	String url;
 	String title;
-	String ampUrl;
+	String nonAmpUrl;
 	Integer featuredRank;
     Short2ShortArrayMap map = new Short2ShortArrayMap();
 
@@ -31,7 +31,7 @@ public class GoogleSerpEntry {
     	this.entry = entry;
         this.url = entry.getUrl();
         this.title = entry.getTitle();
-        this.ampUrl = entry.getAmpUrl();
+        this.nonAmpUrl = entry.getNonAmpUrl();
         this.featuredRank = entry.getFeaturedRank();
     }
     
@@ -88,12 +88,12 @@ public class GoogleSerpEntry {
 		this.title = title;
 	}
 
-	public String getAmpUrl() {
-		return ampUrl;
+	public String getNonAmpUrl() {
+		return nonAmpUrl;
 	}
 
-	public void setAmpUrl(String ampUrl) {
-		this.ampUrl = ampUrl;
+	public void setNonAmpUrl(String nonAmpUrl) {
+		this.nonAmpUrl = nonAmpUrl;
 	}
 
 	public Integer getFeaturedRank() {
