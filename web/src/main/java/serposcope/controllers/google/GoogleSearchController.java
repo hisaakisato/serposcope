@@ -73,6 +73,9 @@ public class GoogleSearchController extends GoogleController {
 	private static final Logger LOG = LoggerFactory.getLogger(GoogleSearchController.class);
 
 	@Inject
+	Messages messages;
+
+	@Inject
 	GoogleDB googleDB;
 
 	@Inject
@@ -437,7 +440,7 @@ public class GoogleSearchController extends GoogleController {
 		Group group = context.getAttribute("group", Group.class);
 		List<GoogleTarget> targets = googleDB.target.list(Arrays.asList(group.getId()));
 
-		return Results.ok().text().addHeader("Content-Disposition", "attachment; filename=\"export.csv\"")
+		return Results.ok().text().addHeader("Content-Disposition", "attachment; filename=\"serps.csv\"")
 				.render((Context ctx, Result result) -> {
 					ResponseStreams stream = ctx.finalizeHeaders(result);
 					DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd");
@@ -447,7 +450,9 @@ public class GoogleSearchController extends GoogleController {
 						byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
 						out.write(bom);
 						// Header
-						writer.append("date,rank,url,target,keyword,device,country,local,custom\n");
+						writer.append(
+								messages.get("google.search.exportHeader", Optional.of(ctx.getAcceptLanguage())).get())
+								.append("\n");
 						// SERP
 						LocalDate date = startDate;
 						while (!date.isAfter(endDate)) {
@@ -459,7 +464,6 @@ public class GoogleSearchController extends GoogleController {
 									}
 									String dateString = serp.getRunDay().toLocalDate().format(dtf);
 									StringBuilder sb = new StringBuilder();
-									sb.append("\"").append(search.getKeyword()).append("\",");
 									sb.append(search.getDevice() == GoogleDevice.DESKTOP ? "PC" : "SP").append(",");
 									sb.append("\"").append(search.getCountry()).append("\",");
 									sb.append("\"").append(search.getLocal()).append("\",");
@@ -481,6 +485,7 @@ public class GoogleSearchController extends GoogleController {
 											continue;
 										}
 										writer.append(dateString).append(",");
+										writer.append("\"").append(search.getKeyword()).append("\",");
 										writer.append(String.valueOf(i + 1)).append(",");
 										writer.append("\"").append(entry.getUnicodeUrl()).append("\",");
 										writer.append("\"").append(targetName == null ? "" : targetName).append("\",");

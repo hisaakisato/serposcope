@@ -9,6 +9,7 @@ package serposcope.controllers.google;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Optional;
 import com.google.inject.Inject;
 import ninja.Result;
 import ninja.Results;
@@ -53,6 +54,7 @@ import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import ninja.Context;
 import ninja.Router;
+import ninja.i18n.Messages;
 import ninja.params.Param;
 import ninja.params.PathParam;
 import ninja.utils.ResponseStreams;
@@ -63,6 +65,9 @@ import org.slf4j.LoggerFactory;
 public class GoogleTargetController extends GoogleController {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(GoogleTargetController.class);
+
+	@Inject
+	Messages messages;
 
     @Inject
     BaseDB baseDB;
@@ -475,14 +480,16 @@ public class GoogleTargetController extends GoogleController {
 
         return Results.ok()
             .text()
-            .addHeader("Content-Disposition", "attachment; filename=\"export.csv\"")
+            .addHeader("Content-Disposition", "attachment; filename=\"serps.csv\"")
             .render((Context context, Result result) -> {
                 ResponseStreams stream = context.finalizeHeaders(result);
                 try (OutputStream out = stream.getOutputStream();
     					Writer writer = new OutputStreamWriter(out, StandardCharsets.UTF_8)) {
         			byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
         			out.write(bom);
-                    writer.append("date,rank,url,target,keyword,device,country,local,custom\n");
+					writer.append(
+							messages.get("google.search.exportHeader", Optional.of(context.getAcceptLanguage())).get())
+							.append("\n");
                     for (LocalDate date : new TreeSet<LocalDate>(runs.stream().map(Run::getDay).collect(Collectors.toSet()))) {
                         String day = date.toString();
                         
@@ -492,10 +499,10 @@ public class GoogleTargetController extends GoogleController {
                             	continue;
                             }
                             writer.append(day).append(",");
+                            writer.append(StringEscapeUtils.escapeCsv(search.getKeyword())).append(",");
                             writer.append(rank.rank == UNRANKED ? "-" : Integer.toString(rank.rank)).append(",");
                             writer.append(rank.url == null ? "" : rank.url).append(",");
                             writer.append(StringEscapeUtils.escapeCsv(target.getName())).append(",");
-                            writer.append(StringEscapeUtils.escapeCsv(search.getKeyword())).append(",");
                             writer.append(search.getDevice() == GoogleDevice.DESKTOP ? "PC" : "SP").append(",");
                             writer.append(search.getCountry().name()).append(",");
 //                            writer.append(
