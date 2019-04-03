@@ -58,6 +58,16 @@ public abstract class GoogleAbstractScrapParser {
 		return null;
 	}
 
+	protected boolean isInnerCard(Element element) {
+		for (Element parent : element.parents()) {
+			String tagName = parent.tagName();
+			if (tagName.equalsIgnoreCase("g-inner-card") || tagName.equalsIgnoreCase("g-scrolling-carousel")) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	protected boolean isAdLink(Element element) {
 		for (Element parent : element.parents()) {
 			String classes = parent.attr("class");
@@ -68,8 +78,8 @@ public abstract class GoogleAbstractScrapParser {
 		return false;
 	}
 
-	protected String getTitle(Element element) {
-		return element.select("h3, div[role=heading]").text();
+	public static String getTitle(Element element) {
+		return element.select("h3, div[role=heading]").html();
 	}
 
 }

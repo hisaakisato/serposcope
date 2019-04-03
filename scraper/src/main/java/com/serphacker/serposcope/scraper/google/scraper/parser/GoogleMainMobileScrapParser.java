@@ -16,7 +16,7 @@ public class GoogleMainMobileScrapParser extends GoogleMainDesktopScrapParser {
 		Elements headings = divElement.select("#main a[href][ping] > div[role=heading]");
 
 		for (Element heading : headings) {
-			if (isAdLink(heading)) {
+			if (isInnerCard(heading) || isAdLink(heading)) {
 				continue;
 			}
 			Element link = heading.parent();
@@ -49,6 +49,7 @@ public class GoogleMainMobileScrapParser extends GoogleMainDesktopScrapParser {
 		if (element.hasClass("amp_r") && element.hasAttr("data-amp")) {
 			entry.setUrl(element.attr("data-amp"));
 			entry.setNonAmpUrl(element.attr("data-amp-cur"));
+			entry.setTitle(getTitle(element));
 			return entry;
 		}
 		

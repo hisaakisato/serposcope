@@ -312,8 +312,10 @@ public class GoogleSearchController extends GoogleController {
 		} catch (Exception ex) {
 			return Results.badRequest().text().renderRaw("Invalid date");
 		}
-		Run run = baseDB.run.findLast(Module.GOOGLE, Arrays.asList(Status.DONE_SUCCESS), date, null, null,
-				Arrays.asList(searchId), null);
+		Group group = context.getAttribute("group", Group.class);
+		Run run = baseDB.run.findLast(Module.GOOGLE,
+				Arrays.asList(Status.DONE_SUCCESS, Status.DONE_WITH_ERROR, Status.DONE_ABORTED, Status.DONE_CRASHED),
+				date, group, null, Arrays.asList(searchId), null);
 		if (run != null) {
 			search = getSearch(context, searchId);
 			if (search != null) {

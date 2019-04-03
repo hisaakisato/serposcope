@@ -403,7 +403,7 @@ public class RunDB extends AbstractDB {
         Run run = null;
         try(Connection conn = ds.getConnection()){
 
-            boolean sub = group != null || (searchIds != null && !searchIds.isEmpty())
+            boolean sub = (searchIds != null && !searchIds.isEmpty())
 					|| (targetIds != null && !targetIds.isEmpty());
 
             SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
@@ -428,7 +428,11 @@ public class RunDB extends AbstractDB {
         	}
 
         	if (group != null) {
-        		cond = t_rank.groupId.eq(group.getId()).and(cond);
+        		if (sub) {
+        			cond = t_rank.groupId.eq(group.getId()).and(cond);
+        		} else {
+        			cond = t_run.groupId.eq(group.getId()).and(cond);
+        		}
             }
 
         	if (searchIds != null) {
@@ -454,6 +458,9 @@ public class RunDB extends AbstractDB {
                 .limit(1)
                 .fetchFirst();
 
+        	if (tuple == null && sub && group != null) { // no rank yet
+        		return findLast(module, statuses, untilDate, group, user, null, null);
+        	}
             run = fromTuple(tuple);
 
         }catch(Exception ex){
@@ -475,7 +482,7 @@ public class RunDB extends AbstractDB {
         Run run = null;
         try(Connection conn = ds.getConnection()){
 
-            boolean sub = group != null || (searchIds != null && !searchIds.isEmpty())
+            boolean sub = (searchIds != null && !searchIds.isEmpty())
 					|| (targetIds != null && !targetIds.isEmpty());
 
             SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
@@ -500,7 +507,11 @@ public class RunDB extends AbstractDB {
         	}
 
         	if (group != null) {
-        		cond = t_rank.groupId.eq(group.getId()).and(cond);
+        		if (sub) {
+        			cond = t_rank.groupId.eq(group.getId()).and(cond);
+        		} else {
+        			cond = t_run.groupId.eq(group.getId()).and(cond);
+        		}
             }
 
         	if (searchIds != null) {
@@ -525,6 +536,9 @@ public class RunDB extends AbstractDB {
                 .orderBy(t_run.id.asc())
                 .fetchFirst();
 
+        	if (tuple == null && sub && group != null) { // no rank yet
+        		return findFirst(module, statuses, fromDate, group, user, null, null);
+        	}
             run = fromTuple(tuple);
 
         }catch(Exception ex){

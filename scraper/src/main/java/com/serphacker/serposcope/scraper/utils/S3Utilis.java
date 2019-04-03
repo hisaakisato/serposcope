@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.SocketException;
 import java.net.URLEncoder;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -16,12 +17,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.amazonaws.ClientConfiguration;
+import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.services.s3.model.S3Object;
@@ -32,7 +33,7 @@ public class S3Utilis {
 
 	private static final Logger LOG = LoggerFactory.getLogger(S3Utilis.class);
 
-	static AmazonS3 s3;
+	static volatile AmazonS3 s3;
 
 	static String bucket;
 
@@ -45,8 +46,15 @@ public class S3Utilis {
 		if (bucket == null) {
 			bucket = System.getProperty("serposcope.upload.bucket", "jp.markeship.serposcope.serps");
 		}
-		s3 = AmazonS3Client.builder().withRegion(Regions.AP_NORTHEAST_1).withCredentials(chain)
-				.withClientConfiguration(new ClientConfiguration().withGzip(false)).build();
+	}
+
+	public static synchronized AmazonS3 getClient() {
+		if (s3 == null) {
+			ClientConfiguration config = new ClientConfiguration().withGzip(false);
+			s3 = AmazonS3Client.builder().withRegion(Regions.AP_NORTHEAST_1).withCredentials(chain)
+					.withClientConfiguration(config).build();
+		}
+		return s3;
 	}
 
 	public static void upload(LocalDate date, GoogleScrapSearch search, int page, String content) {
@@ -72,18 +80,24 @@ public class S3Utilis {
 			PutObjectRequest request = new PutObjectRequest(bucket, key, new ByteArrayInputStream(baos.toByteArray()),
 					metadata);
 			// request.setStorageClass(StorageClass.OneZoneInfrequentAccess);
-			s3.putObject(request);
+			getClient().putObject(request);
 			LOG.info("[Serps archive] Uploaded. id: {} page: {} key: {}", search.getSearchId(), page + 1, key);
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
-		} catch (AmazonS3Exception e) {
-			LOG.error(e.getMessage(), e);
+		} catch (SdkClientException e) {
+			if (e.getCause() != null && e.getCause() instanceof SocketException) {
+				LOG.warn("[Serps archive] Retry upload.");
+				s3 = null;
+				upload(date, search, page, content);
+			} else {
+				LOG.error(e.getMessage(), e);
+			}
 		}
 	}
 
 	public static void download(OutputStream out, LocalDate date, int searchId, int page) {
 		String key = generateKey(date, searchId, page);
-		S3Object s3obj = s3.getObject(bucket, key);
+		S3Object s3obj = getClient().getObject(bucket, key);
 		try (InputStream in = new GZIPInputStream(s3obj.getObjectContent())) {
 			int len = 0;
 			byte bytes[] = new byte[4096];
@@ -94,10 +108,15 @@ public class S3Utilis {
 			LOG.info("[Serps archive] Downloaded. id: {} page: {} key: {}", searchId, page + 1, key);
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
-		} catch (AmazonS3Exception e) {
-			LOG.error(e.getMessage(), e);
+		} catch (SdkClientException e) {
+			if (e.getCause() != null && e.getCause() instanceof SocketException) {
+				LOG.warn("[Serps archive] Retry download.");
+				s3 = null;
+				download(out, date, searchId, page);
+			} else {
+				LOG.error(e.getMessage(), e);
+			}
 		}
-
 	}
 
 	private static String generateKey(LocalDate date, int searchId, int page) {

@@ -17,6 +17,7 @@ import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status;
 import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
+import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleAbstractScrapParser;
 import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleMainDesktopScrapParser;
 import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleMainMobileScrapParser;
 import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleResScrapParser;
@@ -44,6 +45,7 @@ import org.apache.http.cookie.ClientCookie;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -290,21 +292,25 @@ public class GoogleScraper {
 				for (int i = 0; i < list.size(); i++) {
 					GoogleScrapLinkEntry entry = list.get(i);
 					entries.add(entry);
-					m.usePattern(Pattern.compile(
-							String.format("(<a ([^>]* )?href=\"%s\"[^>]*>)(.*?)(</a>)", Pattern.quote(entry.getUrl()))));
+					String title = entry.getTitle();
+					if (title == null) {
+						continue;
+					}
+					m.usePattern(Pattern.compile(String.format("(<a ([^>]* )?(href|data-amp)=\"%s\"[^>]*>)(.*?)(</a>)",
+							Pattern.quote(entry.getUrl()).replaceAll("&", "&amp;"))));
 					if (m.find(nextIdx)) {
-						String inner = null;
-						while(!(inner = html.substring(m.start(), m.end())).contains(entry.getTitle())) {
-							if (!m.find()) {
+						do {
+							String anchorHtml = html.substring(m.start(), m.end());
+							Document anchor = Jsoup.parse(anchorHtml);
+							if (title.equals(GoogleAbstractScrapParser.getTitle(anchor))) {
+								sb.append(html.subSequence(nextIdx, m.start()))
+										.append(anchorHtml.replaceFirst("href",
+												String.format(" data-serposcope-entry=%d title=%d href", entries.size(),
+														entries.size())));
+								nextIdx = m.end();
 								break;
 							}
-						}
-						if (inner != null && inner.contains(entry.getTitle())) {
-							sb.append(html.subSequence(nextIdx, m.start())).append(inner.replaceFirst("href",
-									String.format(" data-serposcope-entry=%d title=%d href", entries.size(),
-											entries.size())));
-							nextIdx = m.end();
-						}
+						} while (m.find());
 					}
 				}
 				if (nextIdx < html.length()) {
