@@ -27,13 +27,13 @@ public class GoogleMainDesktopScrapParser extends GoogleLegacyScrapParser {
 			if (!link.children().isEmpty() && "img".equals(link.child(0).tagName())) {
 				continue;
 			}
-
 			GoogleScrapLinkEntry entry = extractLink(link);
 			if (entry == null) {
 				continue;
 			}
 
 			entries.add(entry);
+			setFeaturedRank(link, entries);
 		}
 
 		return Status.OK;

@@ -20,12 +20,14 @@ public class GoogleResScrapParser extends GoogleLegacyScrapParser {
 
 		for (Element h3Elt : h3Elts) {
 
-			GoogleScrapLinkEntry entry = extractLink(h3Elt.parent());
+			Element link = h3Elt.parent();
+			GoogleScrapLinkEntry entry = extractLink(link);
 			if (entry == null) {
 				continue;
 			}
 
 			entries.add(entry);
+			setFeaturedRank(link, entries);
 		}
 
 		return Status.OK;

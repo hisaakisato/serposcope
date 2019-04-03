@@ -35,8 +35,6 @@ public abstract class GoogleAbstractScrapParser {
 			}
 		}
 
-		//TODO check featured snippets
-		// $$('.kp-blk .mod:first-child')
 		if (href.startsWith("http://") || href.startsWith("https://")) {
 			entry.setTitle(getTitle(element));
 			return entry;
@@ -78,8 +76,35 @@ public abstract class GoogleAbstractScrapParser {
 		return false;
 	}
 
+	protected boolean isFeaturedSnippets(Element element) {
+		for (Element parent : element.parents()) {
+			if (parent.hasClass("kno-result")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public void setFeaturedRank(Element element, List<GoogleScrapLinkEntry> entries) {
+		GoogleScrapLinkEntry entry = entries.get(entries.size() - 1);
+		if (isFeaturedSnippets(element)) {
+			entry.setFeaturedRank(entries.size());
+		} else {
+			for (GoogleScrapLinkEntry e : entries) {
+				if (e.getFeaturedRank() != null && e.getUrl().equals(entry.getUrl())) {
+					entry.setFeaturedRank(e.getFeaturedRank());
+					break;
+				}
+			}
+		}
+	}
+
 	public static String getTitle(Element element) {
-		return element.select("h3, div[role=heading]").html();
+		if (element.children().isEmpty()) {
+			// mobile featured snipetts
+			return element.text();
+		}
+		return element.select("h3, div[role=heading]").text();
 	}
 
 }

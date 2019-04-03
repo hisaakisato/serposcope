@@ -19,9 +19,11 @@ public class GoogleLegacyScrapParser extends GoogleAbstractScrapParser {
 				continue;
 			}
 
-			GoogleScrapLinkEntry entry = extractLink(h3Elt.getElementsByTag("a").first());
+			Element link = h3Elt.getElementsByTag("a").first();
+			GoogleScrapLinkEntry entry = extractLink(link);
 			if (entry != null) {
 				entries.add(entry);
+				setFeaturedRank(link, entries);
 			}
 		}
 

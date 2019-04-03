@@ -13,22 +13,26 @@ public class GoogleMainMobileScrapParser extends GoogleMainDesktopScrapParser {
 	@Override
 	public Status parse(Element divElement, List<GoogleScrapLinkEntry> entries) {
 
-		Elements headings = divElement.select("#main a[href][ping] > div[role=heading]");
+		Elements links = divElement
+				.select("#main a[href][ping] > div[role=heading], #main .kno-result h3 > a[href][ping]");
 
-		for (Element heading : headings) {
-			if (isInnerCard(heading) || isAdLink(heading)) {
+		if (links.isEmpty()) {
+			return super.parse(divElement, entries);
+		}
+
+		for (Element link : links) {
+			if (isInnerCard(link) || isAdLink(link)) {
 				continue;
 			}
-			Element link = heading.parent();
+			if (!link.tagName().equalsIgnoreCase("a")) {
+				link = link.parent();
+			}
 			GoogleScrapLinkEntry entry = extractLink(link);
 			if (entry == null) {
 				continue;
 			}
 			entries.add(entry);
-		}
-
-		if (headings.isEmpty()) {
-			return super.parse(divElement, entries);
+			setFeaturedRank(link, entries);
 		}
 
 		return Status.OK;
@@ -44,9 +48,9 @@ public class GoogleMainMobileScrapParser extends GoogleMainDesktopScrapParser {
 			return null;
 		}
 
-		GoogleScrapLinkEntry entry = new GoogleScrapLinkEntry(href);
 		// for amp pages
 		if (element.hasClass("amp_r") && element.hasAttr("data-amp")) {
+			GoogleScrapLinkEntry entry = new GoogleScrapLinkEntry(href);
 			entry.setUrl(element.attr("data-amp"));
 			entry.setNonAmpUrl(element.attr("data-amp-cur"));
 			entry.setTitle(getTitle(element));

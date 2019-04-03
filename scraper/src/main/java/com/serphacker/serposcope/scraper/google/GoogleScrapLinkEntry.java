@@ -50,5 +50,5 @@ public class GoogleScrapLinkEntry {
 	public void setFeaturedRank(Integer featuredRank) {
 		this.featuredRank = featuredRank;
 	}
-
+	
 }

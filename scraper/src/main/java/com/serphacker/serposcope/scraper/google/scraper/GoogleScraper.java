@@ -45,7 +45,6 @@ import org.apache.http.cookie.ClientCookie;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Document.OutputSettings;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
@@ -63,7 +62,10 @@ public class GoogleScraper {
 	private static final String TAG_BASE = "<base href=\"http://www.google.com/\">";
 	private static final String TAG_HEAD = "<head>";
 
-	private static final String STYLE_ENTRY_MARK = "<style type=\"text/css\">[data-serposcope-entry] h3,[data-serposcope-entry] div[role=heading] {border:1px solid red;}</style>";
+	private static final String STYLE_ENTRY_MARK = "<style type=\"text/css\">a[data-serposcope-entry] > h3, "
+			+ "a[data-serposcope-entry] > div[role=heading], "
+			+ "div.kno-result h3 > a[data-serposcope-entry] "
+			+ "{border:1px solid red;}</style>";
 
 	final static BasicClientCookie NCR_COOKIE = new BasicClientCookie("PREF", "ID=1111111111111111:CR=2");
 
@@ -265,19 +267,19 @@ public class GoogleScraper {
 		}
 
 		Status status = null;
-		List<GoogleScrapLinkEntry> list = new ArrayList<>();
+		int entryStart = entries.size();
 		Element resDiv = lastSerpHtml.getElementById("res");
 		if (resDiv != null) {
-			status = new GoogleResScrapParser().parse(resDiv, list);
+			status = new GoogleResScrapParser().parse(resDiv, entries);
 		}
 
 		if (status == null) {
 			final Element mainDiv = lastSerpHtml.getElementById("main");
 			if (mainDiv != null) {
 				if (device == GoogleDevice.DESKTOP) {
-					status = new GoogleMainDesktopScrapParser().parse(mainDiv, list);
+					status = new GoogleMainDesktopScrapParser().parse(mainDiv, entries);
 				} else {
-					status = new GoogleMainMobileScrapParser().parse(mainDiv, list);
+					status = new GoogleMainMobileScrapParser().parse(mainDiv, entries);
 				}
 			}
 		}
@@ -289,9 +291,8 @@ public class GoogleScraper {
 				int nextIdx = m.end();
 				sb.append(html.substring(0, nextIdx)).append(TAG_BASE).append(STYLE_ENTRY_MARK);
 				// mark serp html
-				for (int i = 0; i < list.size(); i++) {
-					GoogleScrapLinkEntry entry = list.get(i);
-					entries.add(entry);
+				for (int i = entryStart; i < entries.size(); i++) {
+					GoogleScrapLinkEntry entry = entries.get(i);
 					String title = entry.getTitle();
 					if (title == null) {
 						continue;
@@ -301,12 +302,11 @@ public class GoogleScraper {
 					if (m.find(nextIdx)) {
 						do {
 							String anchorHtml = html.substring(m.start(), m.end());
-							Document anchor = Jsoup.parse(anchorHtml);
+							Element anchor = Jsoup.parse(anchorHtml).select("a").first();
 							if (title.equals(GoogleAbstractScrapParser.getTitle(anchor))) {
 								sb.append(html.subSequence(nextIdx, m.start()))
-										.append(anchorHtml.replaceFirst("href",
-												String.format(" data-serposcope-entry=%d title=%d href", entries.size(),
-														entries.size())));
+										.append(anchorHtml.replaceFirst("href", String
+												.format(" data-serposcope-entry=%d title=%d href", i + 1, i + 1)));
 								nextIdx = m.end();
 								break;
 							}
