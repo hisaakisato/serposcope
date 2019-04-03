@@ -496,7 +496,8 @@ public class GoogleSearchController extends GoogleController {
 									// check out of ranks
 									for (GoogleTarget target : targets) {
 										if (!founds.contains(target)) {
-											writer.append(dateString).append(",-,,");
+											writer.append(dateString).append(",");
+											writer.append("\"").append(search.getKeyword()).append("\",-,,");
 											writer.append(target.getName()).append(",");
 											writer.append(tailer);
 										}
