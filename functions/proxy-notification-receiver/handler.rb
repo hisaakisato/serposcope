@@ -10,12 +10,11 @@ def lambda_handler(event:, context:)
   json = JSON.parse(event['Records'][0]['Sns']['Message'])
   availability_zone = json["Details"]['Availability Zone']
   region = availability_zone.chop
-  endpoint = ENV['EC2_ENDPOINT_' + region.upcase.gsub('-', '_')]
 
   instance_id = json['EC2InstanceId']
   cause = json['Cause']
 
-  ec2 = Aws::EC2::Resource.new({ region: region, endpoint: endpoint })
+  ec2 = Aws::EC2::Resource.new({ region: region })
   instance = ec2.instance(instance_id)
   private_ip_address = instance.private_ip_address
   public_ip_address = instance.public_ip_address

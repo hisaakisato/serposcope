@@ -32,13 +32,9 @@ functions:
       securityGroupIds:
         - sg-08e5c3bc5c8e863c9
       subnetIds:
-        - subnet-032c8c4b3c577880a
-        - subnet-019d7becda14a9f16
-        - subnet-0f6e46f5017f23bed
+        - subnet-075ecc53105e42206
     environment:
       SERPOSCOPE_HOST: serposcope.cluster-cndvdgoirjyt.ap-northeast-1.rds.amazonaws.com
-      EC2_ENDPOINT_AP_NORTHEAST_1: https://ec2.ap-northeast-1.amazonaws.com
-      EC2_ENDPOINT_AP_SOUTHEAST_2: https://vpce-0cd82288d1ed47fba-ypb8z8te.ec2.ap-southeast-2.vpce.amazonaws.com
     # package:
     #   include:
     #     handler.js

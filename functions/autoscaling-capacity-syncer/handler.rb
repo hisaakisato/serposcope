@@ -3,7 +3,7 @@ require 'aws-sdk-autoscaling'
 
 MAIN_REGION = 'ap-northeast-1'
 MAIN_GROUP = ENV['MAIN_GROUP']
-REGIONS = %w( ap-northeast-1 ap-southeast-2 )
+REGIONS = ENV['REGIONS'].split(',')
 
 def lambda_handler(event:, context:)
 
