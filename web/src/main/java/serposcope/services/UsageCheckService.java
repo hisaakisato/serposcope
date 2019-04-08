@@ -69,7 +69,7 @@ public class UsageCheckService {
 				String.format("%.2f", nonHeapUsed * 100.0 / nonHeapComitted));
 	}
 
-	@Schedule(delay = 15, initialDelay = 60, timeUnit = TimeUnit.SECONDS)
+	@Schedule(delay = 10, initialDelay = 60, timeUnit = TimeUnit.SECONDS)
 	public void checkRunningTaskStats() {
 		// tasks
 		int activeTasks = 0;
