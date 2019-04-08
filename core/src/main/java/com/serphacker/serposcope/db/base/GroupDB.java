@@ -19,13 +19,12 @@ import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.User;
-import com.serphacker.serposcope.querybuilder.QGoogleSearch;
 import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
 import com.serphacker.serposcope.querybuilder.QGoogleTarget;
 import com.serphacker.serposcope.querybuilder.QGroup;
+import com.serphacker.serposcope.querybuilder.QUser;
 import com.serphacker.serposcope.querybuilder.QUserGroup;
 import java.sql.Connection;
-import java.sql.Date;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,6 +33,7 @@ import java.util.List;
 public class GroupDB extends AbstractDB {
     
     QGroup t_group = QGroup.group;
+    QUser t_user = QUser.user;
     QUserGroup t_user_group = QUserGroup.userGroup;
     QGoogleSearchGroup t_searchGroup = QGoogleSearchGroup.googleSearchGroup;
     QGoogleTarget t_target = QGoogleTarget.googleTarget;
@@ -46,6 +46,8 @@ public class GroupDB extends AbstractDB {
             Integer key = new SQLInsertClause(con, dbTplConf, t_group)
                 .set(t_group.moduleId, group.getModule().ordinal())
                 .set(t_group.name, group.getName())
+                .set(t_group.ownerId, group.getOwner() == null ? 0 : group.getOwner().getId())
+                .set(t_group.shared, group.isShared())
                 .set(t_group.sundayEnabled, group.isSundayEnabled())
                 .set(t_group.mondayEnabled, group.isMondayEnabled())
                 .set(t_group.tuesdayEnabled, group.isTuesdayEnabled())
@@ -98,6 +100,7 @@ public class GroupDB extends AbstractDB {
         try(Connection con = ds.getConnection()){
             updated = new SQLUpdateClause(con, dbTplConf, t_group)
                 .set(t_group.name, group.getName())
+                .set(t_group.shared, group.isShared())
                 .set(t_group.sundayEnabled, group.isSundayEnabled())
                 .set(t_group.mondayEnabled, group.isMondayEnabled())
                 .set(t_group.tuesdayEnabled, group.isTuesdayEnabled())
@@ -135,13 +138,19 @@ public class GroupDB extends AbstractDB {
 					.from(t_target).groupBy(t_target.groupId);
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-					.select(t_group.id, t_group.moduleId, t_group.name, t_group.sundayEnabled, t_group.mondayEnabled,
-							t_group.tuesdayEnabled, t_group.wednesdayEnabled, t_group.thursdayEnabled,
-							t_group.fridayEnabled, t_group.saturdayEnabled,
+					.select(t_group.id, t_group.moduleId, t_group.name, t_group.shared,
+							t_group.sundayEnabled, t_group.mondayEnabled,
+							t_group.tuesdayEnabled, t_group.wednesdayEnabled,
+							t_group.thursdayEnabled, t_group.fridayEnabled,
+							t_group.saturdayEnabled,
+							t_user.id, t_user.name, t_user.email, t_user.admin,
 							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId),
 							t_target.id)
-					.from(t_group).leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
-					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id, t_target.id)
+					.from(t_group)
+					.leftJoin(t_user).on(t_group.ownerId.eq(t_user.id))
+					.leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId))
+					.groupBy(t_group.id, t_target.id)
 					.orderBy(t_group.name.asc());
             
             if(module != null){
@@ -195,17 +204,25 @@ public class GroupDB extends AbstractDB {
 					.from(t_target).groupBy(t_target.groupId);
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-					.select(t_group.id, t_group.moduleId, t_group.name, t_group.sundayEnabled, t_group.mondayEnabled,
-							t_group.tuesdayEnabled, t_group.wednesdayEnabled, t_group.thursdayEnabled,
-							t_group.fridayEnabled, t_group.saturdayEnabled,
+					.select(t_group.id, t_group.moduleId, t_group.name, t_group.shared,
+							t_group.sundayEnabled, t_group.mondayEnabled,
+							t_group.tuesdayEnabled, t_group.wednesdayEnabled,
+							t_group.thursdayEnabled, t_group.fridayEnabled,
+							t_group.saturdayEnabled,
+							t_user.id, t_user.name, t_user.email, t_user.admin,
 							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId), t_target.id)
-					.from(t_group).leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
-					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId)).groupBy(t_group.id, t_target.id)
+					.from(t_group)
+					.leftJoin(t_user).on(t_group.ownerId.eq(t_user.id))
+					.leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId))
+					.groupBy(t_group.id, t_target.id)
 					.orderBy(t_group.name.asc());
             
             if(user != null && !user.isAdmin()){
                 query.join(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
-                query.where(t_user_group.userId.eq(user.getId()));
+                query.where(t_group.shared.isTrue()
+                		.or(t_group.ownerId.eq(user.getId()))
+                		.or(t_user_group.userId.eq(user.getId())));
             }
             
             List<Tuple> tuples = query.fetch();
@@ -230,13 +247,18 @@ public class GroupDB extends AbstractDB {
 					.from(t_target).where(t_target.groupId.eq(groupId));
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-					.select(t_group.id, t_group.moduleId, t_group.name, t_group.sundayEnabled, t_group.mondayEnabled,
-							t_group.tuesdayEnabled, t_group.wednesdayEnabled, t_group.thursdayEnabled,
-							t_group.fridayEnabled, t_group.saturdayEnabled,
+					.select(t_group.id, t_group.moduleId, t_group.name, t_group.shared,
+							t_group.sundayEnabled, t_group.mondayEnabled,
+							t_group.tuesdayEnabled, t_group.wednesdayEnabled,
+							t_group.thursdayEnabled, t_group.fridayEnabled,
+							t_group.saturdayEnabled,
+							t_user.id, t_user.name, t_user.email, t_user.admin,
 							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId), t_target.id)
-					.from(t_group).leftJoin(t_searchGroup)
-					.on(t_group.id.eq(groupId).and(t_group.id.eq(t_searchGroup.groupId))).leftJoin(subQuery, t_target)
-					.on(t_group.id.eq(groupId).and(t_group.id.eq(t_target.groupId))).where(t_group.id.eq(groupId))
+					.from(t_group)
+					.leftJoin(t_user).on(t_group.ownerId.eq(t_user.id))
+					.leftJoin(t_searchGroup).on(t_group.id.eq(groupId).and(t_group.id.eq(t_searchGroup.groupId)))
+					.leftJoin(subQuery, t_target).on(t_group.id.eq(groupId).and(t_group.id.eq(t_target.groupId)))
+					.where(t_group.id.eq(groupId))
 					.groupBy(t_group.id, t_target.id);
 
 			Tuple tuple = query.fetchFirst();
@@ -260,6 +282,7 @@ public class GroupDB extends AbstractDB {
             tuple.get(t_group.id), 
             Group.Module.values()[tuple.get(t_group.moduleId)], 
             tuple.get(t_group.name));
+		group.setShared(tuple.get(t_group.shared) == null ? false : tuple.get(t_group.shared));
 		group.setSundayEnabled(tuple.get(t_group.sundayEnabled) == null ? false : tuple.get(t_group.sundayEnabled));
 		group.setMondayEnabled(tuple.get(t_group.mondayEnabled) == null ? false : tuple.get(t_group.mondayEnabled));
 		group.setTuesdayEnabled(tuple.get(t_group.tuesdayEnabled) == null ? false : tuple.get(t_group.tuesdayEnabled));
@@ -269,6 +292,16 @@ public class GroupDB extends AbstractDB {
 		group.setSaturdayEnabled(tuple.get(t_group.saturdayEnabled) == null ? false : tuple.get(t_group.saturdayEnabled));
 		group.setTargets(tuple.get(t_target.id));
 		group.setSearches(tuple.get(t_searchGroup.googleSearchId));
+		
+		if (tuple.get(t_user.id) != null) {
+			User user = new User();
+			user.setId(tuple.get(t_user.id));
+			user.setName(tuple.get(t_user.name));
+			user.setEmail(tuple.get(t_user.email));
+			user.setAdmin(tuple.get(t_user.admin));
+			group.setOwner(user);
+		}
+		
         return group;
     }
     

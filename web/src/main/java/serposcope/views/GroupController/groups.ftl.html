@@ -41,7 +41,9 @@
                         <table class="table table-condensed table-bordered" >
                             <tr>
                                 <th class="width30" style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>#</th>
-                                <th style="white-space:nowrap;vertical-align:middle;" rowspan=2>${i18n("label.name")}</th>
+                                <th style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>${i18n("label.name")}</th>
+                                <th class="width100" style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>${i18n("label.owner")}</th>
+                                <th class="width30" style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>${i18n("label.shared")}</th>
                                 <th class="width30" style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>${i18n("label.websites")}</th>
                                 <th class="width30" style="white-space:nowrap;text-align:center;vertical-align:middle;" rowspan=2>${i18n("label.searches")}</th>
                                 <th class="day-of-the-week-schedule" colspan=7>${i18n("label.schedule")}</th>
@@ -66,6 +68,7 @@
                                     </a>
                                     <a href="${reverseRoute("google.GoogleGroupController","rename","groupId",group.getId())}" class="btn-rename-group text-normal" 
                                        data-id="${group.getId()}" data-name="${group.getName()}"
+                                       data-shared="${group.isShared()?c}"
                                        data-sunday-enabled="${group.isSundayEnabled()?c}"
                                        data-monday-enabled="${group.isMondayEnabled()?c}"
                                        data-tuesday-enabled="${group.isTuesdayEnabled()?c}"
@@ -80,6 +83,20 @@
                                 </td>
                                 <td>
                                 	<a href="${fu.groupLink(group)}" >${group.getName()}</a>
+                                </td>
+                                <td>
+                                	<#if (group.getOwner()?? && group.getOwner().getName()??)>
+                                	${group.getOwner().getName()}
+                                	<#else>
+                                	-
+                                	</#if>
+                                </td>
+                                <td class="shared-group">
+                                	<#if (group.isShared())>
+                                	<i class="glyphicon glyphicon-ok-sign"></i>
+                                	<#else>
+                                	-
+                                	</#if>
                                 </td>
                                 <td style="text-align:center;">${group.targets!0}</td>
                                 <td style="text-align:center;">${group.searches!0}</td>

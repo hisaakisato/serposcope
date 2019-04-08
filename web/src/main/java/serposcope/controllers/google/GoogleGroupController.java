@@ -735,6 +735,7 @@ public class GoogleGroupController extends GoogleController {
         XSRFFilter.class
     })
     public Result rename(Context context, @Param("name") String name,
+    		@Param("shared") boolean shared,
     		@Param("sundayEnabled") boolean sundayEnabled,
             @Param("mondayEnabled") boolean mondayEnabled,
             @Param("tuesdayEnabled") boolean tuesdayEnabled,
@@ -751,6 +752,7 @@ public class GoogleGroupController extends GoogleController {
         }
 
         group.setName(name);
+        group.setShared(shared);
         group.setSundayEnabled(sundayEnabled);
         group.setMondayEnabled(mondayEnabled);
         group.setTuesdayEnabled(tuesdayEnabled);

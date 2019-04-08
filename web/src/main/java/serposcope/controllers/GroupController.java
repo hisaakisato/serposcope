@@ -49,8 +49,10 @@ public class GroupController extends BaseController {
 
     public Result groups(Context context) throws JsonProcessingException{
         long count = googleDB.search.count();
+        List<User> users = baseDB.user.list();
         return Results
             .ok()
+            .render("users", users)
             .render("groups", context.getAttribute("groups"))
             .render("search_count", googleDB.search.count())
             .render("h2warning", count > 2000 && conf.dbUrl != null && conf.dbUrl.contains(":h2:"))
@@ -89,6 +91,7 @@ public class GroupController extends BaseController {
     public Result create(
         Context context,
         @Param("name") String name,
+        @Param("shared") boolean shared,
         @Param("sundayEnabled") boolean sundayEnabled,
         @Param("mondayEnabled") boolean mondayEnabled,
         @Param("tuesdayEnabled") boolean tuesdayEnabled,
@@ -113,7 +116,9 @@ public class GroupController extends BaseController {
             return Results.redirect(router.getReverseRoute(GroupController.class, "home"));            
         }
         
+        User owner = context.getAttribute("user", User.class);
         Group group = new Group(module, name);
+        group.setShared(shared);
         group.setSundayEnabled(sundayEnabled);
         group.setMondayEnabled(mondayEnabled);
         group.setTuesdayEnabled(tuesdayEnabled);
@@ -121,9 +126,9 @@ public class GroupController extends BaseController {
         group.setThursdayEnabled(thursdayEnabled);
         group.setFridayEnabled(fridayEnabled);
         group.setSaturdayEnabled(saturdayEnabled);
+        group.setOwner(owner);
         baseDB.group.insert(group);
-        User user = context.getAttribute("user", User.class);
-        baseDB.user.addPerm(user, group);
+        baseDB.user.addPerm(owner, group);
         
         flash.success("home.groupCreated");
         switch(group.getModule()){

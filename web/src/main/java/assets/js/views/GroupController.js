@@ -33,6 +33,7 @@ serposcope.GroupController = function () {
         var form = $("#rename-group-form")
         form.attr("action", target.attr("href"));
         form.find("#groupName").val(target.attr("data-name"));
+        form.find("#groupShared").prop("checked", target.attr("data-shared") === "true");
         form.find("#groupSundayEnabled").prop("checked", target.attr("data-sunday-enabled") === "true");
         form.find("#groupMondayEnabled").prop("checked", target.attr("data-monday-enabled") === "true");
         form.find("#groupTuesdayEnabled").prop("checked", target.attr("data-tuesday-enabled") === "true");

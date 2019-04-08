@@ -1053,7 +1053,7 @@ ul.typeahead.dropdown-menu {
     color: #735fff;
 }
 
-.day-of-the-week-schedule {
+.day-of-the-week-schedule, .shared-group {
     -webkit-touch-callout: none;
 	-webkit-user-select: none;
 	-khtml-user-select: none;
@@ -1062,19 +1062,19 @@ ul.typeahead.dropdown-menu {
 	text-align: center;
 	width: 50px;
 }
-.day-of-the-week-schedule > .glyphicon.glyphicon-ok-sign {
+.day-of-the-week-schedule > .glyphicon.glyphicon-ok-sign, .shared-group > .glyphicon.glyphicon-ok-sign {
 	color: #51d851;
 }
-fieldset.day-of-the-week-schedule {
+fieldset.day-of-the-week-schedule, fieldset.shared-group {
 	width: 100%;
 }
-fieldset.day-of-the-week-schedule > legend {	
+fieldset.day-of-the-week-schedule > legend, fieldset.shared-group > legend {	
     text-align: left;
     font-size: 14px;
     font-weight: bold;
     margin: 0 0 6px 0;	
 }
-.day-of-the-week-schedule > label {
+.day-of-the-week-schedule > label, .shared-group > label {
 	width: 100%;
 	height: 20px;
 	line-height: 20px;
@@ -1083,7 +1083,7 @@ fieldset.day-of-the-week-schedule > legend {
 	text-align: left;
 	padding: 0 30px;
 }
-.day-of-the-week-schedule > label > input {
+.day-of-the-week-schedule > label > input, .shared-group > label > input {
 	height: 20px;
 	margin-top: 2px;
 	margin-left: -30px !important;

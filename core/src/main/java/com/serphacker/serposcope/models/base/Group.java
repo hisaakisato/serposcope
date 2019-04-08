@@ -27,6 +27,8 @@ public class Group {
     int id;
     Module module;
     String name;
+    User owner;
+    boolean shared;
     boolean sundayEnabled;
     boolean mondayEnabled;
     boolean tuesdayEnabled;
@@ -72,6 +74,22 @@ public class Group {
         this.name = name;
     }
     
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+    
+    public boolean isShared() {
+		return shared;
+	}
+
+	public void setShared(boolean shared) {
+		this.shared = shared;
+	}
+
     public boolean isSundayEnabled() {
 		return sundayEnabled;
 	}

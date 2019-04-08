@@ -15,12 +15,15 @@ create table `USER` (
     admin boolean,
     logout datetime
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
+create unique index USER_EMAIL on `USER`(email);
 
 drop table if exists `GROUP`;
 create table `GROUP` (
     id int primary key auto_increment,
     module_id int,
     name varchar(255),
+    shared boolean,
+    owner_id int,
     sunday_enabled boolean,
     monday_enabled boolean,
     tuesday_enabled boolean,
@@ -29,6 +32,8 @@ create table `GROUP` (
     friday_enabled boolean,
     saturday_enabled boolean
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
+create unique index GROUP_NAME on `GROUP`(name);
+create index GROUP_OWNER on `GROUP`(owner_id);
 
 drop table if exists `EVENT`;
 create table `EVENT` (
