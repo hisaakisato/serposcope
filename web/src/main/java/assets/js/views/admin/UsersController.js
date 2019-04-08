@@ -14,11 +14,19 @@ serposcope.adminUsersController = function () {
         $('.tab-content.admin-users').css("min-height", serposcope.theme.availableHeight() - 100);
     };
     
-    var delUser = function(elt){
-        if(confirm("are you sure you want to delete this user ?")){
-            $(elt.currentTarget).parent().submit();
-        }
+    var delUserModal = function(elt){
+        $('.modal').modal('hide');
+        var target = $(elt.currentTarget);
+        var href = target.attr("href");
+        var userId = target.attr("data-id");
+        var name = target.attr("data-name");
+        var dialog = $('#delete-user-modal');
+        dialog.find('form').attr('action', target.attr("href"));
+        dialog.find('#delete-user-name').text(target.attr("data-name"));
+        dialog.find('[name=_xsrf]').val($('#_xsrf').attr("data-value"));
+        dialog.modal();
         return false;
+
     };
     
     var addUserModal = function(){
@@ -62,7 +70,7 @@ serposcope.adminUsersController = function () {
         });
         $('#add-user-modal').on('shown.bs.modal', function(){ $('#userEmail').focus(); });
         $('#add-user-btn').click(addUserModal);
-        $('.del-user-btn').click(delUser);
+        $('.btn-delete-user').click(delUserModal);
         $('.btn-toggle-perm').click(togglePermission);
     };
     

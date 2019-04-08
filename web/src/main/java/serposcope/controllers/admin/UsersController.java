@@ -22,6 +22,7 @@ import ninja.Results;
 import ninja.Router;
 import ninja.i18n.Messages;
 import ninja.params.Param;
+import ninja.params.PathParam;
 import ninja.session.FlashScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,8 @@ public class UsersController extends BaseController {
     @FilterWith({AdminFilter.class, XSRFFilter.class})
     public Result delete(
         Context context,
-        @Param("user-id") Integer userId
+        @PathParam("userId") Integer userId,
+        @Param("email") String email
     ){
         
         FlashScope flash = context.getFlashScope();
@@ -127,8 +129,16 @@ public class UsersController extends BaseController {
         if(userId == null || (user=baseDB.user.findById(userId)) == null) {
             flash.error("admin.users.invalidUserId");
             return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+        }        
+        if (email == null || email.isEmpty()) {
+            flash.error("admin.users.userEmailMissing");
+            return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
         }
-        
+        if (!email.equals(user.getEmail())) {
+            flash.error("admin.users.userEmailNotMatch");
+            return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+        }
+
         baseDB.user.delPerm(user);
         baseDB.user.delete(user.getId());
         flash.success("admin.users.userDeleted");

@@ -68,7 +68,7 @@ public class Routes implements ApplicationRoutes {
         
         router.GET().route("/admin/users").with(UsersController.class, "users");
         router.POST().route("/admin/users/add").with(UsersController.class, "add");
-        router.POST().route("/admin/users/delete").with(UsersController.class, "delete");
+        router.POST().route("/admin/users/{userId: [0-9]+}/delete").with(UsersController.class, "delete");
         router.POST().route("/admin/users/permissions/set").with(UsersController.class, "setPerm");        
         
         router.GET().route("/admin/tasks").with(TaskController.class, "tasks");
