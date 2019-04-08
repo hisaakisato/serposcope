@@ -19,7 +19,8 @@ public class GoogleScrapResult {
         ERROR_CAPTCHA_INCORRECT,
         ERROR_CAPTCHA_NO_SOLVER,
         ERROR_IP_BANNED,
-        ERROR_PARSING
+        ERROR_PARSING,
+        ERROR_PROXY_GONE
     };
     
     public Status status;

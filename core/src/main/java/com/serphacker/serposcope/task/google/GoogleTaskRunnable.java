@@ -13,6 +13,7 @@ import com.serphacker.serposcope.scraper.google.GoogleScrapSearch;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult;
 import static com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status.OK;
+import static com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status.ERROR_PROXY_GONE;
 import com.serphacker.serposcope.scraper.google.scraper.GoogleScraper;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -156,8 +157,10 @@ public class GoogleTaskRunnable implements Runnable {
 						.getAttr(device == GoogleDevice.DESKTOP ? ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT
 								: ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT, String.class);
 
-				if (res.status != OK) {
-					if (searchTry > controller.googleOptions.getFetchRetry()) {
+				if (res.status != OK) {// FIXME
+					if (res.status == ERROR_PROXY_GONE) {
+						searchTry--; // discard proxy
+					} else if (searchTry > controller.googleOptions.getFetchRetry()) {
 						LOG.error("[Search Failed] id: {} device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
 								search.getId(), device == GoogleDevice.DESKTOP ? "PC" : "SP",
 								search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
