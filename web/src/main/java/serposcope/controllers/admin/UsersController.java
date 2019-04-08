@@ -30,7 +30,6 @@ import serposcope.filters.AdminFilter;
 import serposcope.filters.XSRFFilter;
 import serposcope.helpers.Validator;
 
-@FilterWith(AdminFilter.class)
 @Singleton
 public class UsersController extends BaseController {
     
@@ -45,6 +44,7 @@ public class UsersController extends BaseController {
     @Inject
     Router router;
     
+    @FilterWith(AdminFilter.class)
     public Result users(){
         
         List<User> users = baseDB.user.list();
@@ -57,7 +57,7 @@ public class UsersController extends BaseController {
             ;
     }
     
-    @FilterWith(XSRFFilter.class)
+    @FilterWith({AdminFilter.class, XSRFFilter.class})
     public Result add(
         Context context,
         @Param("name") String name,
@@ -115,7 +115,7 @@ public class UsersController extends BaseController {
         return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
     }
     
-    @FilterWith(XSRFFilter.class)
+    @FilterWith({AdminFilter.class, XSRFFilter.class})
     public Result delete(
         Context context,
         @Param("user-id") Integer userId
@@ -153,12 +153,21 @@ public class UsersController extends BaseController {
             return Results.ok().text().render("error",msg.get("error.invalidGroup", context, Optional.absent()).or(""));
         }        
         
-        if(Boolean.TRUE.equals(newValue)){
-            baseDB.user.addPerm(user, group);
+        boolean isPermitted = false;
+        if (user.isAdmin()) {
+        	isPermitted = true;
+        } else if (group.getOwner() != null && user.getId() == group.getOwner().getId()){
+            	isPermitted = true;
         } else {
-            baseDB.user.delPerm(user, group);
+        	isPermitted = user.getGroups().contains(group);
         }
-        
+        if (isPermitted) {
+	        if(Boolean.TRUE.equals(newValue)){
+	            baseDB.user.addPerm(user, group);
+	        } else {
+	            baseDB.user.delPerm(user, group);
+	        }
+        }        
         
         return Results.ok().json().render("perm", baseDB.user.hasPerm(user, group));
     }

@@ -49,9 +49,11 @@ public class GroupController extends BaseController {
 
     public Result groups(Context context) throws JsonProcessingException{
         long count = googleDB.search.count();
+        User currentUser = context.getAttribute("user", User.class);
         List<User> users = baseDB.user.list();
         return Results
             .ok()
+            .render("currentUser", currentUser)
             .render("users", users)
             .render("groups", context.getAttribute("groups"))
             .render("search_count", googleDB.search.count())

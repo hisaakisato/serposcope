@@ -82,6 +82,20 @@ public class Group {
         this.owner = owner;
     }
     
+    public boolean isOwner(User user) {
+    	if (user == null) {
+    		return false;
+    	}
+    	return isOwner(user.getId());    	
+    }
+
+    public boolean isOwner(int userId) {
+    	if (this.owner == null) {
+    		return false;
+    	}
+    	return userId == this.owner.getId();    	
+    }
+
     public boolean isShared() {
 		return shared;
 	}

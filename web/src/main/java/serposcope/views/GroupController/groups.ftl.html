@@ -26,6 +26,9 @@
             <li class="active">
                 <a href="#groups" data-toggle="tab">${i18n("label.groups")}</a>
             </li>
+            <li>
+                <a href="#permissions" data-toggle="tab">${i18n("admin.users.permissions")}</a>
+            </li>
         </ul>
 
         <div class="tab-content tab-groups">
@@ -155,7 +158,60 @@
                     </div>
                 </div>                
             </div>
-        </div>
+	        <div class="tab-pane" id="permissions">
+	            <div class="row top5" >
+	                <div class="col-xs-12" >
+	                    <div style="overflow-x: auto;" >
+	                        <table class="table-header-rotated">
+	                            <thead>
+	                                <tr>
+	                                    <th></th>
+	                                    <#list groups as group>
+	                                    <th class="rotate">
+	                                        <div><span>${group.getName()}</span></div>
+	                                    </th>
+	                                    </#list>
+	                                </tr>
+	                            </thead>
+	                            <tbody>
+                                    <#list users as user>
+                                    <tr>
+                                        <th class="row-header" style="white-space: nowrap;">
+                                            <#if user.isAdmin()>
+                                            <span class="fa-stack" title="${i18n("label.admin")}" data-toggle="tooltip">
+                                                  <i class="fa fa-circle fa-stack-2x"></i>
+                                                <i class="fa fa-user fa-stack-1x fa-inverse"></i> 
+                                            </span>
+                                            <#else>
+                                            <span class="fa-stack" title="${i18n("label.user")}" data-toggle="tooltip">
+                                                  <!--<i class="fa fa-circle fa-stack-2x"></i>-->
+                                                  <i class="fa fa-user fa-stack-1x"></i> 
+                                            </span>
+                                            </#if>
+                                            ${user.getName()!user.getEmail()}
+                                        </th>
+                                        <#list groups as group>
+                                        <td>
+                                        	<#if currentUser.isAdmin() || currentUser.canRead(group) || group.isOwner(currentUser)>
+                                            <input class="btn-toggle-perm" type="checkbox"
+                                                   ${user.canRead(group.getId())?string("checked=checked","")}
+                                                   data-user="${user.getId()}" data-group="${group.getId()}" >
+                                        	<#else>
+                                            <input class="btn-toggle-perm" type="checkbox"
+                                                   ${user.canRead(group.getId())?string("checked=checked","")}
+                                                   data-user="${user.getId()}" data-group="${group.getId()}" disabled>
+                                        	</#if>
+                                        </td>                                    
+                                        </#list>
+                                    </tr>
+                                    </#list>                                
+                                </tbody>
+	                        </table>
+	                    </div>
+	                </div>
+	            </div>
+	        </div>
+	    </div>
     </div>
 </div>
 
@@ -183,5 +239,6 @@
     </div>
 </div>
 <div class="csp-script" data-src="GroupController.render" ></div>
+<div class="csp-script" data-src="adminUsersController.users" ></div>
 
 </@>

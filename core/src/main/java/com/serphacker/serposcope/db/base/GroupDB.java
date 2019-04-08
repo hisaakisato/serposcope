@@ -219,7 +219,7 @@ public class GroupDB extends AbstractDB {
 					.orderBy(t_group.name.asc());
             
             if(user != null && !user.isAdmin()){
-                query.join(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
+                query.leftJoin(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
                 query.where(t_group.shared.isTrue()
                 		.or(t_group.ownerId.eq(user.getId()))
                 		.or(t_user_group.userId.eq(user.getId())));
