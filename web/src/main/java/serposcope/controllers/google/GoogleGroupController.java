@@ -503,18 +503,24 @@ public class GoogleGroupController extends GoogleController {
             googleDB.rank.deleteByTarget(group.getId(), target.getId());
             googleDB.target.delete(target.getId());
         }
+        LOG.info("[Group Delete] Targets were deleted. id: {}", group.getId());
 
         List<GoogleSearch> searches = googleDB.search.listByGroup(Arrays.asList(group.getId()));
         for (GoogleSearch search : searches) {
             deleteSearch(group, search);
         }
+        LOG.info("[Group Delete] Searches were deleted. id: {}", group.getId());
 
         baseDB.event.delete(group);
+        LOG.info("[Group Delete] Events were deleted. id: {}", group.getId());
         baseDB.user.delPerm(group);
+        LOG.info("[Group Delete] Permissions were deleted. id: {}", group.getId());
         if (!baseDB.group.delete(group)) {
             flash.error("admin.google.failedDeleteGroup");
+            LOG.error("[Group Delete] Failed to delete group. id: {}", group.getId());
         } else {
             flash.success("admin.google.groupDeleted");
+            LOG.info("[Group Delete] Group was deleted. id: {}", group.getId());
         }
         return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
 
