@@ -164,7 +164,7 @@ public class GoogleSearchDB extends AbstractDB {
                 .select(Expressions.ONE)
                 .from(t_ggroup)
                 .where(t_ggroup.googleSearchId.eq(search.getId()))
-                .fetchOne() != null;
+                .fetchCount() > 0;
             
         } catch(Exception ex){
             LOG.error("SQL error", ex);
