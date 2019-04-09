@@ -30,6 +30,7 @@ import com.serphacker.serposcope.scraper.utils.UserAgentGenerator;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.nio.file.Files;
@@ -42,7 +43,12 @@ import java.util.Map;
 import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import javax.net.ssl.SSLHandshakeException;
+
+import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpHost;
+import org.apache.http.TruncatedChunkException;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.cookie.ClientCookie;
@@ -254,37 +260,15 @@ public class GoogleScraper {
 			return handleCaptchaRedirect(url, referrer, http.getResponseHeader("location"));
 		}
 
-		if (http.getException() != null) {
+		Exception cause = http.getException();
+		if (cause != null && http.getProxy() != null) {
 			ScrapProxy proxy = http.getProxy();
 			if (proxy != null) {
-				try {
-					if (http.getException() instanceof HttpHostConnectException) {
-						String hostName = ((HttpHostConnectException) http.getException()).getHost().getHostName();
-						if (InetAddress.getByName(hostName).isSiteLocalAddress()) {
-							// proxy was gone
-							return Status.ERROR_PROXY_GONE;
-						}
-					} else if (http.getException() instanceof ConnectTimeoutException) {
-						String hostName = ((ConnectTimeoutException) http.getException()).getHost().getHostName();
-						if (hostName != null && retry > 1) {
-							if (InetAddress.getByName(hostName).isSiteLocalAddress()) {
-								String attr = this.device == GoogleDevice.DESKTOP
-										? ScrapProxy.PROXY_ATTR_DESKTOP_REQUEST_COUNT
-										: ScrapProxy.PROXY_ATTR_MOBILE_REQUEST_COUNT;
-								int requestCount = proxy.getAttr(attr, Integer.class);
-								if (requestCount == 0) {
-									// retry after 20 secs
-									proxy.getAttr(attr, Integer.class);
-									proxy.setAttr(ScrapProxy.PROXY_ATTR_SLEEP_TIMESTAMP,
-											System.currentTimeMillis() + 20 * 1000);
-									return Status.ERROR_NETWORK;
-								}
-								// proxy was gone
-								return Status.ERROR_PROXY_GONE;
-							}
-						}
-					}
-				} catch (UnknownHostException e) {
+				if (cause instanceof SSLHandshakeException || cause instanceof ConnectionClosedException
+						|| cause instanceof TruncatedChunkException || cause instanceof SocketTimeoutException
+						|| cause instanceof HttpHostConnectException || cause instanceof ConnectTimeoutException) {
+					// proxy was gone
+					return Status.ERROR_PROXY_GONE;
 				}
 			}
 
