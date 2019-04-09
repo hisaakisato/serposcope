@@ -146,6 +146,71 @@ public class UsersController extends BaseController {
         
     }
     
+    @FilterWith({AdminFilter.class, XSRFFilter.class})
+    public Result edit(
+        Context context,
+        @PathParam("userId") Integer userId,
+        @Param("name") String name,
+        @Param("email") String email,
+        @Param("email-confirm") String emailConfirm,
+        @Param("password") String password,
+        @Param("password-confirm") String passwordConfirm,        
+        @Param("admin") String admin
+    ){
+        
+        FlashScope flash = context.getFlashScope();
+        
+        User user = null;
+        try {            
+	        if(userId == null || (user=baseDB.user.findById(userId)) == null) {
+	            flash.error("admin.users.invalidUserId");
+	            return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+	        }
+	        if (email != null && !email.isEmpty() && !user.getEmail().contentEquals(email)) {
+		        if (!Validator.isEmailAddress(email)) {
+		            flash.error("error.invalidEmail");
+		            return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+		        }
+		        
+		        if(baseDB.user.findByEmail(email) != null){
+		            flash.error("admin.users.emailAlreadyExists");
+		            return Results.redirect(router.getReverseRoute(UsersController.class, "users"));            
+		        }
+	            user.setEmail(email);
+	        }
+	
+	        if (password != null && !password.isEmpty()) {
+		        if (password == null || password.length() < 6) {
+		            flash.error("error.invalidPassword");
+		            return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+		        }
+		
+		        if (!password.equals(passwordConfirm)) {
+		            flash.error("error.invalidPasswordConfirm");
+		            return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+		        }
+	            user.setPassword(password);
+	        }
+	        
+	        if (name != null && !name.isEmpty()) {
+	        	user.setName(name);
+	        }
+            user.setAdmin("on".equals(admin));
+            if (!baseDB.user.update(user)) {
+                LOG.error("can't update user in database");
+                flash.error("error.internalError");
+                return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+            }
+        } catch (Exception ex) {
+            LOG.error("internal error while saving user", ex);
+            flash.error("error.internalError");
+            return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+        }
+        
+        return Results.redirect(router.getReverseRoute(UsersController.class, "users"));
+        
+    }
+
     @FilterWith(XSRFFilter.class)
     public Result setPerm(
         Context context,

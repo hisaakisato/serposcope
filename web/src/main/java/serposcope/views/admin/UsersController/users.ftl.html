@@ -35,11 +35,18 @@
                             <tr>
                                 <td style="white-space:nowrap;">
                                     <a href="${reverseRoute("admin.UsersController","delete", "userId",user.getId())}" class="btn-delete-user text-danger" 
-                                       data-id="${user.getId()}" data-name="${user.getEmail()}"
+                                       data-id="${user.getId()}" data-email="${user.getEmail()}"
                                        title="${i18n("label.delete")}" data-toggle="tooltip" 
                                     >
                                         <i class="glyphicon glyphicon-remove" ></i>
                                     </a>                                
+                                    <a href="${reverseRoute("admin.UsersController","edit", "userId",user.getId())}" class="btn-edit-user" 
+                                       data-id="${user.getId()}" data-name="${user.getName()}"
+                                       data-email="${user.getEmail()}" data-admin="${user.isAdmin()?c}"
+                                       title="${i18n("label.edit")}" data-toggle="tooltip" 
+                                    >
+                                        <i class="glyphicon glyphicon-pencil" ></i>
+                                    </a>
                                 </td>
                                 <td>${user.isAdmin()?c}</td>
                                 <td>${user.getEmail()}</td>
@@ -152,13 +159,58 @@
         </div>
     </div>
 </div>
+<div id="edit-user-modal" class="modal fade">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">${i18n("admin.users.editUser")}</h4>
+            </div>
+            <form class="form" method="post" action="${reverseRoute("admin.UsersController","add")}" >
+                  <@authenticityForm/>
+                  <div class="modal-body">
+                    <div class="form-group" >
+                        <label for="userName" >${i18n("label.name")}</label>
+                        <input id="userName" class="form-control" type="name" name="name" >
+                    </div>
+
+                    <div class="form-group" >
+                        <label for="userEmail" >${i18n("label.email")}</label>
+                        <input id="userEmail" class="form-control" type="email" name="email" >
+                    </div>
+
+                    <div class="form-group" >
+                        <label for="userPassword" >${i18n("label.password")}</label>
+                        <input id="userPassword" class="form-control" type="password" name="password" >
+                    </div>
+
+                    <div class="form-group" >
+                        <label for="userConfirmPassword" >${i18n("label.confirmPassword")}</label>
+                        <input id=userConfirmPassword" class="form-control" type="password" name="password-confirm" >
+                    </div>
+
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="admin"> Admin
+                        </label>
+                    </div>                    
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>
+                    <input type="submit" class="btn btn-primary" value="${i18n("label.save")}" />
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 <div id="delete-user-modal" class="modal fade">
     <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST">
                 <div class="modal-header">
                   <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                  <h4 class="modal-title no-user-select">${i18n("admin.users.deleteUser")} [ <span id="delete-user-name"></span> ]</h4>                  
+                  <h4 class="modal-title no-user-select">${i18n("admin.users.deleteUser")} [ <span id="delete-user-email"></span> ]</h4>                  
                   <input type="hidden" name="_xsrf">
                 </div>
 

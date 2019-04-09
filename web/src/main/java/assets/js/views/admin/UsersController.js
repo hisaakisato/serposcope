@@ -17,18 +17,27 @@ serposcope.adminUsersController = function () {
     var delUserModal = function(elt){
         $('.modal').modal('hide');
         var target = $(elt.currentTarget);
-        var href = target.attr("href");
-        var userId = target.attr("data-id");
-        var name = target.attr("data-name");
         var dialog = $('#delete-user-modal');
         dialog.find('form').attr('action', target.attr("href"));
-        dialog.find('#delete-user-name').text(target.attr("data-name"));
+        dialog.find('#delete-user-email').text(target.attr("data-email"));
         dialog.find('[name=_xsrf]').val($('#_xsrf').attr("data-value"));
         dialog.modal();
         return false;
-
     };
     
+    var editUserModal = function(elt){
+        $('.modal').modal('hide');
+        var target = $(elt.currentTarget);
+        var dialog = $('#edit-user-modal');
+        dialog.find('form').attr('action', target.attr("href"));
+        dialog.find('input[name=name]').val(target.attr("data-name"));
+        dialog.find('input[name=email]').val(target.attr("data-email"));
+        dialog.find('input[name=admin]').prop("checked", target.attr("data-admin") === "true");
+        dialog.find('[name=_xsrf]').val($('#_xsrf').attr("data-value"));
+        dialog.modal();
+        return false;
+    };
+
     var addUserModal = function(){
         $('#add-user-modal').modal();
     };
@@ -71,6 +80,7 @@ serposcope.adminUsersController = function () {
         $('#add-user-modal').on('shown.bs.modal', function(){ $('#userEmail').focus(); });
         $('#add-user-btn').click(addUserModal);
         $('.btn-delete-user').click(delUserModal);
+        $('.btn-edit-user').click(editUserModal);
         $('.btn-toggle-perm').click(togglePermission);
     };
     
