@@ -82,7 +82,6 @@ public class GoogleSerp {
         
         for (int i = 0; i < entrySize; i++) {
         	GoogleScrapLinkEntry linkEntry = new GoogleScrapLinkEntry(dis.readUTF());
-            GoogleSerpEntry entry = new GoogleSerpEntry(linkEntry);
             byte mapSize = dis.readByte();
             if (mapSize < 0) {
             	// check version
@@ -104,6 +103,7 @@ public class GoogleSerp {
             	}
                 mapSize = dis.readByte();
             }
+            GoogleSerpEntry entry = new GoogleSerpEntry(linkEntry);
             for (int j = 0; j < mapSize; j++) {
                 short key = dis.readShort();
                 short value = dis.readShort();
