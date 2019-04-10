@@ -70,6 +70,8 @@ public class GoogleGroupController extends GoogleController {
 
     private static final Logger LOG = LoggerFactory.getLogger(GoogleGroupController.class);
 
+    private static final int MAX_KEYWORD_LENGTH = 250;
+
     @Inject
     Router router;
 
@@ -221,6 +223,13 @@ public class GoogleGroupController extends GoogleController {
                 flash.error("admin.google.keywordEmpty");
                 return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
             }
+            if (keywords[i].length() > MAX_KEYWORD_LENGTH) {
+				flash.error(msg
+						.get("admin.google.keywordTooLong", context, Optional.absent(), MAX_KEYWORD_LENGTH, keywords[i])
+						.or(""));
+                return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+            }
+
             search.setKeyword(keywords[i]);
 
             GoogleCountryCode countryCode = null;
