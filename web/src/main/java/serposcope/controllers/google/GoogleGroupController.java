@@ -61,6 +61,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import serposcope.controllers.GroupController;
 import serposcope.controllers.HomeController;
+import serposcope.controllers.admin.TaskController;
 import serposcope.filters.XSRFFilter;
 import serposcope.helpers.Validator;
 
@@ -833,10 +834,11 @@ public class GoogleGroupController extends GoogleController {
         
         if (!taskManager.startGoogleTask(run, user, group)) {
             flash.error("admin.task.errGoogleAlreadyRunning");
-            return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
+			return Results
+					.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
         }
         flash.success("admin.task.tasksStarted");
-        return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
+		return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 
 }
