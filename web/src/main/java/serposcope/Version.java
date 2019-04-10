@@ -7,9 +7,15 @@
  */
 package serposcope;
 
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 import java.util.Objects;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import javax.inject.Singleton;
 
 @Singleton
@@ -17,6 +23,28 @@ public class Version implements Comparable<Version> {
 
     private final static Pattern PATTERN = Pattern.compile("^([0-9]+)\\.([0-9]+)\\.([0-9]+)(-[A-Z]+[0-9]+)?$");
     public final static Version CURRENT = new Version("2.10.0");
+
+    public static String BUILD = "";
+
+    static {
+		try {
+			Enumeration<URL> resources = Version.class.getClassLoader().getResources("META-INF/MANIFEST.MF");
+			while (resources.hasMoreElements()) {
+				try (InputStream input = resources.nextElement().openStream()){
+					Manifest manifest = new Manifest(input);
+					Attributes attrs = manifest.getMainAttributes();
+					for (Object obj : attrs.keySet()) {
+						if ("Serposcope-Build-Timestamp".equals(obj.toString())) {
+							BUILD = attrs.getValue("Serposcope-Build-Timestamp");
+							break;
+						}
+					}
+				} catch (Exception E) {
+				}
+			}
+		} catch (Exception e) {
+		}
+    }
 
     int major;
     int minor;

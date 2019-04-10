@@ -69,6 +69,7 @@ public class Ninja extends NinjaDefault {
             Map<String,Object> global = new HashMap<>();
             global.put("ldtf", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             global.put("version", Version.CURRENT);
+            global.put("build", Version.BUILD);
             global.put("prod", props.isProd());
             global.put("update", update);
             global.put("countries", GoogleCountryCode.__);

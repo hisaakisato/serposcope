@@ -131,6 +131,7 @@ public class SerposcopeConf {
     
     public void logEnv(){
         LOG.info("serposcope.version          : " + Version.CURRENT);
+        LOG.info("serposcope.build            : " + Version.BUILD);
         LOG.info("serposcope.datadir          : " + datadir);
         LOG.info("serposcope.logdir           : " + logdir);
         LOG.info("serposcope.db.url           : " + dbUrl);
@@ -142,6 +143,7 @@ public class SerposcopeConf {
     public String dumpEnv(){
         return 
             "serposcope.version          : " + Version.CURRENT + "\n" + 
+            "serposcope.build            : " + Version.BUILD + "\n" + 
             "serposcope.datadir          : " + datadir + "\n" + 
             "serposcope.logdir           : " + logdir + "\n" + 
             // "serposcope.db.url           : " + dbUrl + "\n" + 
