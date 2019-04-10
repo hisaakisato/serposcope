@@ -53,11 +53,15 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 import ninja.Context;
+import ninja.FilterWith;
 import ninja.Router;
 import ninja.i18n.Messages;
 import ninja.params.Param;
 import ninja.params.PathParam;
 import ninja.utils.ResponseStreams;
+import serposcope.filters.MaintenanceFilter;
+import serposcope.filters.XSRFFilter;
+
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.LoggerFactory;
 
@@ -467,6 +471,9 @@ public class GoogleTargetController extends GoogleController {
             .render("eventsJson", jsonEvents);
     }
 
+    @FilterWith({
+    	MaintenanceFilter.class, XSRFFilter.class
+    })
     protected Result renderExport(
         Group group,
         GoogleTarget target,

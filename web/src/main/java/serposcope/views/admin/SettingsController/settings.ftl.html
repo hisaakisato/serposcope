@@ -40,6 +40,31 @@
                 </div>                
                 
                 <hr/>
+                <div class="form-group" >
+                    <label for="maintenance" >${i18n("label.maintenance")}</label>
+                    <div>
+                        <div class="btn-group" data-toggle="buttons">
+                            <#if maintenance.enabled >
+                            <label class="btn btn-default active">
+                                <input type="radio" name="maintenance" value="1" checked="checked">${i18n("label.enabled")}
+                            </label>
+                            <label class="btn btn-default">
+                                <input type="radio" name="maintenance" value="0">${i18n("label.disabled")}
+                            </label>                            
+                            <#else>
+                            <label class="btn btn-default">
+                                <input type="radio" name="maintenance" value="1">${i18n("label.enabled")}
+                            </label>
+                            <label class="btn btn-default active">
+                                <input type="radio" name="maintenance" value="0" checked="checked">${i18n("label.disabled")}
+                            </label>                            
+                            </#if>
+
+                        </div>         
+                    </div>
+                </div>
+
+                <hr/>
                 <h2 class="styled-h2">${i18n("label.display")}</h2>
                 
                 <hr/>

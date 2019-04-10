@@ -31,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import serposcope.controllers.BaseController;
 import serposcope.filters.AdminFilter;
+import serposcope.filters.MaintenanceFilter;
 import serposcope.filters.XSRFFilter;
 import com.serphacker.serposcope.task.TaskManager;
 import java.util.Arrays;
@@ -85,7 +86,7 @@ public class TaskController extends BaseController {
             .render("done", done);
     }
 
-    @FilterWith({ AdminFilter.class, XSRFFilter.class })
+    @FilterWith({ MaintenanceFilter.class, AdminFilter.class, XSRFFilter.class })
     public Result startTask(
         Context context,
         @Param("module") Integer moduleId,
@@ -159,7 +160,7 @@ public class TaskController extends BaseController {
         return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 
-    @FilterWith({ AdminFilter.class, XSRFFilter.class })
+    @FilterWith({ MaintenanceFilter.class, AdminFilter.class, XSRFFilter.class })
     public Result deleteRun(
         Context context,
         @PathParam("runId") Integer runId
@@ -189,7 +190,7 @@ public class TaskController extends BaseController {
         return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 
-    @FilterWith({ AdminFilter.class, XSRFFilter.class })
+    @FilterWith({ MaintenanceFilter.class, AdminFilter.class, XSRFFilter.class })
     public Result rescanSerp(
         Context context,
         @PathParam("runId") Integer runId

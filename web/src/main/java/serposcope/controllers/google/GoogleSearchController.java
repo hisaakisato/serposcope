@@ -55,6 +55,7 @@ import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import com.serphacker.serposcope.scraper.utils.S3Utilis;
 
 import ninja.Context;
+import ninja.FilterWith;
 import ninja.Result;
 import ninja.Results;
 import ninja.Router;
@@ -66,6 +67,8 @@ import ninja.session.FlashScope;
 import ninja.utils.ResponseStreams;
 import serposcope.filters.AbstractFilter;
 import serposcope.filters.CanReadFilter;
+import serposcope.filters.MaintenanceFilter;
+import serposcope.filters.XSRFFilter;
 
 @Singleton
 public class GoogleSearchController extends GoogleController {
@@ -345,6 +348,9 @@ public class GoogleSearchController extends GoogleController {
 		return Results.internalServerError();
 	}
 
+	@FilterWith({
+    	MaintenanceFilter.class, XSRFFilter.class
+    })
 	public Result exportSerp(Context context, @PathParam("searchId") Integer searchId, @Param("date") String pdate) {
 		GoogleSerp serp = null;
 		GoogleSearch search = null;
@@ -422,6 +428,9 @@ public class GoogleSearchController extends GoogleController {
 		return Results.internalServerError();
 	}
 
+	@FilterWith({
+    	MaintenanceFilter.class, XSRFFilter.class
+    })
 	public Result export(Context context, @Params("searchIds") String[] ids, @Param("targetOnly") boolean targetOnly,
 			@Param("startDate") String start, @Param("endDate") String end) {
 

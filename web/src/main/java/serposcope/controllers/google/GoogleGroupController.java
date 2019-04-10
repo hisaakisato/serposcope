@@ -62,6 +62,7 @@ import org.slf4j.LoggerFactory;
 import serposcope.controllers.GroupController;
 import serposcope.controllers.HomeController;
 import serposcope.controllers.admin.TaskController;
+import serposcope.filters.MaintenanceFilter;
 import serposcope.filters.XSRFFilter;
 import serposcope.helpers.Validator;
 
@@ -195,7 +196,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class
+    	MaintenanceFilter.class, XSRFFilter.class
     })
     public Result addSearch(
         Context context,
@@ -289,7 +290,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class
+    	MaintenanceFilter.class, XSRFFilter.class
     })
     public Result addTarget(
         Context context,
@@ -399,7 +400,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class
+    	MaintenanceFilter.class, XSRFFilter.class
     })
     public Result delSearch(
         Context context,
@@ -445,7 +446,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class
+    	MaintenanceFilter.class, XSRFFilter.class
     })
     public Result delTarget(
         Context context,
@@ -487,7 +488,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class
+    	MaintenanceFilter.class, XSRFFilter.class
     })
     public Result delete(Context context, @Param("name") String name) {
         FlashScope flash = context.getFlashScope();
@@ -537,7 +538,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class
+    	MaintenanceFilter.class, XSRFFilter.class
     })
     public Result exportSearches(
         Context context,
@@ -599,7 +600,7 @@ public class GoogleGroupController extends GoogleController {
     }
 
     @FilterWith({
-        XSRFFilter.class
+    	MaintenanceFilter.class, XSRFFilter.class
     })
     public Result exportTargets(
         Context context,
@@ -831,7 +832,9 @@ public class GoogleGroupController extends GoogleController {
         return Results.json().renderRaw(builder.toString());
     }
 
-    @FilterWith(XSRFFilter.class)
+    @FilterWith({
+    	MaintenanceFilter.class, XSRFFilter.class
+    })
     public Result startTask(
         Context context
     ) {

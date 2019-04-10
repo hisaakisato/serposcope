@@ -20,6 +20,9 @@ import com.serphacker.serposcope.scraper.captcha.solver.DeathByCaptchaSolver;
 import com.serphacker.serposcope.scraper.captcha.solver.DecaptcherSolver;
 import com.serphacker.serposcope.scraper.captcha.solver.ImageTyperzSolver;
 import com.serphacker.serposcope.scraper.captcha.solver.TwoCaptchaSolver;
+
+import conf.Maintenance;
+
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import ninja.Context;
@@ -51,6 +54,9 @@ public class SettingsController extends BaseController {
     BaseDB baseDB;
     
     @Inject
+    Maintenance maintenance;
+    
+    @Inject
     Router router;
     
     @Inject
@@ -74,6 +80,7 @@ public class SettingsController extends BaseController {
             .render("diskUsage", diskUsage)
             .render("diskFree", diskFree)
             .render("runs", baseDB.run.count())
+            .render("maintenance", maintenance)
             ;
     }
     
@@ -84,6 +91,7 @@ public class SettingsController extends BaseController {
         @Param("displayGoogleTarget") String displayGoogleTarget,
         @Param("displayGoogleSearch") String displayGoogleSearch,
         @Param("cronTime") String cronTime,
+        @Param("maintenance") int maintenanceMode,
         @Param("dbcUser") String dbcUser,
         @Param("dbcPass") String dbcPass,
         @Param("decaptcherUser") String decaptcherUser,
@@ -157,6 +165,7 @@ public class SettingsController extends BaseController {
         }        
         
         baseDB.config.updateConfig(config);
+        maintenance.setEnabled(maintenanceMode > 0);
         
         flash.success("label.settingsUpdated");
         return Results.redirect(router.getReverseRoute(SettingsController.class, "settings"));
