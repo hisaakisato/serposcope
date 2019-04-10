@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.http.NameValuePair;
@@ -14,6 +15,8 @@ import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status;
 
 public abstract class GoogleAbstractScrapParser {
+
+	protected static Pattern PATTERN_GOOGLE_SERVICES = Pattern.compile("^https:\\/\\/[^.]+\\.google\\.[^/]+\\/");
 
 	public abstract Status parse(Element resElement, List<GoogleScrapLinkEntry> entries);
 
