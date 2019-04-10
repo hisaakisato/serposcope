@@ -19,8 +19,10 @@ import com.serphacker.serposcope.db.AbstractDBIT;
 import com.serphacker.serposcope.db.base.BaseDB;
 import com.serphacker.serposcope.db.base.ExportDB;
 import com.serphacker.serposcope.db.base.ExportHugeDBIT;
+import com.serphacker.serposcope.db.base.GroupDB;
 import com.serphacker.serposcope.di.db.ConfigurationProvider;
 import com.serphacker.serposcope.di.db.DataSourceProvider;
+import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import java.io.File;
@@ -83,6 +85,7 @@ public class GoogleSerpRescanDBIT extends DeepIntegrationTest {
     public void testSomeMethod() {
         
         int groupId = 1;
+        Group group = baseDB.group.find(groupId);
         GoogleTarget target = new GoogleTarget(groupId, "www.site45.com", GoogleTarget.PatternType.DOMAIN, "www.site45.com");
         List<GoogleSearch> searches = googleDB.search.listByGroup(Arrays.asList(groupId));
         System.out.println(searches.size());
@@ -103,8 +106,8 @@ public class GoogleSerpRescanDBIT extends DeepIntegrationTest {
             try{
                 googleDB.target.insert(Arrays.asList(target));
                 System.out.println("TARGET ID : " + target.getId());
-                googleDB.serpRescan.rescan(null, Arrays.asList(target), searches, true);
-                googleDB.serpRescan.rescan(null, Arrays.asList(target), searches, true);
+                googleDB.serpRescan.rescan(null, group, Arrays.asList(target), searches, true);
+                googleDB.serpRescan.rescan(null, group, Arrays.asList(target), searches, true);
             } finally {
                 googleDB.targetSummary.deleteByTarget(target.getId());
                 googleDB.rank.deleteByTarget(groupId, target.getId());

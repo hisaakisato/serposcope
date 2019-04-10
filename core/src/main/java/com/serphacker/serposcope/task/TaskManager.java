@@ -19,14 +19,18 @@ import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.http.proxy.ProxyRotator;
 import com.serphacker.serposcope.task.google.GoogleTask;
+import com.serphacker.serposcope.util.TaskRescanRunnable;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,7 +51,9 @@ public class TaskManager {
     @Inject
     GoogleDB googleDB;
 
-    public final ProxyRotator rotator = new ProxyRotator(Collections.emptySet());
+    Map<TaskRescanRunnable, Future<?>> rescans = new ConcurrentHashMap<>();
+
+	public final ProxyRotator rotator = new ProxyRotator(Collections.emptySet());
 
     final Object googleTaskLock = new Object();
     GoogleTask googleTask;
@@ -220,13 +226,43 @@ public class TaskManager {
         return tasks;
     }
 
-	public void rescan(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,
-			boolean updateSummary) {
-		executor.execute(new Runnable() {
+    public void rescan(Integer specificRunId, Group group, Collection<GoogleTarget> targets,
+			Collection<GoogleSearch> searches, boolean updateSummary) {
+		// check group
+		if (db.group.find(group.getId()) == null) {
+			return; // already deleted
+		}
+		TaskRescanRunnable r = new TaskRescanRunnable(group) {
 			@Override
 			public void run() {
-				googleDB.serpRescan.rescan(specificRunId, targets, searches, updateSummary);
+				try {
+					googleDB.serpRescan.rescan(specificRunId, getGroup(), targets, searches, updateSummary);
+				} finally {
+					synchronized (rescans) {
+						rescans.remove(this);
+					}
+				}
 			}
-		});
+		};
+		synchronized (rescans) {
+			Future<?> future = executor.submit(r);
+			rescans.put(r, future);
+		}
+	}
+
+    public void abortRescan(Group group) {
+    	synchronized (rescans) {
+			for (Entry<TaskRescanRunnable, Future<?>> entry : rescans.entrySet()) {
+				if (entry.getKey().getGroup().equals(group)) {
+					Future<?> future = entry.getValue();
+					if (!future.isDone() || !future.isCancelled()) {
+						try {
+							future.cancel(true);
+						} catch (Exception e) {
+						}
+					}
+				}
+			}
+		}
     }
 }

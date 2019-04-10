@@ -167,12 +167,12 @@ public class GoogleSerpDB extends AbstractDB {
 
 			while (iterate.hasNext()) {
 				GoogleSerp serp = fromTuple(iterate.next());
-				try {
-					callback.accept(serp);
-				} catch (Exception e) {
-					break;
-				}			}
+				callback.accept(serp);
+			}
 
+		} catch (InterruptedException ex) {
+			// abort
+			Thread.currentThread().interrupt();
 		} catch (Exception ex) {
 			LOG.error("SQL error", ex);
 		}
@@ -212,13 +212,12 @@ public class GoogleSerpDB extends AbstractDB {
 
 			while (iterate.hasNext()) {
 				GoogleSerp serp = fromTuple(iterate.next());
-				try {
-					callback.accept(serp);
-				} catch (Exception e) {
-					break;
-				}
+				callback.accept(serp);
 			}
 
+		} catch (InterruptedException ex) {
+			// abort
+			Thread.currentThread().interrupt();
 		} catch (Exception ex) {
 			LOG.error("SQL error", ex);
 		}

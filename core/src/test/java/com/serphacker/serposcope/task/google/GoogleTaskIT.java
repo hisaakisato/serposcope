@@ -500,7 +500,7 @@ public class GoogleTaskIT extends AbstractDBIT {
         for (Group group : allGroups) {
             List<GoogleSearch> searchRescan = googleDB.search.listByGroup(Arrays.asList(group.getId()));
             List<GoogleTarget> targetRescan = googleDB.target.list(Arrays.asList(group.getId()));
-            googleDB.serpRescan.rescan(null, targetRescan, searchRescan, true);
+            googleDB.serpRescan.rescan(null, group, targetRescan, searchRescan, true);
         }
         ReflectionAssert.assertReflectionEquals(originalSummaries, googleDB.targetSummary.list(task.getRun().getId()));
         
@@ -515,7 +515,7 @@ public class GoogleTaskIT extends AbstractDBIT {
             for (Group group : allGroups) {
                 List<GoogleSearch> searchRescan = googleDB.search.listByGroup(Arrays.asList(group.getId()));
                 List<GoogleTarget> targetRescan = googleDB.target.list(Arrays.asList(group.getId()));
-                googleDB.serpRescan.rescan(run.getId(), targetRescan, searchRescan, true);
+                googleDB.serpRescan.rescan(run.getId(), group, targetRescan, searchRescan, true);
             }
         }
         ReflectionAssert.assertReflectionEquals(originalSummaries, googleDB.targetSummary.list(task.getRun().getId()));

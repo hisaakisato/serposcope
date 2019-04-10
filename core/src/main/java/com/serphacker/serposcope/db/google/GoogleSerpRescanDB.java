@@ -8,7 +8,9 @@
 
 package com.serphacker.serposcope.db.google;
 
+import com.serphacker.serposcope.db.base.GroupDB;
 import com.serphacker.serposcope.db.base.RunDB;
+import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.google.GoogleBest;
 import com.serphacker.serposcope.models.google.GoogleRank;
@@ -50,6 +52,9 @@ public class GoogleSerpRescanDB {
     
     @Inject
     RunDB runDB;
+    
+    @Inject
+    GroupDB groupDB;
     
     /*
     public void rescanNonBulk(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,  boolean updateSummary) {
@@ -155,8 +160,8 @@ public class GoogleSerpRescanDB {
     }
     */
     
-    public void rescan(Integer specificRunId, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,  boolean updateSummary) {
-        LOG.info("[SERP rescan] started.");
+    public void rescan(Integer specificRunId, Group group, Collection<GoogleTarget> targets, Collection<GoogleSearch> searches,  boolean updateSummary) {
+        LOG.info("[SERP rescan] started, group: {}", group.getId());
         long _start = System.currentTimeMillis();
         Map<Integer, Integer> searchCountByGroup = searchDB.countByGroup();
         Run specPrevRun = null;
@@ -200,6 +205,10 @@ public class GoogleSerpRescanDB {
 
             serpDB.stream(specificRunId, specificRunId, new ArrayList<Integer>(bests.keySet()), (GoogleSerp res) -> {
                 
+            	if (Thread.interrupted()) {
+            		throw new InterruptedException();
+            	}
+            	
             	final GoogleSearch search = res.getSearch();
             	int searchId = search.getId();
                 final MutableInt previousRunId = previousRunIds.get(searchId);
@@ -238,10 +247,26 @@ public class GoogleSerpRescanDB {
                 previousRunId.setValue(res.getRunId());
                 previousRank.setValue(rank);
             });
+        	if (Thread.interrupted()) {
+        		LOG.warn("[SERP rescan] aborted, group: {} duration: {}",
+        				group.getId(), DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - _start));
+        		return;
+        	}
 
             for (GoogleBest best : bests.values()) {
                 if (best.getRank() != GoogleRank.UNRANKED) {
-                    rankDB.insertBest(best);
+                	if (Thread.interrupted()) {
+                		LOG.warn("[SERP rescan] aborted, group: {} duration: {}",
+                				group.getId(), DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - _start));
+                		return;
+                	}
+                	if (!rankDB.insertBest(best)) {
+						if (groupDB.find(group.getId()) == null) { // gone
+							LOG.warn("[SERP rescan] group was deleted, group: {} duration: {}",
+									group.getId(), DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - _start));
+							return;
+						}
+                    }
                 }
             }
             
@@ -264,7 +289,18 @@ public class GoogleSerpRescanDB {
                 }
                 
                 if(!summaries.isEmpty()){
-                    targetSummaryDB.insert(summaries.values());
+                	if (Thread.interrupted()) {
+                		LOG.warn("[SERP rescan] aborted, group: {} duration: {}",
+                				group.getId(), DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - _start));
+                		return;
+                	}
+                	if (targetSummaryDB.insert(summaries.values()) == 0) {
+						if (groupDB.find(group.getId()) == null) { // gone
+							LOG.warn("[SERP rescan] group was deleted, group: {} duration: {}",
+									group.getId(), DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - _start));
+							return;
+						}
+                    }
                 }
             }
         }
@@ -272,10 +308,21 @@ public class GoogleSerpRescanDB {
         int len = ranks.size();
         int bulksize = 2000;
         for (int i = 0; i * bulksize < len; i++) {
-        	rankDB.insert(ranks.subList(i * bulksize, Math.min((i + 1) * bulksize, len)));
+        	if (Thread.interrupted()) {
+        		LOG.warn("[SERP rescan] aborted, group: {} duration: {}",
+        				group.getId(), DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - _start));
+        		return;
+        	}
+        	if (!rankDB.insert(ranks.subList(i * bulksize, Math.min((i + 1) * bulksize, len)))) {
+				if (groupDB.find(group.getId()) == null) { // gone
+					LOG.warn("[SERP rescan] group was deleted, group: {} duration: {}",
+							group.getId(), DurationFormatUtils.formatDurationHMS(System.currentTimeMillis() - _start));
+					return;
+				}
+        	}
         }
         
-        LOG.info("[SERP rescan] rescan was finished: duration: {}", DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-_start));
+        LOG.info("[SERP rescan] rescan was finished, group: {} duration: {}", group.getId(),DurationFormatUtils.formatDurationHMS(System.currentTimeMillis()-_start));
     }    
     
     /*
