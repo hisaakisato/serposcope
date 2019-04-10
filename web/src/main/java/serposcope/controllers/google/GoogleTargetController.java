@@ -30,6 +30,8 @@ import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 
 import static com.serphacker.serposcope.scraper.google.GoogleDevice.SMARTPHONE;
+
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -361,6 +363,8 @@ public class GoogleTargetController extends GoogleController {
                     }
                     writer.append("]]");
 
+				} catch (EOFException e) {
+					LOG.warn("[Export Variation] Download was interrupted: {}", e.getMessage());
                 } catch (Exception ex) {
                     LOG.warn("HTTP error", ex);
                 } finally {
@@ -531,6 +535,8 @@ public class GoogleTargetController extends GoogleController {
                         }
                     }
 
+				} catch (EOFException e) {
+					LOG.warn("[Export Serps] Download was interrupted: {}", e.getMessage());
                 } catch (IOException ex) {
                     LOG.warn("error while exporting csv");
                 }
@@ -580,6 +586,8 @@ public class GoogleTargetController extends GoogleController {
                     writer = new PrintWriter(os);
                     getTableJson(group, target, searches, runs, startDate, endDate, writer);
 
+				} catch (EOFException e) {
+					LOG.warn("[Export Ranks] Download was interrupted: {}", e.getMessage());
                 } catch (Exception ex) {
                     LOG.warn("HTTP error", ex);
                 } finally {

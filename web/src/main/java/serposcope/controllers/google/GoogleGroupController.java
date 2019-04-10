@@ -31,6 +31,7 @@ import static com.serphacker.serposcope.models.base.Group.Module.GOOGLE;
 import static com.serphacker.serposcope.scraper.google.GoogleDevice.SMARTPHONE;
 import com.serphacker.serposcope.task.TaskManager;
 
+import java.io.EOFException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -180,6 +181,8 @@ public class GoogleGroupController extends GoogleController {
                     }
                     writer.append("]");
 
+				} catch (EOFException e) {
+					LOG.warn("[Export Searches] Download was interrupted: {}", e.getMessage());
                 } catch (Exception ex) {
                     LOG.warn("HTTP error", ex);
                 } finally {

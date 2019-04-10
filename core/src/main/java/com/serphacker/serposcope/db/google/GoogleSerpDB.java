@@ -28,6 +28,7 @@ import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
 import com.serphacker.serposcope.querybuilder.QGoogleSerp;
 import com.serphacker.serposcope.querybuilder.QRun;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
+import com.serphacker.serposcope.util.ThrowableConsumer;
 
 import java.nio.ByteBuffer;
 import java.sql.Blob;
@@ -37,7 +38,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 import javax.sql.rowset.serial.SerialBlob;
 import net.jpountz.lz4.LZ4Compressor;
 import net.jpountz.lz4.LZ4Factory;
@@ -133,11 +133,11 @@ public class GoogleSerpDB extends AbstractDB {
 //        }
 //    }    
 
-	public void stream(Integer firstRun, Integer lastRun, int googleSearchId, Consumer<GoogleSerp> callback) {
+	public void stream(Integer firstRun, Integer lastRun, int googleSearchId, ThrowableConsumer<GoogleSerp> callback) {
 		stream(firstRun, lastRun, Arrays.asList(googleSearchId), callback);
 	}
 
-	public void stream(Integer firstRun, Integer lastRun, List<Integer> googleSearchIds, Consumer<GoogleSerp> callback) {
+	public void stream(Integer firstRun, Integer lastRun, List<Integer> googleSearchIds, ThrowableConsumer<GoogleSerp> callback) {
 		try (Connection con = ds.getConnection()) {
 
 			BooleanExpression exp = t_serp.googleSearchId.in(googleSearchIds);
@@ -167,8 +167,11 @@ public class GoogleSerpDB extends AbstractDB {
 
 			while (iterate.hasNext()) {
 				GoogleSerp serp = fromTuple(iterate.next());
-				callback.accept(serp);
-			}
+				try {
+					callback.accept(serp);
+				} catch (Exception e) {
+					break;
+				}			}
 
 		} catch (Exception ex) {
 			LOG.error("SQL error", ex);
@@ -176,7 +179,7 @@ public class GoogleSerpDB extends AbstractDB {
 	}
 
 	public void stream(LocalDate startDate, LocalDate endDate, Group group, List<Integer> googleSearchIds,
-			Consumer<GoogleSerp> callback) {
+			ThrowableConsumer<GoogleSerp> callback) {
 		try (Connection con = ds.getConnection()) {
 
 			if (group == null) {
@@ -209,7 +212,11 @@ public class GoogleSerpDB extends AbstractDB {
 
 			while (iterate.hasNext()) {
 				GoogleSerp serp = fromTuple(iterate.next());
-				callback.accept(serp);
+				try {
+					callback.accept(serp);
+				} catch (Exception e) {
+					break;
+				}
 			}
 
 		} catch (Exception ex) {

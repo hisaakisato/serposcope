@@ -16,6 +16,7 @@ import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleSerp;
 import com.serphacker.serposcope.models.google.GoogleSerpEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
+import com.serphacker.serposcope.util.ThrowableConsumer;
 
 import it.unimi.dsi.fastutil.shorts.Short2ShortArrayMap;
 import java.io.IOException;
@@ -109,7 +110,7 @@ public class GoogleSerpDBIT extends AbstractDBIT {
             googleDB.serp.insert(serp);
         }
         
-        googleDB.serp.stream(30, 50, search.getId(), new Consumer<GoogleSerp>() {
+        googleDB.serp.stream(30, 50, search.getId(), new ThrowableConsumer<GoogleSerp>() {
             @Override
             public void accept(GoogleSerp t) {
                 System.out.println(t.getRunId() + "|" + t.getEntries().size());

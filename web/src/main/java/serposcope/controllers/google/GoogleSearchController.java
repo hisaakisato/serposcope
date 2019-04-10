@@ -10,6 +10,7 @@ package serposcope.controllers.google;
 import static com.serphacker.serposcope.db.base.RunDB.STATUSES_DONE;
 import static com.serphacker.serposcope.models.google.GoogleRank.UNRANKED;
 
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -336,6 +337,8 @@ public class GoogleSearchController extends GoogleController {
 				ResponseStreams stream = ctx.finalizeHeaders(result);
 				try (OutputStream out = stream.getOutputStream()) {
 					S3Utilis.download(out, date, searchId, page);
+				} catch (EOFException e) {
+					LOG.warn("[Serps download] Download was interrupted: {}", e.getMessage());
 				} catch (IOException e) {
 					LOG.error("error while downloading serp", e);
 				}
@@ -513,7 +516,12 @@ public class GoogleSearchController extends GoogleController {
 									}
 									writer.flush();
 								} catch (IOException e) {
-									LOG.error("error while exporting csv", e);
+									if (e instanceof EOFException) {
+										LOG.warn("[Export Serps] Download was interrupted: {}", e.getMessage());
+									} else {
+										LOG.error("error while exporting csv", e);
+									}
+									throw e;
 								}
 							});
 							date = date.plusDays(1);

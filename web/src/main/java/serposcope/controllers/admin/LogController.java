@@ -17,6 +17,7 @@ import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import conf.SerposcopeConf;
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -113,7 +114,9 @@ public class LogController extends BaseController {
                             }
                             try {writer.append(line).append("\n");} catch (IOException ex) {}
                         });
-                    } catch (IOException ex) {
+    				} catch (EOFException e) {
+    					LOG.warn("[Export log] Download was interrupted: {}", e.getMessage());
+    				} catch (IOException ex) {
                         LOG.error("view log", ex);
                     }
                 });
@@ -124,6 +127,8 @@ public class LogController extends BaseController {
                     ResponseStreams responseStreams = context.finalizeHeaders(res);
                     try (OutputStream os = responseStreams.getOutputStream()) {
                         Files.copy(new File(path).toPath(), os);
+    				} catch (EOFException e) {
+    					LOG.warn("[Export log] Download was interrupted: {}", e.getMessage());
                     } catch (IOException ex) {
                         LOG.error("view log", ex);
                     }

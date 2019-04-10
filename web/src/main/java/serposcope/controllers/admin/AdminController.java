@@ -14,6 +14,7 @@ import com.serphacker.serposcope.db.base.ExportDB;
 import com.serphacker.serposcope.models.base.User;
 import conf.SerposcopeConf;
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -112,6 +113,8 @@ public class AdminController extends BaseController {
                         }
                         writer.println("\n");
                     }
+				} catch (EOFException e) {
+					LOG.warn("[Export Stackdump] Download was interrupted: {}", e.getMessage());
                 } catch (IOException ex) {
                     LOG.error("stackdump", ex);
                 }
@@ -131,6 +134,8 @@ public class AdminController extends BaseController {
                     Writer writer = new PrintWriter(osw);
                 ) {
                     exportDB.export(writer);
+				} catch (EOFException e) {
+					LOG.warn("[Export SQL] Download was interrupted: {}", e.getMessage());
                 } catch (IOException ex) {
                     LOG.error("export dl ex", ex);
                 }
