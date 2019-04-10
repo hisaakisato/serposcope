@@ -28,11 +28,10 @@ import com.serphacker.serposcope.scraper.utils.S3Utilis;
 import com.serphacker.serposcope.scraper.utils.UserAgentGenerator;
 
 import java.io.File;
+import java.io.InterruptedIOException;
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.SocketTimeoutException;
+import java.net.ConnectException;
 import java.net.URLEncoder;
-import java.net.UnknownHostException;
 import java.nio.file.Files;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -44,13 +43,11 @@ import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.SSLException;
 
 import org.apache.http.ConnectionClosedException;
 import org.apache.http.HttpHost;
 import org.apache.http.TruncatedChunkException;
-import org.apache.http.conn.ConnectTimeoutException;
-import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.cookie.ClientCookie;
 import org.apache.http.impl.cookie.BasicClientCookie;
 import org.jsoup.Jsoup;
@@ -264,9 +261,10 @@ public class GoogleScraper {
 		if (cause != null && http.getProxy() != null) {
 			ScrapProxy proxy = http.getProxy();
 			if (proxy != null) {
-				if (cause instanceof SSLHandshakeException || cause instanceof ConnectionClosedException
-						|| cause instanceof TruncatedChunkException || cause instanceof SocketTimeoutException
-						|| cause instanceof HttpHostConnectException || cause instanceof ConnectTimeoutException) {
+				if (cause instanceof SSLException || cause instanceof InterruptedIOException
+						|| cause instanceof ConnectException
+						|| cause instanceof ConnectionClosedException
+						|| cause instanceof TruncatedChunkException) {
 					// proxy was gone
 					return Status.ERROR_PROXY_GONE;
 				}
