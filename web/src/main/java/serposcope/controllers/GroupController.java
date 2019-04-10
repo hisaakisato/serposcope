@@ -108,14 +108,18 @@ public class GroupController extends BaseController {
         
         if(name == null || name.isEmpty()){
             flash.error("error.invalidName");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "home"));
+            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+        }
+        if (baseDB.group.findByName(name) != null) {
+            flash.error("google.group.alreadyExists");
+            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
         }
         
         try {
             module = Module.values()[moduleNum];
         }catch(Exception ex){
             flash.error("error.invalidModule");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "home"));            
+            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));            
         }
         
         User owner = context.getAttribute("user", User.class);
@@ -137,7 +141,7 @@ public class GroupController extends BaseController {
             case GOOGLE:
                 return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));  
             default:
-                return Results.redirect(router.getReverseRoute(GroupController.class, "home"));
+                return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
         }
         
         

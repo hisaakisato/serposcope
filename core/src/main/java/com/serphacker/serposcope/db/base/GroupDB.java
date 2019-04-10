@@ -270,9 +270,44 @@ public class GroupDB extends AbstractDB {
         }        
         
         return group;
-    }    
+    }
     
-    
+    public Group findByName(String name){
+        Group group = null;
+        try(Connection con = ds.getConnection()){
+            
+        	SubQueryExpression<Tuple> subQuery = SQLExpressions
+					.select(t_target.groupId, t_target.groupId.count().castToNum(Integer.class).as(t_target.id))
+					.from(t_target)
+					.leftJoin(t_group).on(t_target.groupId.eq(t_group.id).and(t_group.name.eq(name)))
+					.groupBy(t_target.groupId);
+
+			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+					.select(t_group.id, t_group.moduleId, t_group.name, t_group.shared,
+							t_group.sundayEnabled, t_group.mondayEnabled,
+							t_group.tuesdayEnabled, t_group.wednesdayEnabled,
+							t_group.thursdayEnabled, t_group.fridayEnabled,
+							t_group.saturdayEnabled,
+							t_user.id, t_user.name, t_user.email, t_user.admin,
+							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId), t_target.id)
+					.from(t_group)
+					.leftJoin(t_user).on(t_group.ownerId.eq(t_user.id))
+					.leftJoin(t_searchGroup).on(t_group.name.eq(name).and(t_group.id.eq(t_searchGroup.groupId)))
+					.leftJoin(subQuery, t_target).on(t_group.name.eq(name).and(t_group.id.eq(t_target.groupId)))
+					.where(t_group.name.eq(name))
+					.groupBy(t_group.id, t_target.id);
+
+			Tuple tuple = query.fetchFirst();
+
+            group = fromTuple(tuple);
+            
+        }catch(Exception ex){
+            LOG.error("SQLError ex", ex);
+        }        
+        
+        return group;
+    }
+
     Group fromTuple(Tuple tuple){
         if(tuple == null){
             return null;
