@@ -26,6 +26,7 @@ public class GoogleResScrapParser extends GoogleLegacyScrapParser {
 				continue;
 			}
 
+			incrementStats(StatsType.RES);
 			entries.add(entry);
 			setFeaturedRank(link, entries);
 		}

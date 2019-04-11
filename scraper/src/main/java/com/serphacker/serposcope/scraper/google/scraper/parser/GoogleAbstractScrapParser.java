@@ -4,19 +4,38 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status;
+import static com.serphacker.serposcope.scraper.google.scraper.parser.GoogleAbstractScrapParser.StatsType.*;
 
 public abstract class GoogleAbstractScrapParser {
 
 	protected static Pattern PATTERN_GOOGLE_SERVICES = Pattern.compile("^https:\\/\\/[^.]+\\.google\\.[^/]+\\/");
+
+	private static final Logger LOG = LoggerFactory.getLogger(GoogleAbstractScrapParser.class);
+
+	protected static enum StatsType {
+		LEGACY,
+		RES,
+		DESCTOP_MAIN_1,
+		DESCTOP_MAIN_2,
+		MOBILE_PING,
+		MOBILE_NO_PING,
+		MOBILE_FEATURED,
+		MOBILE_PING_2,
+		MOBILE_FEATURED_2
+	};
 
 	public abstract Status parse(Element resElement, List<GoogleScrapLinkEntry> entries);
 
@@ -110,4 +129,28 @@ public abstract class GoogleAbstractScrapParser {
 		return element.select("h3, div[role=heading]").text();
 	}
 
+	protected static volatile ConcurrentHashMap<StatsType, AtomicInteger> stats = new ConcurrentHashMap<>();
+
+	protected void incrementStats(StatsType type) {
+		if (!stats.containsKey(type)) {
+			stats.putIfAbsent(type, new AtomicInteger());
+		}
+		stats.get(type).incrementAndGet();
+	}
+
+	public static void printStats() {
+		if (stats.values().stream().mapToInt(AtomicInteger::get).sum() == 0) {
+			return;
+		}
+		LOG.info("[Scrap Parser Stats] stats: {} {} {} {} {} {} {} {} {}",
+				stats.getOrDefault(LEGACY, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(RES, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(DESCTOP_MAIN_1, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(DESCTOP_MAIN_2, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(MOBILE_PING, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(MOBILE_NO_PING, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(MOBILE_FEATURED, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(MOBILE_PING_2, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(MOBILE_FEATURED_2, new AtomicInteger()).getAndSet(0));
+	}
 }

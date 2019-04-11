@@ -26,6 +26,7 @@ import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
+import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleAbstractScrapParser;
 import com.serphacker.serposcope.task.TaskManager;
 import com.serphacker.serposcope.task.google.GoogleTask;
 
@@ -180,4 +181,10 @@ public class UsageCheckService {
 					mobileSearch, targetCount);
 		}
 	}
+
+	@Schedule(delay = 1, initialDelay = 1, timeUnit = TimeUnit.MINUTES)
+	public void checkParserStats() {
+		GoogleAbstractScrapParser.printStats();
+	}
+
 }

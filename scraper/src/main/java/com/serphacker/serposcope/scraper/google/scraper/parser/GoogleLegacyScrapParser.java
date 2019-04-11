@@ -22,6 +22,7 @@ public class GoogleLegacyScrapParser extends GoogleAbstractScrapParser {
 			Element link = h3Elt.getElementsByTag("a").first();
 			GoogleScrapLinkEntry entry = extractLink(link);
 			if (entry != null) {
+				incrementStats(StatsType.LEGACY);
 				entries.add(entry);
 				setFeaturedRank(link, entries);
 			}

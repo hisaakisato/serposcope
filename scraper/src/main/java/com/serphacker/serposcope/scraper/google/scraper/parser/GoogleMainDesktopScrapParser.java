@@ -32,6 +32,11 @@ public class GoogleMainDesktopScrapParser extends GoogleLegacyScrapParser {
 				continue;
 			}
 
+			StatsType type = StatsType.DESCTOP_MAIN_1;
+			if ("main".contentEquals(link.parent().parent().parent().attr("id"))) {
+				type = StatsType.DESCTOP_MAIN_2;
+			}
+			incrementStats(type);
 			entries.add(entry);
 			setFeaturedRank(link, entries);
 		}

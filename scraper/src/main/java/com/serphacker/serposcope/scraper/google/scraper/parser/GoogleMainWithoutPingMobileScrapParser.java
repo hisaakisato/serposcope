@@ -26,7 +26,9 @@ public class GoogleMainWithoutPingMobileScrapParser extends GoogleMainDesktopScr
 			if (isInnerCard(link) || isAdLink(link)) {
 				continue;
 			}
+			StatsType type = StatsType.MOBILE_FEATURED_2;
 			if (!link.tagName().equalsIgnoreCase("a")) {
+				type = StatsType.MOBILE_PING_2;
 				link = link.parent();
 			}
 			if (link.attr("ping") == null) {
@@ -40,6 +42,7 @@ public class GoogleMainWithoutPingMobileScrapParser extends GoogleMainDesktopScr
 			if (entry == null) {
 				continue;
 			}
+			incrementStats(type);
 			entries.add(entry);
 			setFeaturedRank(link, entries);
 		}

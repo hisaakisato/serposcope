@@ -30,8 +30,10 @@ public class GoogleMainMobileScrapParser extends GoogleMainWithoutPingMobileScra
 			if (isInnerCard(link) || isAdLink(link)) {
 				continue;
 			}
+			StatsType type = StatsType.MOBILE_FEATURED;
 			if (!link.tagName().equalsIgnoreCase("a")) {
 				link = link.parent();
+				type = StatsType.MOBILE_PING;
 			}
 			if (link.attr("ping") == null) {
 				// check google services
@@ -39,11 +41,13 @@ public class GoogleMainMobileScrapParser extends GoogleMainWithoutPingMobileScra
 				if (!PATTERN_GOOGLE_SERVICES.matcher(href).matches()) {
 					continue;
 				}
+				type = StatsType.MOBILE_NO_PING;
 			}
 			GoogleScrapLinkEntry entry = extractLink(link);
 			if (entry == null) {
 				continue;
 			}
+			incrementStats(type);
 			entries.add(entry);
 			setFeaturedRank(link, entries);
 		}
