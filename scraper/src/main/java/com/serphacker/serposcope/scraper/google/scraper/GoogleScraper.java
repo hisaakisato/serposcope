@@ -69,10 +69,24 @@ public class GoogleScraper {
 	private static final String TAG_BASE = "<base href=\"http://www.google.com/\">";
 	private static final String TAG_HEAD = "<head>";
 
-	private static final String STYLE_ENTRY_MARK = "<style type=\"text/css\">a[data-serposcope-entry] > h3, "
-			+ "a[data-serposcope-entry] > div[role=heading], "
-			+ "div.kno-result h3 > a[data-serposcope-entry] "
-			+ "{border:1px solid red;}</style>";
+	private static final String STYLE_ENTRY_MARK = "<style id=\"serposcope-rank-style\" type=\"text/css\">"
+			+ "body"
+				+ "{counter-reset:entry}"
+			+ "[data-serposcope-entry]"
+				+ "{counter-increment:entry}"
+			+ "a[data-serposcope-entry]>h3,"
+			+ "a[data-serposcope-entry]>div[role=heading],"
+			+ "div.kno-result h3>a[data-serposcope-entry]"
+				+ "{border:1px solid red;"
+				+ "position:relative}"
+			+ "a[data-serposcope-entry]>h3:before,"
+			+ "a[data-serposcope-entry]>div[role=heading]:before,"
+			+ "div.kno-result h3>a[data-serposcope-entry]:before"
+				+ "{content:counter(entry)\"位\";"
+				+ "position:absolute;"
+				+ "font-size:12px;"
+				+ "top:-16px}"
+			+ "</style>";
 
 	final static BasicClientCookie NCR_COOKIE = new BasicClientCookie("PREF", "ID=1111111111111111:CR=2");
 
