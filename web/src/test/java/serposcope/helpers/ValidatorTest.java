@@ -31,5 +31,10 @@ public class ValidatorTest {
         
     }
     
+    @Test
+    public void testCanonicalName() {        
+        // Canonical Names
+        assertTrue(Validator.isCanonicalName("Minato,Tokyo,Japan"));
+    }
 }
 

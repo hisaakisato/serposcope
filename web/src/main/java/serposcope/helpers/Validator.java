@@ -7,11 +7,15 @@
  */
 package serposcope.helpers;
 
-import java.util.Arrays;
-import java.util.List;
+import static java.util.regex.Pattern.UNICODE_CHARACTER_CLASS;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import static java.util.regex.Pattern.UNICODE_CHARACTER_CLASS;
 
 public class Validator {
 
@@ -75,4 +79,24 @@ public class Validator {
     public static boolean isIPv4(String ip){
         return patternIPv4.matcher(ip).find();
     }
+
+	private static Set<String> canonicalNames = new TreeSet<>();
+
+	static {
+		try (BufferedReader br = new BufferedReader(
+				new InputStreamReader(Validator.class.getResourceAsStream("/assets/js/canonical-location.js")))) {
+			String line;
+			while ((line = br.readLine()) != null) {
+				if (!line.contains("\"")) {
+					continue;
+				}
+				canonicalNames.add(line.trim().replaceFirst(".*\\\"(.+)\\\",?.*", "$1").replace("\\\"", "\""));
+			}
+		} catch (IOException e) {
+		}
+	}
+	
+	public static boolean isCanonicalName(String canonicalName) {
+		return canonicalNames.contains(canonicalName);
+	}
 }

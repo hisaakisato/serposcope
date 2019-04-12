@@ -264,6 +264,13 @@ public class GoogleGroupController extends GoogleController {
             }
 
             if (!Validator.isEmpty(locals[i])) {
+                if (!Validator.isCanonicalName(locals[i])) {
+    				flash.error(msg
+    						.get("admin.google.invalidLocal", context, Optional.absent(), locals[i])
+    						.or(""));
+					return Results.redirect(
+							router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+                }
                 search.setLocal(locals[i]);
             }
 
