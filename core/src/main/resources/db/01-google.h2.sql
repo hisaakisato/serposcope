@@ -19,7 +19,7 @@ create table `GOOGLE_SERP` (
     run_day datetime default null,
     serp blob,
     primary key(run_id, google_search_id),
-    foreign key (google_search_id) references `GOOGLE_SEARCH`(id)
+    foreign key (google_search_id) references `GOOGLE_SEARCH`(id) on delete cascade
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
 
 drop table if exists `GOOGLE_SEARCH_GROUP`;
@@ -27,8 +27,8 @@ create table `GOOGLE_SEARCH_GROUP` (
     google_search_id int,
     group_id int,
     primary key (google_search_id, group_id),
-    foreign key (group_id) references `GROUP`(id),
-    foreign key (google_search_id) references `GOOGLE_SEARCH`(id)
+    foreign key (group_id) references `GROUP`(id) on delete cascade,
+    foreign key (google_search_id) references `GOOGLE_SEARCH`(id) on delete cascade
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
 
 drop table if exists `GOOGLE_TARGET`;
@@ -38,7 +38,7 @@ create table `GOOGLE_TARGET` (
     name varchar(255),
     pattern_type tinyint,
     pattern varchar(255),
-    foreign key (group_id) references `GROUP`(id)
+    foreign key (group_id) references `GROUP`(id) on delete cascade
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
 
 drop table if exists `GOOGLE_RANK`;
@@ -54,10 +54,10 @@ create table `GOOGLE_RANK` (
     url varchar(256),
 
     primary key(run_id, group_id, google_target_id, google_search_id),
-    foreign key (run_id) references `RUN`(id),
-    foreign key (group_id) references `GROUP`(id),
-    foreign key (google_target_id) references `GOOGLE_TARGET`(id),
-    foreign key (google_search_id) references `GOOGLE_SEARCH`(id)
+    foreign key (run_id) references `RUN`(id) on delete cascade,
+    foreign key (group_id) references `GROUP`(id) on delete cascade,
+    foreign key (google_target_id) references `GOOGLE_TARGET`(id) on delete cascade,
+    foreign key (google_search_id) references `GOOGLE_SEARCH`(id) on delete cascade
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
 
 drop table if exists `GOOGLE_RANK_BEST`;
@@ -71,9 +71,9 @@ create table `GOOGLE_RANK_BEST` (
     url varchar(256),
 
     primary key(group_id, google_target_id, google_search_id),
-    foreign key (group_id) references `GROUP`(id),
-    foreign key (google_target_id) references `GOOGLE_TARGET`(id),
-    foreign key (google_search_id) references `GOOGLE_SEARCH`(id)
+    foreign key (group_id) references `GROUP`(id) on delete cascade,
+    foreign key (google_target_id) references `GOOGLE_TARGET`(id) on delete cascade,
+    foreign key (google_search_id) references `GOOGLE_SEARCH`(id) on delete cascade
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
 
 drop table if exists `GOOGLE_TARGET_SUMMARY`;
@@ -96,9 +96,9 @@ create table `GOOGLE_TARGET_SUMMARY` (
     previous_score_basis_point int default 0,
 
     primary key(group_id, google_target_id, run_id),
-    foreign key (group_id) references `GROUP`(id),
-    foreign key (google_target_id) references `GOOGLE_TARGET`(id),
-    foreign key (run_id) references `RUN`(id)
+    foreign key (group_id) references `GROUP`(id) on delete cascade,
+    foreign key (google_target_id) references `GOOGLE_TARGET`(id) on delete cascade,
+    foreign key (run_id) references `RUN`(id) on delete cascade
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
 
 SET FOREIGN_KEY_CHECKS=1;
