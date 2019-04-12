@@ -852,6 +852,11 @@ public class GoogleGroupController extends GoogleController {
 
         Run run = new Run(Run.Mode.MANUAL, Group.Module.GOOGLE, LocalDateTime.now());
         
+        if (googleDB.search.listByGroup(Arrays.asList(group.getId())).size() == 0) {
+            flash.error("admin.google.keywordEmpty");
+			return Results
+					.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));        	
+        }
         if (!taskManager.startGoogleTask(run, user, group)) {
             flash.error("admin.task.errGoogleAlreadyRunning");
 			return Results
