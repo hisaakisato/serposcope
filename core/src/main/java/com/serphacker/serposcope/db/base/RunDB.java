@@ -186,6 +186,18 @@ public class RunDB extends AbstractDB {
             LOG.error("SQL error", ex);
         }        
     }
+
+    public void delete(Group group){
+    	if (group == null) {
+    		return;
+    	}
+        try(Connection conn = ds.getConnection()){
+            new SQLDeleteClause(conn, dbTplConf, t_run).where(t_run.groupId.eq(group.getId())).execute();
+        }catch(Exception ex){
+            LOG.error("SQL error", ex);
+        }        
+    }
+
     public List<Run> listDone(Integer firstId, Integer lastId){
     	return listDone(firstId, lastId, null);
     }

@@ -538,6 +538,8 @@ public class GoogleGroupController extends GoogleController {
         } else {
             flash.success("admin.google.groupDeleted");
             LOG.info("[Group Delete] Group was deleted. id: {}", group.getId());
+            // delete group specific runs
+            baseDB.run.delete(group);
         }
         return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
 
