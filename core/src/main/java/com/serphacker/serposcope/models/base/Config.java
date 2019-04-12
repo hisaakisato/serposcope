@@ -45,6 +45,7 @@ public class Config {
     
     public final static int DEFAULT_PRUNE_RUNS = 365;
     int pruneRuns = DEFAULT_PRUNE_RUNS;
+    int pruneGroupRuns = pruneRuns;
 
     public String getDbcUser() {
         return dbcUser;
@@ -151,6 +152,14 @@ public class Config {
 
     public void setPruneRuns(int pruneRuns) {
         this.pruneRuns = pruneRuns;
+    }
+    
+    public int getPruneGroupRuns() {
+        return pruneGroupRuns;
+    }
+
+    public void setPruneGroupRuns(int pruneGroupRuns) {
+        this.pruneGroupRuns = pruneGroupRuns;
     }
     
 }

@@ -14,7 +14,6 @@ import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
 import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.base.Config;
-import static com.serphacker.serposcope.models.base.Config.DEFAULT_PRUNE_RUNS;
 import com.serphacker.serposcope.querybuilder.QConfig;
 import java.sql.Connection;
 
@@ -45,6 +44,8 @@ public class ConfigDB extends AbstractDB {
     public final static String APP_DISPLAY_GOOGLE_SEARCH = "app.display.google.search";
     
     public final static String APP_PRUNE_RUNS = "app.prune.runs";
+    
+    public final static String APP_PRUNE_GROUP_RUNS = "app.prune.group_runs";
     
     QConfig t_cfg = QConfig.config;
     
@@ -151,6 +152,7 @@ public class ConfigDB extends AbstractDB {
         config.setDisplayGoogleTarget(get(APP_DISPLAY_GOOGLE_TARGET, Config.DEFAULT_DISPLAY_GOOGLE_TARGET));
         
         config.setPruneRuns(getInt(APP_PRUNE_RUNS, Config.DEFAULT_PRUNE_RUNS));
+		config.setPruneGroupRuns(getInt(APP_PRUNE_GROUP_RUNS, getInt(APP_PRUNE_RUNS, Config.DEFAULT_PRUNE_RUNS)));
         
         return config;
     }
@@ -175,6 +177,7 @@ public class ConfigDB extends AbstractDB {
         update(APP_DISPLAY_GOOGLE_TARGET, config.getDisplayGoogleTarget());
         
         updateInt(APP_PRUNE_RUNS, config.getPruneRuns());
+        updateInt(APP_PRUNE_GROUP_RUNS, config.getPruneGroupRuns());
     }
     
 }

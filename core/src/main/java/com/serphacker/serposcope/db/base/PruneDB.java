@@ -16,6 +16,8 @@ import com.serphacker.serposcope.querybuilder.QGoogleSerp;
 import com.serphacker.serposcope.querybuilder.QGoogleTargetSummary;
 import com.serphacker.serposcope.querybuilder.QRun;
 import java.sql.Connection;
+import java.sql.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -24,38 +26,33 @@ public class PruneDB extends AbstractDB {
     QGoogleRank t_google_rank = QGoogleRank.googleRank;
     QGoogleSerp t_serp = QGoogleSerp.googleSerp;
     QGoogleTargetSummary t_target_summary = QGoogleTargetSummary.googleTargetSummary;
-    
-    public long prune(int maxRuns){
+
+    public long prune(int days){
+    	return prune(days, false);
+    }
+
+    public long prune(int days, boolean groupTaskOnly){
         
-        if(maxRuns <= 0){
+        if(days <= 0){
             return 0;
         }
-        
+                
         try(Connection con = ds.getConnection()){
             
-            Long count = new SQLQuery<>(con, dbTplConf)
-                .select(t_run.count())
-                .from(t_run)
-                .fetchFirst();
-            
-            if(count == null ){
-                LOG.warn("count return null");
-                return 0;
-            }
-            
-            long limit = count - maxRuns;
-            
-            if(limit < 1){
-                return 0;
-            }
-            
-            List<Integer> runIds = new SQLQuery<>(con, dbTplConf)
+            SQLQuery<Integer> query = new SQLQuery<>(con, dbTplConf)
                 .select(t_run.id)
                 .from(t_run)
-                .orderBy(t_run.id.asc())
-                .limit(limit)
-                .fetch();
+                .where(t_run.day.before(Date.valueOf(LocalDate.now().minusDays(days))));
             
+            if (groupTaskOnly) {                
+            	query.where(t_run.groupId.isNotNull());
+            }
+
+            List<Integer> runIds = query.fetch();
+            if (runIds.size() == 0) {
+            	return 0;
+            }
+                       
             new SQLDeleteClause(con, dbTplConf, t_google_rank).where(t_google_rank.runId.in(runIds)).execute();
             new SQLDeleteClause(con, dbTplConf, t_serp).where(t_serp.runId.in(runIds)).execute();
             new SQLDeleteClause(con, dbTplConf, t_target_summary).where(t_target_summary.runId.in(runIds)).execute();

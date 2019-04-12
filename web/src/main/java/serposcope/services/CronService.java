@@ -100,11 +100,12 @@ public class CronService implements Runnable {
 //            return;
 //        }
         
-        if(config.getPruneRuns() > 0){
-            long pruned = pruneDB.prune(config.getPruneRuns());
-            LOG.info("history pruning : {} runs deleted", pruned);
+        if(config.getPruneRuns() > 0 || config.getPruneGroupRuns() > 0){
+            long pruned = pruneDB.prune(config.getPruneRuns(), false);
+            pruned += pruneDB.prune(config.getPruneGroupRuns(), true);
+            LOG.warn("[Prune] {} tasks was pruned by scheduler.", pruned);
         } else {
-            LOG.info("history pruning is disabled");
+            LOG.debug("[Prune] History pruning is disabled.");
         }
         
     }

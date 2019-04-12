@@ -80,10 +80,29 @@ serposcope.adminSettingsController = function () {
         }
     };
     
+    var clickPruneGroupNow = function(){
+        if(confirm($(this).attr("data-warning"))){
+            $('<form>', {
+                'action': $(this).attr("data-action"),
+                'method': 'post',
+                'target': '_top'
+            }).append($('<input>', {
+                'name': '_xsrf',
+                'value': $('#_xsrf').attr("data-value"),
+                'type': 'hidden'
+            })).append($('<input>', {
+                'name': 'pruneGroupRuns',
+                'value': $('#pruneGroupRuns').val(),
+                'type': 'hidden'
+            })).appendTo(document.body).submit();
+        }
+    };
+    
     var settings = function() {
         $('#btn-reset-settings').click(resetSettings);
         $('.btn-test-captcha').click(testCaptcha);
         $('.btn-prune-now').click(clickPruneNow);
+        $('.btn-prune-group-now').click(clickPruneGroupNow);
     };
     
     var oPublic = {

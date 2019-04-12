@@ -12,6 +12,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.serphacker.serposcope.db.base.BaseDB;
 import static com.serphacker.serposcope.db.base.ConfigDB.APP_PRUNE_RUNS;
+import static com.serphacker.serposcope.db.base.ConfigDB.APP_PRUNE_GROUP_RUNS;
 import com.serphacker.serposcope.db.base.PruneDB;
 import com.serphacker.serposcope.models.base.Config;
 import com.serphacker.serposcope.scraper.captcha.solver.AntiCaptchaSolver;
@@ -191,13 +192,33 @@ public class SettingsController extends BaseController {
         baseDB.config.updateInt(APP_PRUNE_RUNS, pruneRuns);
         
         if(pruneRuns > 0){
-            long prunedDays = pruneDB.prune(pruneRuns);
-            context.getFlashScope().success(msg.get("admin.settings.pruneResult", context, Optional.absent(), prunedDays).get());
+            long pruned = pruneDB.prune(pruneRuns, false);
+            LOG.warn("[Prune] {} tasks was pruned before {} days.", pruned, pruneRuns);
+            context.getFlashScope().success(msg.get("admin.settings.pruneResult", context, Optional.absent(), pruned).get());
         }
         
         return Results.redirect(router.getReverseRoute(SettingsController.class, "settings"));
     }
     
+    @FilterWith(XSRFFilter.class)
+    public Result pruneGroup(
+        Context context,
+        @Param("pruneGroupRuns") Integer pruneGroupRuns
+    ){
+        if(pruneGroupRuns == null){
+        	pruneGroupRuns = 0;
+        }
+        baseDB.config.updateInt(APP_PRUNE_GROUP_RUNS, pruneGroupRuns);
+        
+        if(pruneGroupRuns > 0){
+            long pruned = pruneDB.prune(pruneGroupRuns, true);
+            LOG.warn("[Prune] {} group tasks was pruned before {} days.", pruned, pruneGroupRuns);
+            context.getFlashScope().success(msg.get("admin.settings.pruneResult", context, Optional.absent(), pruned).get());
+        }
+        
+        return Results.redirect(router.getReverseRoute(SettingsController.class, "settings"));
+    }
+
     public Result testCaptcha(
         Context context,
         @Param("service") String captchaService,
