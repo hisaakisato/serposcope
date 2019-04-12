@@ -91,7 +91,7 @@
                 <tr>
                     <th class="rank" >#</th>
                     <th>
-                        URL [<#if serp??>${serp.getRunDay().toLocalDate()}</#if>] 
+                        URL [<#if (serp.runDay)??>${serp.runDay.toLocalDate()}</#if>] 
                         <a href="#" class="btn-draw-top10" data-toggle="tooltip" title="${i18n("google.search.drawTop10")}" style="margin-left:10px" >
                              <i class="fa fa-fw fa-line-chart" ></i> TOP 10
                         </a>
