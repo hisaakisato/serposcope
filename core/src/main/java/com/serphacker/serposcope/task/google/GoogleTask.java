@@ -405,6 +405,9 @@ public class GoogleTask extends AbstractTask {
     }
 
     public int getActiveCount() {
+    	if (threads == null) {
+    		return 0;
+    	}
     	return (int) (Arrays.stream(threads).filter(t -> t != null && t.isAlive()).count() - waitingCount);
     }
 
