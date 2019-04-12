@@ -43,7 +43,7 @@ public class CanReadFilter extends AbstractFilter {
         User user = context.getAttribute("user", User.class);
         Group group = getGroup(context);
         
-        if(group == null || (!user.isAdmin() && !user.canRead(group))){
+        if(group == null || (!user.isAdmin() && !user.canRead(group) && !group.isShared())){
             flash.error("error.unauthorizedAccess");
             return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
         }
