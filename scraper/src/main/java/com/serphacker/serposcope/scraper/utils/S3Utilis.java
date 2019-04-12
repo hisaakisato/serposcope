@@ -16,6 +16,7 @@ import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.amazonaws.AbortedException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.AWSCredentialsProviderChain;
@@ -85,13 +86,18 @@ public class S3Utilis {
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		} catch (SdkClientException e) {
-			if (e.getCause() != null && e.getCause() instanceof SocketException) {
+			if (e instanceof AbortedException) {
+				LOG.warn("[Serps archive] Upload aborted.");
+				return;
+			}
+			Throwable cause = e.getCause();
+			if (cause != null && cause instanceof SocketException) {
 				LOG.warn("[Serps archive] Retry upload.");
 				s3 = null;
 				upload(date, search, page, content);
-			} else {
-				LOG.error(e.getMessage(), e);
+				return;
 			}
+			LOG.error(e.getMessage(), e);
 		}
 	}
 
@@ -109,13 +115,18 @@ public class S3Utilis {
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		} catch (SdkClientException e) {
-			if (e.getCause() != null && e.getCause() instanceof SocketException) {
+			if (e instanceof AbortedException) {
+				LOG.warn("[Serps archive] Download aborted.");
+				return;
+			}
+			Throwable cause = e.getCause();
+			if (cause != null && cause instanceof SocketException) {
 				LOG.warn("[Serps archive] Retry download.");
 				s3 = null;
 				download(out, date, searchId, page);
-			} else {
-				LOG.error(e.getMessage(), e);
+				return;
 			}
+			LOG.error(e.getMessage(), e);
 		}
 	}
 

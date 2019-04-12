@@ -21,6 +21,7 @@ import com.serphacker.serposcope.querybuilder.QProxy;
 import com.serphacker.serposcope.scraper.http.proxy.BindProxy;
 import com.serphacker.serposcope.scraper.http.proxy.HttpProxy;
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -102,6 +103,12 @@ public class ProxyDB extends AbstractDB {
                 }
                 updated = update.execute() > 0;
                 
+            } catch(SQLException ex){
+				if (ex.getCause() != null && ex.getCause() instanceof InterruptedException) {
+            		// ignore
+            		return false;
+            	}
+                LOG.error("SQL Error", ex);
             } catch(Exception ex){
                 LOG.error("SQL Error", ex);
             }

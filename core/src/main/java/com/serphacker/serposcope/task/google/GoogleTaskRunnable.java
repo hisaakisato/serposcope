@@ -54,7 +54,7 @@ public class GoogleTaskRunnable implements Runnable {
 			MAIN_LOOP: while (search != null || !controller.shouldStop()) {
 
 				if (Thread.interrupted()) {
-					LOG.error("[Search Abort] interrupted, aborting the thread");
+					LOG.warn("[Search Abort] interrupted, aborting the thread");
 					break;
 				}
 
@@ -87,7 +87,7 @@ public class GoogleTaskRunnable implements Runnable {
 					try {
 						search = controller.searches.poll(1, TimeUnit.SECONDS);
 					} catch (InterruptedException ex) {
-						LOG.error("[Search Abort] interrupted while polling, aborting the thread");
+						LOG.warn("[Search Abort] interrupted while polling, aborting the thread");
 						break;
 					}
 					searchTry = 0;
@@ -125,7 +125,7 @@ public class GoogleTaskRunnable implements Runnable {
 					res = scraper.scrap(getScrapConfig(controller.googleOptions, search));
 				} catch (InterruptedException ex) {
 					if (!controller.abort && !controller.interrupted) {
-						LOG.error("[Search Abort] interrupted while scraping, aborting the thread");
+						LOG.warn("[Search Abort] interrupted while scraping, aborting the thread");
 					}
 					break;
 				}
