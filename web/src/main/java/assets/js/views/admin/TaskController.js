@@ -11,28 +11,18 @@
 serposcope.adminTaskController = function () {
     
     var deleteRun = function(elt) {
-        var date = $(elt.currentTarget).attr("data-date");
-        var href= $(elt.currentTarget).attr("href");
-        
-        if(!confirm("Confirm delete run of the \"" + date + "\" ?\n" + 
-            "All  position checked for this day will be erased")
-        ){
-            return false;
-        }
-        
-        $('<form>', {
-            'action': href,
-            'method': 'post',
-            'target': '_top'
-        }).append($('<input>', {
-            'name': '_xsrf',
-            'value': $('#_xsrf').attr("data-value"),
-            'type': 'hidden'
-        })).appendTo(document.body).submit();
-        
-        return false;        
+        $('.modal').modal('hide');
+        var target = $(elt.currentTarget);
+        var href = target.attr("href");
+        var name = target.attr("data-name");
+        var dialog = $('#modal-delete-task');
+        dialog.find('form').attr('action', target.attr("href"));
+        dialog.find('#delete-task-id').text(target.attr("data-id"));
+        dialog.find('[name=_xsrf]').val($('#_xsrf').attr("data-value"));
+        dialog.modal();
+        return false;
     };
-    
+
     var rescanSerp = function(elt) {
         var date = $(elt.currentTarget).attr("data-date");
         var href= $(elt.currentTarget).attr("href");

@@ -13,6 +13,7 @@
                     <th style="text-align:left">${i18n("label.group")}</th>
                     <th style="width: 150px">${i18n("label.started")}</th>
                     <th style="width: 200px">${i18n("label.progress")}</th>
+                    <th style="width: 50px">${i18n("label.duration")}</th>
                     <th style="width: 30px">${i18n("label.done")}</th>
                     <th style="width: 30px">${i18n("label.total")}</th>
                     <th style="width: 30px">${i18n("label.captchas")}</th>
@@ -47,6 +48,7 @@
                             </div>
                         </div>
                     </td>
+                    <td>${task.getDurationFormated()}</td>
                     <td>${task.getDone()}</td>
                     <td>${task.getTotal()}</td>
                     <td>${task.getCaptchas()}</td>
@@ -67,11 +69,9 @@
             <table class="table table-bordered table-condensed table-task">
                 <tr>
                     <th style="width: 30px">#</th>
-                    <th style="width: 50px">ID</th>
                     <th style="width: 200px;text-align:left">${i18n("label.user")}</th>
                     <th style="text-align:left">${i18n("label.group")}</th>
                     <th style="width: 150px">${i18n("label.started")}</th>
-                    <th style="width: 150px">${i18n("label.finished")}</th>
                     <th style="width: 50px">${i18n("label.duration")}</th>
                     <th style="width: 30px">${i18n("label.total")}</th>
                     <th style="width: 30px">${i18n("label.captchas")}</th>
@@ -83,14 +83,12 @@
                 </tr>            
                 <#list done as task>
                 <#if task.getStatus() == "DONE_SUCCESS" >
-                    <tr class="success" >
+                <tr class="success" >
                 <#elseif task.getStatus() == "DONE_ABORTED" >
-                    <tr class="warning" >
+                <tr class="warning" >
                 <#else>
-                    <tr class="danger" >
-                </#if>
-                
-                    <td></td>
+                <tr class="danger" >
+                </#if>                
                     <td style="text-align:center;">${task.getId()}</td>
                 <#if task.getMode() == "CRON" >
                     <td>&lt;&lt;${i18n("label.cron")}&gt;&gt;</td>
@@ -105,7 +103,6 @@
 	                    </#if>
                     </td>
                     <td>${global.ldtf.format(task.getStarted())}</td>
-                    <td>${global.ldtf.format(task.getFinished())}</td>
                     <td>${task.getDurationFormated()}</td>
                     <td style="text-align:center;">${task.getTotal()}</td>
                     <td style="text-align:center;">${task.getCaptchas()}</td>
@@ -124,14 +121,18 @@
                     <#if user.isAdmin()>
                     <td style="text-align:center;">
                         <a href="${reverseRoute("admin.TaskController","deleteRun","runId",task.getId())}" 
-                           class="btn-delete-run text-danger" data-date="${task.getDay()}" 
-                           data-toggle="tooltip" title="${i18n("label.delete")}" >
-                           <i class="fa fa-fw fa-remove" ></i></a>
+                            class="btn-delete-run text-danger"
+                            data-id="${task.id}" 
+                            data-date="${task.getDay()}" 
+                            data-toggle="tooltip" title="${i18n("label.delete")}" >
+                            <i class="fa fa-fw fa-remove" ></i>
+                        </a>
                         <#if task.getModule() == "GOOGLE" >
                         <a href="${reverseRoute("admin.TaskController","rescanSerp","runId",task.getId())}" 
                             class="btn-rescan-serp text-warning" data-date="${task.getDay()}" 
                             data-toggle="tooltip" title="${i18n("label.rescanSerp")}" >
-                            <i class="fa fa-fw fa-refresh" ></i></a>
+                            <i class="fa fa-fw fa-refresh" ></i>
+                        </a>
                         </#if>
                     </td>
                     </#if>
@@ -153,6 +154,29 @@
                     
                 </ul>
             </nav>
+        </div>
+    </div>
+</div>
+<div id="modal-delete-task" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST">
+                <div class="modal-header">
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <h4 class="modal-title no-user-select">${i18n("admin.task.delete")} [ <span id="delete-task-id"></span> ]</h4>                  
+                  <input type="hidden" name="_xsrf">
+                </div>
+
+                <div class="modal-body">
+                   <label for="deleteTaskId">${i18n("admin.task.id")}</label>
+                   <input id="deleteTaskId" name="id" class="form-control">
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>
+                    <input type="submit" class="btn btn-primary" value="${i18n("label.delete")}" />
+                </div>
+            </form>
         </div>
     </div>
 </div>

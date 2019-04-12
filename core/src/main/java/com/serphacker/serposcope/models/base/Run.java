@@ -170,10 +170,10 @@ public class Run {
     }
     
     public long getDurationMs(){
-        if(started == null || finished == null){
+        if(started == null){
             return 0;
         }
-        return Math.abs(Duration.between(started, finished).toMillis());
+        return Math.abs(Duration.between(started, finished == null ? LocalDateTime.now() : finished).toMillis());
     }
     
     public String getDurationFormated(){

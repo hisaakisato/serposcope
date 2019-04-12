@@ -30,6 +30,7 @@ import ninja.session.FlashScope;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import serposcope.controllers.BaseController;
+import serposcope.controllers.GroupController;
 import serposcope.filters.AdminFilter;
 import serposcope.filters.MaintenanceFilter;
 import serposcope.filters.XSRFFilter;
@@ -163,9 +164,19 @@ public class TaskController extends BaseController {
     @FilterWith({ MaintenanceFilter.class, AdminFilter.class, XSRFFilter.class })
     public Result deleteRun(
         Context context,
-        @PathParam("runId") Integer runId
+        @PathParam("runId") Integer runId,
+        @Param("id") Integer id
     ) {
         FlashScope flash = context.getFlashScope();
+
+        if (id == null) {
+            flash.error("error.invalidId");
+            return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+        }
+        if (!id.equals(runId)) {
+            flash.error("error.invalidId");
+            return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+        }
 
         Run run = baseDB.run.find(runId);
         if (run == null || run.getFinished() == null) {
