@@ -184,7 +184,7 @@ public class GoogleScraper {
 
 				if (this.lastHtml != null) {
 					// upload s3
-					S3Utilis.upload(today, search, page, this.lastHtml);
+					S3Utilis.upload(today, search, page + 1, this.lastHtml);
 				}
 
 				if (status != Status.OK) {
@@ -329,7 +329,7 @@ public class GoogleScraper {
 				// check nextpage
 				if ((this.nextPage = getNextResultPageLink()) != null) {
 					lastHtml = html;
-					return Status.SEE_NEXT_PAGE;
+					status = Status.SEE_NEXT_PAGE;
 				}
 			} else {
 				if (device == GoogleDevice.DESKTOP) {
@@ -341,33 +341,36 @@ public class GoogleScraper {
 		}
 
 
-		if (status == Status.OK) {
+		if (status == Status.OK || status == Status.SEE_NEXT_PAGE) {
 			StringBuilder sb = new StringBuilder();
 			Matcher m = Pattern.compile(TAG_HEAD).matcher(html);
 			if (m.find()) {
 				int nextIdx = m.end();
-				sb.append(html.substring(0, nextIdx)).append(TAG_BASE).append(STYLE_ENTRY_MARK);
-				// mark serp html
-				for (int i = entryStart; i < entries.size(); i++) {
-					GoogleScrapLinkEntry entry = entries.get(i);
-					String title = entry.getTitle();
-					if (title == null) {
-						continue;
-					}
-					m.usePattern(Pattern.compile(String.format("(<a ([^>]* )?(href|data-amp)=\"%s\"[^>]*>)(.*?)(</a>)",
-							Pattern.quote(entry.getUrl()).replaceAll("&", "&amp;"))));
-					if (m.find(nextIdx)) {
-						do {
-							String anchorHtml = html.substring(m.start(), m.end());
-							Element anchor = Jsoup.parse(anchorHtml).select("a").first();
-							if (title.equals(GoogleAbstractScrapParser.getTitle(anchor))) {
-								sb.append(html.subSequence(nextIdx, m.start()))
-										.append(anchorHtml.replaceFirst("href", String
-												.format(" data-serposcope-entry=%d title=%d href", i + 1, i + 1)));
-								nextIdx = m.end();
-								break;
-							}
-						} while (m.find());
+				sb.append(html.substring(0, nextIdx)).append(TAG_BASE);
+				if (status == Status.OK) {
+					sb.append(STYLE_ENTRY_MARK);
+					// mark serp html
+					for (int i = entryStart; i < entries.size(); i++) {
+						GoogleScrapLinkEntry entry = entries.get(i);
+						String title = entry.getTitle();
+						if (title == null) {
+							continue;
+						}
+						m.usePattern(Pattern.compile(String.format("(<a ([^>]* )?(href|data-amp)=\"%s\"[^>]*>)(.*?)(</a>)",
+								Pattern.quote(entry.getUrl()).replaceAll("&", "&amp;"))));
+						if (m.find(nextIdx)) {
+							do {
+								String anchorHtml = html.substring(m.start(), m.end());
+								Element anchor = Jsoup.parse(anchorHtml).select("a").first();
+								if (title.equals(GoogleAbstractScrapParser.getTitle(anchor))) {
+									sb.append(html.subSequence(nextIdx, m.start()))
+											.append(anchorHtml.replaceFirst("href", String
+													.format(" data-serposcope-entry=%d title=%d href", i + 1, i + 1)));
+									nextIdx = m.end();
+									break;
+								}
+							} while (m.find());
+						}
 					}
 				}
 				if (nextIdx < html.length()) {

@@ -307,7 +307,7 @@ public class GoogleSearchController extends GoogleController {
 	}
 
 	public Result showSerp(Context context, @PathParam("searchId") Integer searchId, @Param("date") String pdate,
-			@Param("rank") int rank) {
+			@Param("page") Integer page) {
 		GoogleSerp serp = null;
 		GoogleSearch search = null;
 		final LocalDate date;
@@ -331,12 +331,11 @@ public class GoogleSearchController extends GoogleController {
 			return Results.notFound().text().renderRaw("SERP not found");
 		}
 		try {
-			int page = 0; // FIXME
 			context.setAttribute(AbstractFilter.SUPPRESS_EXTRA_RENDER, true);
 			return Results.html().render((Context ctx, Result result) -> {
 				ResponseStreams stream = ctx.finalizeHeaders(result);
 				try (OutputStream out = stream.getOutputStream()) {
-					S3Utilis.download(out, date, searchId, page);
+					S3Utilis.download(out, date, searchId, page == null ? 1 : page);
 				} catch (EOFException e) {
 					LOG.warn("[Serps download] Download was interrupted: {}", e.getMessage());
 				} catch (IOException e) {

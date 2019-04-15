@@ -82,7 +82,7 @@ public class S3Utilis {
 					metadata);
 			// request.setStorageClass(StorageClass.OneZoneInfrequentAccess);
 			getClient().putObject(request);
-			LOG.info("[Serps archive] Uploaded. id: {} page: {} key: {}", search.getSearchId(), page + 1, key);
+			LOG.info("[Serps archive] Uploaded. id: {} page: {} key: {}", search.getSearchId(), page, key);
 		} catch (IOException e) {
 			LOG.error(e.getMessage(), e);
 		} catch (SdkClientException e) {
@@ -131,7 +131,7 @@ public class S3Utilis {
 	}
 
 	private static String generateKey(LocalDate date, int searchId, int page) {
-		return String.format("%s/%s/serps_%d-%d.html", date.format(formatter), searchId, searchId, page + 1);
+		return String.format("%s/%s/serps_%d-%d.html", date.format(formatter), searchId, searchId, page);
 	}
 
 	private static String encode(String s) {
