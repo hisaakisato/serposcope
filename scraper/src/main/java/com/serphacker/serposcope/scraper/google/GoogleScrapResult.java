@@ -20,7 +20,8 @@ public class GoogleScrapResult {
         ERROR_CAPTCHA_NO_SOLVER,
         ERROR_IP_BANNED,
         ERROR_PARSING,
-        ERROR_PROXY_GONE
+        ERROR_PROXY_GONE,
+        SEE_NEXT_PAGE
     };
     
     public Status status;

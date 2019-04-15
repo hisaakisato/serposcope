@@ -109,6 +109,7 @@ public class GoogleScraper {
 
 	Document lastSerpHtml = null;
 	String lastHtml = null;
+	String nextPage = null;
 	int captchas = 0;
 	GoogleDevice device;
 
@@ -157,6 +158,7 @@ public class GoogleScraper {
 					LOG.debug("GET {} via {} try {}", url,
 							http.getProxy() == null ? new DirectNoProxy() : http.getProxy(), retry + 1);
 
+					this.nextPage = null;
 					status = downloadSerp(url, referrer, search, retry);
 					if (status == Status.OK) {
 						status = parseSerp(entries);
@@ -164,10 +166,25 @@ public class GoogleScraper {
 							break;
 						}
 					}
+					if (status == Status.SEE_NEXT_PAGE && this.nextPage != null) {
+						// upload first page as 0
+						S3Utilis.upload(today, search, 0, this.lastHtml);
+						url = this.nextPage;
+						this.nextPage = null;
+						this.lastHtml = null;
+						retry--;
+						Thread.sleep(5000); // wait some seconds
+						continue;
+					}
 
 					if (!isRetryableStatus(status)) {
 						break;
 					}
+				}
+
+				if (this.lastHtml != null) {
+					// upload s3
+					S3Utilis.upload(today, search, page, this.lastHtml);
 				}
 
 				if (status != Status.OK) {
@@ -178,9 +195,6 @@ public class GoogleScraper {
 					resultsNumber = parseResultsNumberOnFirstPage();
 				}
 				
-				// upload s3
-				S3Utilis.upload(today, search, page, this.lastHtml);
-
 				if (hasNextPage()) {
 					Thread.sleep(2500);
 				} else {
@@ -310,8 +324,14 @@ public class GoogleScraper {
 		}
 
 		if (status == null) {
-			final Element mainDiv = lastSerpHtml.getElementById("main");
-			if (mainDiv != null) {
+			Element mainDiv = lastSerpHtml.getElementById("main");
+			if (mainDiv == null) {
+				// check nextpage
+				if ((this.nextPage = getNextResultPageLink()) != null) {
+					lastHtml = html;
+					return Status.SEE_NEXT_PAGE;
+				}
+			} else {
 				if (device == GoogleDevice.DESKTOP) {
 					status = new GoogleMainDesktopScrapParser().parse(mainDiv, entries);
 				} else {
@@ -319,7 +339,8 @@ public class GoogleScraper {
 				}
 			}
 		}
-		
+
+
 		if (status == Status.OK) {
 			StringBuilder sb = new StringBuilder();
 			Matcher m = Pattern.compile(TAG_HEAD).matcher(html);
@@ -358,6 +379,15 @@ public class GoogleScraper {
 			lastHtml = sb.toString(); // keep for upload		
 		}
 		return status == null ? Status.ERROR_PARSING : status;
+	}
+
+	protected String getNextResultPageLink() {
+		Element body = lastSerpHtml.select("body").first();
+		if (body.attr("jsmodel") != null) {
+			Element anchor = body.select("a[role=button]").last();
+			return anchor.attr("href");
+		}
+		return null;
 	}
 
 	protected long parseResultsNumberOnFirstPage() {
