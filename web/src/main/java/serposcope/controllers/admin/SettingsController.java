@@ -100,7 +100,8 @@ public class SettingsController extends BaseController {
         @Param("anticaptchaApiKey") String anticaptchaApiKey,
         @Param("twoCaptchaKey") String twoCaptchaKey,
         @Param("imageTyperzKey") String imageTyperzKey,
-        @Param("pruneRuns") Integer pruneRuns
+        @Param("pruneRuns") Integer pruneRuns,
+        @Param("pruneGroupRuns") Integer pruneGroupRuns
     ){
         FlashScope flash = context.getFlashScope();
         
@@ -149,6 +150,12 @@ public class SettingsController extends BaseController {
             config.setPruneRuns(0);
         } else {
             config.setPruneRuns(pruneRuns);
+        }
+        
+        if(pruneGroupRuns == null || pruneGroupRuns == 0){
+            config.setPruneGroupRuns(0);
+        } else {
+            config.setPruneGroupRuns(pruneGroupRuns);
         }
         
         if(displayHome != null && !Config.DEFAULT_DISPLAY_HOME.equals(displayHome) && Config.VALID_DISPLAY_HOME.contains(displayHome)){

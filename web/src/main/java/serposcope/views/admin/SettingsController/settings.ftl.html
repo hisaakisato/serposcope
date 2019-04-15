@@ -31,7 +31,7 @@
                                 data-action="${reverseRoute("admin.SettingsController","prune")}" >${i18n("admin.settings.pruneNow")}</button>
                         </span>
                     </div>
-                    <label for="pruneRuns" >${i18n("admin.settings.groupHistoryLimit")}</label>
+                    <label for="pruneGroupRuns" >${i18n("admin.settings.groupHistoryLimit")}</label>
                     <div class="input-group" >
                         <input id="pruneGroupRuns" class="form-control" name="pruneGroupRuns" placeholder="0 to disable" value="${config.getPruneGroupRuns()}" >
                         <span class="input-group-btn">
