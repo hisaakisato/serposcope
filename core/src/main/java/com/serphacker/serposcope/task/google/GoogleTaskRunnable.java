@@ -129,6 +129,12 @@ public class GoogleTaskRunnable implements Runnable {
 					}
 					break;
 				}
+
+				// check states
+				if (controller.abort || controller.interrupted) {
+					break;
+				}
+
 				long duration = System.currentTimeMillis() - start;
 				if (requestCount > ScrapProxy.MAX_REQUEST_COUNT) {
 					// remove client info
@@ -149,6 +155,7 @@ public class GoogleTaskRunnable implements Runnable {
 						proxy.setAttr(ScrapProxy.PROXY_ATTR_MOBILE_REQUEST_COUNT, requestCount);						
 					}
 				}
+
 				if (res.captchas > 0) {
 					controller.incCaptchaCount(res.captchas);
 				}
