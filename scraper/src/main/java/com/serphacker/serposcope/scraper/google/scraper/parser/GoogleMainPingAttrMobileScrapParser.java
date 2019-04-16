@@ -8,14 +8,14 @@ import org.jsoup.select.Elements;
 import com.serphacker.serposcope.scraper.google.GoogleScrapLinkEntry;
 import com.serphacker.serposcope.scraper.google.GoogleScrapResult.Status;
 
-public class GoogleMainWithoutPingMobileScrapParser extends GoogleMainDesktopScrapParser {
+public class GoogleMainPingAttrMobileScrapParser extends GoogleMainDesktopScrapParser {
 
 	@Override
 	public Status parse(Element divElement, List<GoogleScrapLinkEntry> entries) {
 
 		Elements links = divElement
 				.select("#main a[href][ping] > div[role=heading],"
-						+ "#main .kno-result h3 > a[href][ping]" // featured snippets
+						+ "#main .g h3 > a[href][ping]" // featured snippets & gcard
 						);
 
 		if (links.isEmpty()) {
