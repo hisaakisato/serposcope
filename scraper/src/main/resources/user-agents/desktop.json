@@ -13,13 +13,17 @@
 		"browser": "Google Chrome",
 		"weight": 33,
 		"versions": [{
-			"version": 60,
-			"weight": 33,
-			"header": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/60.0.3112.90 Safari/537.36"
-		},{
 			"version": 71,
-			"weight": 67,
+			"weight": 20,
 			"header": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
+		},{
+			"version": 72,
+			"weight": 30,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
+		},{
+			"version": 73,
+			"weight": 40,
+			"header": "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36"
 		}]
 	}]
 },{
@@ -69,10 +73,6 @@
 		"browser": "Google Chrome",
 		"weight": 54,
 		"versions": [{
-			"version": 68,
-			"weight": 0,
-			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36"
-		},{
 			"version": 69,
 			"weight": 6,
 			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
@@ -94,8 +94,12 @@
 		"weight": 12,
 		"versions": [{
 			"version": 65,
-			"weight": 100,
+			"weight": 40,
 			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:65.0) Gecko/20100101 Firefox/65.0"
+		},{
+			"version": 66,
+			"weight": 60,
+			"header": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:66.0) Gecko/20100101 Firefox/66.0"
 		}]
 	}]
 },{
@@ -114,24 +118,36 @@
 		"weight": 60,
 		"versions": [{
 			"version": 70,
-			"weight": 20,
+			"weight": 10,
 			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"
 		},{
 			"version": 71,
-			"weight": 50,
+			"weight": 25,
 			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
 		},{
 			"version": 72,
-			"weight": 30,
+			"weight": 25,
 			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
+		},{
+			"version": 73,
+			"weight": 40,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36"
 		}]
 	},{
 		"browser": "Firefox",
 		"weight": 16,
 		"versions": [{
-			"version": 63,
-			"weight": 100,
-			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:63.0) Gecko/20100101 Firefox/63.0"
+			"version": 64,
+			"weight": 10,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:64.0) Gecko/20100101 Firefox/64.0"
+		},{
+			"version": 65,
+			"weight": 30,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:65.0) Gecko/20100101 Firefox/65.0"
+		},{
+			"version": 66,
+			"weight": 60,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.14; rv:66.0) Gecko/20100101 Firefox/66.0"
 		}]
 	}]
 },{
@@ -150,24 +166,28 @@
 		"weight": 60,
 		"versions": [{
 			"version": 70,
-			"weight": 60,
+			"weight": 10,
 			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36"
 		},{
 			"version": 71,
-			"weight": 30,
+			"weight": 20,
 			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/71.0.3578.80 Safari/537.36"
 		},{
 			"version": 72,
-			"weight": 10,
+			"weight": 30,
 			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.109 Safari/537.36"
+		},{
+			"version": 73,
+			"weight": 40,
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36"
 		}]
 	},{
 		"browser": "Firefox",
 		"weight": 16,
 		"versions": [{
-			"version": 63,
+			"version": 65,
 			"weight": 100,
-			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:63.0) Gecko/20100101 Firefox/63.0"
+			"header": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:65.0) Gecko/20100101 Firefox/65.0"
 		}]
 	}]
 }]
