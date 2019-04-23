@@ -291,7 +291,14 @@ serposcope.googleSearchController = function () {
                 format: 'YYYY-MM-DD'
             }
         });        
-        $('#btn-add-event').click(eventCalendarClick);        
+        $('#btn-add-event').click(eventCalendarClick);
+        $('#modal-export-serps input[name=targetOnly]').change(function(e) {
+        	if (e.target.checked) {
+            	$('#modal-export-serps input[name=firstTargetOnly]').removeAttr('disabled').parent().show();
+        	} else {
+            	$('#modal-export-serps input[name=firstTargetOnly]').attr('disabled', 'disabled').parent().hide();
+        	}
+        });
         $('#btn-export-serps').click(exportSerpsClick);        
         
         $('.btn-draw-top10').click(drawTop10Click);

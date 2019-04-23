@@ -434,7 +434,8 @@ public class GoogleSearchController extends GoogleController {
     	MaintenanceFilter.class, XSRFFilter.class
     })
 	public Result export(Context context, @Params("searchIds") String[] ids, @Param("targetOnly") boolean targetOnly,
-			@Param("startDate") String start, @Param("endDate") String end) {
+			@Param("firstTargetOnly") boolean firstTargetOnly, @Param("startDate") String start,
+			@Param("endDate") String end) {
 
 		if (ids == null || ids.length == 0) {
 			FlashScope flash = context.getFlashScope();
@@ -489,7 +490,14 @@ public class GoogleSearchController extends GoogleController {
 										String targetName = null;
 										for (GoogleTarget target : targets) {
 											if (target.match(entry.getUrl())) {
-												founds.add(target);
+												if (founds.contains(target)) {
+													if (targetOnly && firstTargetOnly) {
+														// skip duplicated target
+														break;
+													}
+												} else {
+													founds.add(target);
+												}
 												targetName = target.getName();
 												break;
 											}

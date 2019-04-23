@@ -496,6 +496,13 @@ serposcope.googleGroupController = function () {
         $('#btn-chk-search').click(checksearch);
         $('#btn-chk-target').click(checkTarget);
         $('#btn-export-searches').click(exportSearches);
+        $('#modal-export-serps input[name=targetOnly]').change(function(e) {
+        	if (e.target.checked) {
+            	$('#modal-export-serps input[name=firstTargetOnly]').removeAttr('disabled').parent().show();
+        	} else {
+            	$('#modal-export-serps input[name=firstTargetOnly]').attr('disabled', 'disabled').parent().hide();
+        	}
+        });
         $('#btn-export-serps').click(showExportSerpsModal);
         $('#btn-export-targets').click(exportTargets);
         $('#btn-delete-searches').click(deleteSearches);
