@@ -11,6 +11,7 @@ create table `GOOGLE_SEARCH` (
     local varchar(64),
     custom_parameters varchar(255)
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
+create index GOOGLE_SEARCH_KEYWORD on GOOGLE_SEARCH(keyword);
 
 drop table if exists `GOOGLE_SERP`;
 create table `GOOGLE_SERP` (
@@ -21,6 +22,7 @@ create table `GOOGLE_SERP` (
     primary key(run_id, google_search_id),
     foreign key (google_search_id) references `GOOGLE_SEARCH`(id) on delete cascade
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
+create index GOOGLE_SERP_SEARCH_ID on GOOGLE_SERP(google_search_id);
 
 drop table if exists `GOOGLE_SEARCH_GROUP`;
 create table `GOOGLE_SEARCH_GROUP` (

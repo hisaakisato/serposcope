@@ -54,6 +54,7 @@ create table `USER_GROUP` (
     foreign key (user_id) references `USER`(id),
     foreign key (group_id) references `GROUP`(id)
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
+create index USER_GROUP_GROUP_ID on `USER_GROUP`(group_id);
 
 
 drop table if exists `RUN`;
