@@ -30,7 +30,9 @@ import java.util.List;
 @Singleton
 public class GoogleTargetDB extends AbstractDB {
 
-    QGoogleTarget t_target = QGoogleTarget.googleTarget;
+	private static int BULK_INSERT_ROWS = 250;
+
+	QGoogleTarget t_target = QGoogleTarget.googleTarget;
     QGroup t_group = QGroup.group;
 
     public int insert(Collection<GoogleTarget> targets){
@@ -38,20 +40,34 @@ public class GoogleTargetDB extends AbstractDB {
         
         try(Connection con = ds.getConnection()){
             
-            for (GoogleTarget target : targets) {
-                
-                Integer key = new SQLInsertClause(con, dbTplConf, t_target)
-                    .set(t_target.groupId, target.getGroupId())
-                    .set(t_target.name,target.getName())
-                    .set(t_target.patternType, (byte)target.getType().ordinal())
-                    .set(t_target.pattern, target.getPattern())
-                    .executeWithKey(t_target.id);
-                
-                if(key != null){
-                    target.setId(key);
-                    inserted++;
-                }
-            }
+        	boolean autoCommit = con.getAutoCommit();
+        	try {
+	        	con.setAutoCommit(false);
+	        	int rows = 0;
+
+	        	for (GoogleTarget target : targets) {
+	                Integer key = new SQLInsertClause(con, dbTplConf, t_target)
+	                    .set(t_target.groupId, target.getGroupId())
+	                    .set(t_target.name,target.getName())
+	                    .set(t_target.patternType, (byte)target.getType().ordinal())
+	                    .set(t_target.pattern, target.getPattern())
+	                    .executeWithKey(t_target.id);
+	                if(key != null){
+	                    target.setId(key);
+	                    inserted++;
+	                }
+	                if (++rows % BULK_INSERT_ROWS == 0) {
+	                	con.commit();
+	                }
+	            }
+
+	            if (rows % BULK_INSERT_ROWS > 0) {
+	            	con.commit();
+	            }
+
+        	} finally {
+        		con.setAutoCommit(autoCommit);        		
+        	}
             
         } catch(Exception ex){
             LOG.error("SQL error", ex);
