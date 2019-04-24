@@ -186,11 +186,16 @@ serposcope.googleGroupController = function () {
     };
     
     var bulkSearchSubmit = function(){
-        var keyword = [], country = [], datacenter = [], device = [], local = [], custom = [];
         if($('#bulk-search').val() == ""){
             alert("no search specified");
             return false;
         }
+
+        var keyword = [], country = [], device = [], local = [], custom = [];
+        var defaultDevice = parseInt($('#csp-vars').attr('data-default-device'));
+        var defaultCountry = $('#csp-vars').attr('data-default-country');
+        var defaultLocal = $('#csp-vars').attr('data-default-local');
+        var defaultCustom = $('#csp-vars').attr('data-default-custom');
         
         var lines = $('#bulk-search').val().split(/\r?\n/);
         
@@ -206,30 +211,31 @@ serposcope.googleGroupController = function () {
                 return;
             }
             params = params.data[0];
-            keyword[i] = params[0];
-            datacenter[i] = '';
-            // datacenter[i] = params.length > 2 ? params[2]  : $('#csp-vars').attr('data-default-datacenter');
+            if(typeof(params[0]) == "undefined"){
+                continue;
+            }
+            keyword.push(params[0]);
             if(params.length > 1){
                 switch(params[1].toLowerCase()){
                     case "desktop":
                     case "pc":
-                        device[i] = 0;
+                        device.push(0);
                         break;
                     case "smartphone":
                     case "mobile":
                     case "sp":
-                        device[i] = 1;
+                        device.push(1);
                         break;  
                     default:
                         alert(params[1] + " is an invalid device type, valid values : desktop, pc, mobile, sp");
                         return false;
                 }
             } else {
-                device[i] = parseInt($('#csp-vars').attr('data-default-device'));
+                device.push(defaultDevice);
             }
-            country[i] = params.length > 2 ? params[2] : $('#csp-vars').attr('data-default-country');
-            local[i] = params.length > 3 ? params[3]  : $('#csp-vars').attr('data-default-local');
-            custom[i] = params.length > 4 ? params[4]  : $('#csp-vars').attr('data-default-custom');
+            country.push(params.length <= 2 || defaultCountry === params[2] ? '' : params[2]);
+            local.push(params.length <= 3 || defaultLocal === params[3] ? '' : params[3]);
+            custom.push(params.length <= 4 || defaultCustom === params[4] ? '' : params[4]);
         }
         
         var form = $('<form>', {

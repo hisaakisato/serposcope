@@ -21,6 +21,7 @@ import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.base.User;
 import com.serphacker.serposcope.models.google.GoogleSearch;
+import com.serphacker.serposcope.models.google.GoogleSettings;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.models.google.GoogleTarget.PatternType;
 import com.serphacker.serposcope.models.google.GoogleTargetSummary;
@@ -41,6 +42,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,7 +63,6 @@ import org.jsoup.safety.Whitelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import serposcope.controllers.GroupController;
-import serposcope.controllers.HomeController;
 import serposcope.controllers.admin.TaskController;
 import serposcope.filters.MaintenanceFilter;
 import serposcope.filters.XSRFFilter;
@@ -211,8 +212,8 @@ public class GoogleGroupController extends GoogleController {
         FlashScope flash = context.getFlashScope();
         Group group = context.getAttribute("group", Group.class);
 
-        if (keywords == null || country == null || datacenters == null || devices == null || locals == null || customs == null
-            || keywords.length != country.length || keywords.length != datacenters.length || keywords.length != devices.length
+        if (keywords == null || country == null || devices == null || locals == null || customs == null
+            || keywords.length != country.length || (datacenters != null && keywords.length != datacenters.length) || keywords.length != devices.length
             || keywords.length != locals.length || keywords.length != customs.length) {
             flash.error("error.invalidParameters");
             return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
@@ -220,6 +221,7 @@ public class GoogleGroupController extends GoogleController {
 
         Set<GoogleSearch> searches = new HashSet<>();
 
+        GoogleSettings settings = googleDB.options.get();
         for (int i = 0; i < keywords.length; i++) {
             GoogleSearch search = new GoogleSearch();
 
@@ -236,34 +238,42 @@ public class GoogleGroupController extends GoogleController {
 
             search.setKeyword(keywords[i]);
 
-            GoogleCountryCode countryCode = null;
-            if(country[i] != null){
+            if (Validator.isEmpty(country[i])) {
+            	// use default
+                search.setCountry(settings.getDefaultCountry());
+            } else {
+            	GoogleCountryCode countryCode = null;
                 try {
                     countryCode = GoogleCountryCode.valueOf(country[i].toUpperCase());
                 } catch(Exception ex){
                 }                
-            }
-            if (countryCode == null) {
-                flash.error("admin.google.invalidCountry");
-                return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
-            }
-            search.setCountry(countryCode);
-
-            if (!datacenters[i].isEmpty()) {
-                if (!Validator.isIPv4(datacenters[i])) {
-                    flash.error("error.invalidIP");
-                    return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+                if (countryCode == null) {
+                	flash.error("admin.google.invalidCountry");
+                	return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
                 }
-                search.setDatacenter(datacenters[i]);
+                search.setCountry(countryCode);
+            }
+
+            if (datacenters != null) {
+	            if (!datacenters[i].isEmpty()) {
+	                if (!Validator.isIPv4(datacenters[i])) {
+	                    flash.error("error.invalidIP");
+	                    return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+	                }
+	                search.setDatacenter(datacenters[i]);
+	            }
             }
 
             if (devices[i] != null && devices[i] >= 0 && devices[i] < GoogleDevice.values().length) {
                 search.setDevice(GoogleDevice.values()[devices[i]]);
             } else {
-                search.setDevice(GoogleDevice.DESKTOP);
+                search.setDevice(settings.getDefaultDevice());
             }
 
-            if (!Validator.isEmpty(locals[i])) {
+            if (Validator.isEmpty(locals[i])) {
+            	// use default
+                search.setLocal(settings.getDefaultLocal());
+            } else {
                 if (!Validator.isCanonicalName(locals[i])) {
     				flash.error(msg
     						.get("admin.google.invalidLocal", context, Optional.absent(), locals[i])
@@ -274,7 +284,10 @@ public class GoogleGroupController extends GoogleController {
                 search.setLocal(locals[i]);
             }
 
-            if (!Validator.isEmpty(customs[i])) {
+            if (Validator.isEmpty(customs[i])) {
+            	// use default
+                search.setCustomParameters(settings.getDefaultCustomParameters());
+            } else {
                 search.setCustomParameters(customs[i]);
             }
 
