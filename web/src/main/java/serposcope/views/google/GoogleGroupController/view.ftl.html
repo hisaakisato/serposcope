@@ -173,10 +173,10 @@
 
             <div class="modal-footer">
                 <div class="pull-left">
-                    <button type="button" class="btn btn-default btn-add-search" >${i18n("label.singleImport")}</button>
+                    <button type="button" class="btn btn-default btn-add-search" >${i18n("label.cancel")}</button>
                 </div>
                 <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>
-                <input type="submit" id="bulk-search-import" class="btn btn-primary" value="${i18n("label.save")}"
+                <input type="submit" id="bulk-search-import" class="btn btn-primary" value="${i18n("label.execute")}"
                        data-action="${reverseRoute("google.GoogleGroupController","addSearch","groupId",group.getId())}" />
             </div>
         </div>
@@ -253,10 +253,10 @@
 
             <div class="modal-footer">
                 <div class="pull-left">
-                    <button type="button" class="btn btn-default btn-add-target" >${i18n("label.singleImport")}</button>
+                    <button type="button" class="btn btn-default btn-add-target" >${i18n("label.cancel")}</button>
                 </div>
                 <button type="button" class="btn btn-default" data-dismiss="modal">${i18n("label.close")}</button>
-                <input type="submit" id="bulk-target-import" class="btn btn-primary" value="${i18n("label.save")}"
+                <input type="submit" id="bulk-target-import" class="btn btn-primary" value="${i18n("label.execute")}"
                        data-action="${reverseRoute("google.GoogleGroupController","addTarget","groupId",group.getId())}" 
                 />
             </div>
