@@ -32,4 +32,5 @@ exec java -server \
           -Dcom.sun.management.jmxremote.ssl=false \
           -Dcom.sun.management.jmxremote.authenticate=false \
           -agentlib:jdwp=transport=dt_socket,address=8000,server=y,suspend=n \
+          -Dorg.eclipse.jetty.server.Request.maxFormContentSize=4194304 \
           -jar /var/lib/serposcope/serposcope.jar
