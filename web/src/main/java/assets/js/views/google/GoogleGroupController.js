@@ -117,25 +117,16 @@ serposcope.googleGroupController = function () {
             return false;
         }
         
-        var $form = $('<form>', {
-            'action': $(elt.currentTarget).attr("data-action"),
-            'method': 'post',
-            'target': '_top'
-        }).append($('<input>', {
-            'name': '_xsrf',
-            'value': $('#_xsrf').attr("data-value"),
-            'type': 'hidden'
-        }));
+        var form = '<form method="post" target="_top" action="' + $(elt.currentTarget).attr("data-action") + '">';
+        form += '<input type="hidden" name="_xsrf" value="' + $('#_xsrf').attr("data-value") + '">';
         
         var ids = serposcope.googleGroupControllerGrid.getSelection();
         for(var i=0; i <ids.length; i++){
-           $form.append($('<input>', {
-                'name': 'id[]',
-                'value': ids[i],
-                'type': 'hidden'
-            }));
+        	form += '<input type="hidden" name="id[]" value="' + ids[i] + '">';
         }
-        $form.appendTo(document.body).submit();
+        form += '</form>';
+
+        $(form).appendTo(document.body).submit();
         return false;
     };
     
@@ -238,31 +229,17 @@ serposcope.googleGroupController = function () {
             custom.push(params.length <= 4 || defaultCustom === params[4] ? '' : params[4]);
         }
         
-        var form = $('<form>', {
-            'action': $("#bulk-search-import").attr("data-action"),
-            'method': 'post',
-            'target': '_top'
-        }).append($('<input>', {
-            'name': '_xsrf',
-            'value': $('#_xsrf').attr("data-value"),
-            'type': 'hidden'
-        }));
-        
-        var inputs = [];
+        var form = '<form method="post" target="_top" action="' + $("#bulk-search-import").attr("data-action") + '">';
+        form += '<input type="hidden" name="_xsrf" value="' + $('#_xsrf').attr("data-value") + '">';
         for(var i=0; i<keyword.length; i++){
-            if(typeof(keyword[i]) == "undefined"){
-                continue;
-            }
-            inputs.push($('<input>', {'name': 'keyword[]','value': keyword[i],'type': 'hidden'})[0]);
-            inputs.push($('<input>', {'name': 'country[]','value': country[i],'type': 'hidden'})[0]);
-            inputs.push($('<input>', {'name': 'datacenter[]','value': datacenter[i],'type': 'hidden'})[0]);
-            inputs.push($('<input>', {'name': 'device[]','value': device[i],'type': 'hidden'})[0]);
-            inputs.push($('<input>', {'name': 'local[]','value': local[i],'type': 'hidden'})[0]);
-            inputs.push($('<input>', {'name': 'custom[]','value': custom[i],'type': 'hidden'})[0]);
+        	form += '<input type="hidden" name="keyword[]" value="' + keyword[i] + '">'
+            		+ '<input type="hidden" name="country[]" value="' + country[i] + '">'
+            		+ '<input type="hidden" name="device[]" value="' + device[i] + '">'
+            		+ '<input type="hidden" name="local[]" value="' + local[i] + '">'
+            		+ '<input type="hidden" name="custom[]" value="' + custom[i] + '">';
         }
-        form.append(inputs);
-        form.appendTo(document.body).submit();
-        
+        form += '</form>'
+        $(form).appendTo(document.body).submit();
         return false;
     };
     
