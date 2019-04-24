@@ -461,9 +461,7 @@ public class GoogleGroupController extends GoogleController {
             return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
         }
 
-        for (GoogleSearch search : searches) {
-            deleteSearch(group, search);
-        }
+        deleteSearches(group, searches);
 
         return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()) + "#tab-searches");
     }
@@ -543,9 +541,7 @@ public class GoogleGroupController extends GoogleController {
         LOG.info("[Group Delete] Targets were deleted. id: {}", group.getId());
 
         List<GoogleSearch> searches = googleDB.search.listByGroup(Arrays.asList(group.getId()));
-        for (GoogleSearch search : searches) {
-            deleteSearch(group, search);
-        }
+        deleteSearches(group, searches);
         LOG.info("[Group Delete] Searches were deleted. id: {}", group.getId());
 
         baseDB.event.delete(group);
@@ -686,14 +682,20 @@ public class GoogleGroupController extends GoogleController {
 		return Results.internalServerError();
     }
 
-    protected void deleteSearch(Group group, GoogleSearch search) {
+//    protected void deleteSearch(Group group, GoogleSearch search) {
+//        synchronized (searchLock) {
+//            googleDB.search.deleteFromGroup(search, group.getId());
+//            googleDB.rank.deleteBySearch(group.getId(), search.getId());
+//            if (!googleDB.search.hasGroup(search)) {
+//                googleDB.serp.deleteBySearch(search.getId());
+//                googleDB.search.delete(search);
+//            }
+//        }
+//    }
+
+    protected void deleteSearches(Group group, Collection<GoogleSearch> searches) {
         synchronized (searchLock) {
-            googleDB.search.deleteFromGroup(search, group.getId());
-            googleDB.rank.deleteBySearch(group.getId(), search.getId());
-            if (!googleDB.search.hasGroup(search)) {
-                googleDB.serp.deleteBySearch(search.getId());
-                googleDB.search.delete(search);
-            }
+        	googleDB.search.delete(searches, group.getId());
         }
     }
 

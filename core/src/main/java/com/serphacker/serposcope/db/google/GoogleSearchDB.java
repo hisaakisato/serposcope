@@ -16,11 +16,12 @@ import com.querydsl.sql.dml.SQLInsertClause;
 import com.querydsl.sql.dml.SQLMergeClause;
 import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.google.GoogleSearch;
+import com.serphacker.serposcope.querybuilder.QGoogleRank;
+import com.serphacker.serposcope.querybuilder.QGoogleRankBest;
 import com.serphacker.serposcope.querybuilder.QGoogleSearch;
 import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
 import com.serphacker.serposcope.querybuilder.QGoogleSerp;
 import com.serphacker.serposcope.querybuilder.QGroup;
-import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import java.sql.Connection;
 import java.time.DayOfWeek;
@@ -34,46 +35,63 @@ import java.util.Map;
 @Singleton
 public class GoogleSearchDB extends AbstractDB {
     
-    QGoogleSearch t_gsearch = QGoogleSearch.googleSearch;
+	private static int BULK_ROWS = 2500;
+
+	QGoogleSearch t_gsearch = QGoogleSearch.googleSearch;
     QGoogleSearchGroup t_ggroup = QGoogleSearchGroup.googleSearchGroup;
     QGoogleSerp t_gserp = QGoogleSerp.googleSerp;
     QGroup t_group = QGroup.group;
+    QGoogleRank t_rank = QGoogleRank.googleRank;
+    QGoogleRankBest t_best = QGoogleRankBest.googleRankBest;
+	QGoogleSerp t_serp = QGoogleSerp.googleSerp;
 
     public int insert(Collection<GoogleSearch> searches, int groupId){
         int inserted = 0;
-        
-        try(Connection con = ds.getConnection()){
-            
-            for (GoogleSearch search : searches) {
-                
-                if(search.getId() == 0){
-                    Integer key = new SQLInsertClause(con, dbTplConf, t_gsearch)
-                        .set(t_gsearch.keyword, search.getKeyword())
-                        .set(t_gsearch.country, search.getCountry().name())
-                        .set(t_gsearch.datacenter, search.getDatacenter())
-                        .set(t_gsearch.device, (byte)search.getDevice().ordinal())
-                        .set(t_gsearch.local, search.getLocal())
-                        .set(t_gsearch.customParameters, search.getCustomParameters())
-                        .executeWithKey(t_gsearch.id);
 
-                    if(key != null){
-                        search.setId(key);
-                    }
-                }
-                
-                inserted += new SQLMergeClause(con, dbTplConf, t_ggroup)
-                    .set(t_ggroup.groupId, groupId)
-                    .set(t_ggroup.googleSearchId, search.getId())
-                    .execute() == 1 ? 1 : 0;
-            }
-            
+        try(Connection con = ds.getConnection()){
+        	boolean autoCommit = con.getAutoCommit();
+        	try {
+	        	con.setAutoCommit(false);
+	        	int rows = 0;
+
+	        	for (GoogleSearch search : searches) {
+	                if(search.getId() == 0){
+	                    Integer key = new SQLInsertClause(con, dbTplConf, t_gsearch)
+	                        .set(t_gsearch.keyword, search.getKeyword())
+	                        .set(t_gsearch.country, search.getCountry().name())
+	                        .set(t_gsearch.datacenter, search.getDatacenter())
+	                        .set(t_gsearch.device, (byte)search.getDevice().ordinal())
+	                        .set(t_gsearch.local, search.getLocal())
+	                        .set(t_gsearch.customParameters, search.getCustomParameters())
+	                        .executeWithKey(t_gsearch.id);
+	                    if(key != null){
+	                        search.setId(key);
+	                    }
+	                }	                
+	                inserted += new SQLMergeClause(con, dbTplConf, t_ggroup)
+	                    .set(t_ggroup.groupId, groupId)
+	                    .set(t_ggroup.googleSearchId, search.getId())
+	                    .execute() == 1 ? 1 : 0;	                
+	                if (++rows % BULK_ROWS == 0) {
+	                	con.commit();
+	                }
+	            }
+	            
+	            if (rows % BULK_ROWS > 0) {
+	            	con.commit();
+	            }
+        	} finally {
+        		con.setAutoCommit(autoCommit);        		
+        	}
         } catch(Exception ex){
             LOG.error("SQL error", ex);
+        } finally {
         }
         
         return inserted;
     }
     
+
     public int getId(GoogleSearch search){
         int id = 0;
         
@@ -191,7 +209,50 @@ public class GoogleSearchDB extends AbstractDB {
     }       
     
     
-    public void wipe(){
+    public void delete(Collection<GoogleSearch> searches, int groupId){
+        try(Connection con = ds.getConnection()){
+        	boolean autoCommit = con.getAutoCommit();
+        	try {
+	        	con.setAutoCommit(false);
+	        	int rows = 0;
+
+
+	        	for (GoogleSearch search : searches) {
+	        		int googleSearchId = search.getId();
+					new SQLDeleteClause(con, dbTplConf, t_ggroup)
+							.where(t_ggroup.googleSearchId.eq(googleSearchId)).where(t_ggroup.groupId.eq(groupId))
+							.execute();
+					new SQLDeleteClause(con, dbTplConf, t_best).where(t_best.groupId.eq(groupId))
+							.where(t_best.googleSearchId.eq(googleSearchId)).execute();
+					new SQLDeleteClause(con, dbTplConf, t_rank).where(t_rank.groupId.eq(groupId))
+							.where(t_rank.googleSearchId.eq(googleSearchId)).execute();
+					if ( new SQLQuery<Void>(con, dbTplConf).select(Expressions.ONE).from(t_ggroup)
+							.where(t_ggroup.googleSearchId.eq(googleSearchId)).fetchCount() == 0) {
+						// no more group
+						new SQLDeleteClause(con, dbTplConf, t_serp).where(t_serp.googleSearchId.eq(googleSearchId)).execute();
+						new SQLDeleteClause(con, dbTplConf, t_gsearch).where(t_gsearch.id.eq(googleSearchId))
+								.execute();					
+					}
+	                if (++rows % BULK_ROWS == 0) {
+	                	con.commit();
+		            }
+	        	}
+
+	        	if (rows % BULK_ROWS > 0) {
+	            	con.commit();
+	            }
+
+        	} finally {
+	    		con.setAutoCommit(autoCommit);        		
+        	}
+                            
+        } catch(Exception ex){
+            LOG.error("SQL error", ex);
+        }
+	}
+
+
+	public void wipe(){
         try(Connection con = ds.getConnection()){
             new SQLDeleteClause(con, dbTplConf, t_ggroup).execute();
             new SQLDeleteClause(con, dbTplConf, t_gsearch).execute();
