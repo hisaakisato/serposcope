@@ -39,7 +39,6 @@ import com.serphacker.serposcope.querybuilder.QGroup;
 import com.serphacker.serposcope.querybuilder.QRun;
 import com.serphacker.serposcope.querybuilder.QUser;
 
-import java.sql.Blob;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Timestamp;
@@ -65,7 +64,7 @@ public class RunDB extends AbstractDB {
         try(Connection conn = ds.getConnection()){
             id = new SQLInsertClause(conn, dbTplConf, t_run)
                 .set(t_run.moduleId, run.getModule().ordinal())
-                .set(t_run.day, Date.valueOf(run.getDay() == null ? null : run.getDay()))
+                .set(t_run.day, Date.valueOf(run.getDay() == null ? LocalDate.now() : run.getDay()))
                 .set(t_run.started, run.getStarted()== null ? null : Timestamp.valueOf(run.getStarted()))
                 .set(t_run.finished, run.getFinished()== null ? null : Timestamp.valueOf(run.getFinished()))
                 .set(t_run.captchas, run.getCaptchas())
