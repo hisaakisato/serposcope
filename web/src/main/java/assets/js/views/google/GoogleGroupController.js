@@ -55,13 +55,12 @@ serposcope.googleGroupController = function () {
         var form = $('#modal-export-serps').find('form');
         form.find('[name=searchIds]').remove();
         var ids = serposcope.googleGroupControllerGrid.getSelection();
+        var inputs = ''
         for(var i=0; i <ids.length; i++){
-           form.append($('<input>', {
-                'name': 'searchIds',
-                'value': ids[i],
-                'type': 'hidden'
-            }));
+        	inputs += '<input type="hidden" name="searchIds" value="' + ids[i] + '">';
         }
+        form.append(inputs);
+
         $('#modal-export-serps').modal();
         return false;
     };    
@@ -346,25 +345,14 @@ serposcope.googleGroupController = function () {
     };    
     
     var exportSearches = function(elt){
-        var $form = $('<form>', {
-            'action': $(elt.currentTarget).attr("data-action"),
-            'method': 'post',
-            'target': '_top'
-        }).append($('<input>', {
-            'name': '_xsrf',
-            'value': $('#_xsrf').attr("data-value"),
-            'type': 'hidden'
-        }));
-        
+        var form = '<form method="post" target="_top" action="' + $(elt.currentTarget).attr("data-action") + '">';
+        form += '<input type="hidden" name="_xsrf" value="' + $('#_xsrf').attr("data-value") + '">';
         var ids = serposcope.googleGroupControllerGrid.getSelection();
         for(var i=0; i <ids.length; i++){
-           $form.append($('<input>', {
-                'name': 'id[]',
-                'value': ids[i],
-                'type': 'hidden'
-            }));
+        	form += '<input type="hidden" name="id[]" value="' + ids[i] + '">';
         }
-        $form.appendTo(document.body).submit();
+        form += '</form>'
+        $(form).appendTo(document.body).submit();
         return false;
     };
 

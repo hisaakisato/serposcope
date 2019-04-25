@@ -170,7 +170,7 @@ public class GoogleSearchController extends GoogleController {
 			}
 		}
 
-		String jsonRanks = getJsonRanks(group, targets, firstRun, lastRun, searchId);
+		String jsonRanks = getJsonRanks(targets, firstRun, lastRun, searchId);
 		Config config = baseDB.config.getConfig();
 
 		return Results.ok().render("displayMode", config.getDisplayGoogleSearch()).render("events", jsonEvents)
@@ -179,7 +179,7 @@ public class GoogleSearchController extends GoogleController {
 				.render("maxDate", maxDay).render("bestRankings", bestRankings);
 	}
 
-	protected String getJsonRanks(Group group, List<GoogleTarget> targets, Run firstRun, Run lastRun, int searchId) {
+	protected String getJsonRanks(List<GoogleTarget> targets, Run firstRun, Run lastRun, int searchId) {
 
 		StringBuilder builder = new StringBuilder("{\"targets\":[");
 		for (GoogleTarget target : targets) {
@@ -197,7 +197,7 @@ public class GoogleSearchController extends GoogleController {
 		final int[] maxRank = new int[1];
 
 		AtomicInteger ai = new AtomicInteger(0);
-		googleDB.serp.stream(firstRun.getDay(), lastRun.getDay(), group, Arrays.asList(searchId), (GoogleSerp serp) -> {
+		googleDB.serp.stream(firstRun.getDay(), lastRun.getDay(), Arrays.asList(searchId), (GoogleSerp serp) -> {
 
 			while (firstDate.plusDays(ai.get()).isBefore(serp.getRunDay().toLocalDate())) {
 				builder.append('[').append(ai.getAndIncrement()).append(',');
@@ -470,7 +470,7 @@ public class GoogleSearchController extends GoogleController {
 						// SERP
 						LocalDate date = startDate;
 						while (!date.isAfter(endDate)) {
-							googleDB.serp.stream(date, date, group, searchIds, serp -> {
+							googleDB.serp.stream(date, date, searchIds, serp -> {
 								try {
 									GoogleSearch search = serp.getSearch();
 									if (search == null) {

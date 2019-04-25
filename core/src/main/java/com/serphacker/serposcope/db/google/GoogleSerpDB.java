@@ -19,14 +19,12 @@ import com.querydsl.sql.StatementOptions;
 import com.querydsl.sql.dml.SQLDeleteClause;
 import com.querydsl.sql.dml.SQLInsertClause;
 import com.serphacker.serposcope.db.AbstractDB;
-import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleSerp;
 import com.serphacker.serposcope.querybuilder.QGoogleRank;
 import com.serphacker.serposcope.querybuilder.QGoogleSearch;
 import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
 import com.serphacker.serposcope.querybuilder.QGoogleSerp;
-import com.serphacker.serposcope.querybuilder.QRun;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import com.serphacker.serposcope.util.ThrowableConsumer;
 
@@ -48,7 +46,6 @@ public class GoogleSerpDB extends AbstractDB {
 
 	QGoogleSerp t_serp = QGoogleSerp.googleSerp;
 	QGoogleRank t_rank = QGoogleRank.googleRank;
-	QRun t_run = QRun.run;
 	QGoogleSearchGroup t_ggroup = QGoogleSearchGroup.googleSearchGroup;
 	QGoogleSearch t_gsearch = QGoogleSearch.googleSearch;
 
@@ -142,17 +139,17 @@ public class GoogleSerpDB extends AbstractDB {
 
 			BooleanExpression exp = t_serp.googleSearchId.in(googleSearchIds);
 			if (firstRun != null && lastRun != null) {
-				exp = exp.and(t_run.id.between(firstRun, lastRun));
+				exp = exp.and(t_serp.runId.between(firstRun, lastRun));
 			} else if (firstRun != null) {
-				exp = exp.and(t_run.id.goe(firstRun));
+				exp = exp.and(t_serp.runId.goe(firstRun));
 			} else if (lastRun != null) {
-				exp = exp.and(t_run.id.loe(lastRun));
+				exp = exp.and(t_serp.runId.loe(lastRun));
 			}
 
 			SubQueryExpression<Integer> subQuery = SQLExpressions
-					.select(t_serp.runId.max().as(t_serp.runId)).from(t_serp).innerJoin(t_run)
-					.on(t_serp.runId.eq(t_run.id).and(exp))
-					.groupBy(t_run.day);
+					.select(t_serp.runId.max().as(t_serp.runId)).from(t_serp)
+					.where(exp)
+					.groupBy(SQLExpressions.date(Date.class, t_serp.runDay));
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
 					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.serp, t_gsearch.id,
@@ -178,14 +175,9 @@ public class GoogleSerpDB extends AbstractDB {
 		}
 	}
 
-	public void stream(LocalDate startDate, LocalDate endDate, Group group, List<Integer> googleSearchIds,
+	public void stream(LocalDate startDate, LocalDate endDate, List<Integer> googleSearchIds,
 			ThrowableConsumer<GoogleSerp> callback) {
 		try (Connection con = ds.getConnection()) {
-
-			if (group == null) {
-				LOG.error("Group was not found.");
-				return;
-			}
 
 			BooleanExpression exp = null;
 			if (googleSearchIds != null && !googleSearchIds.isEmpty()) {
@@ -193,11 +185,9 @@ public class GoogleSerpDB extends AbstractDB {
 			}
 
 			SubQueryExpression<Tuple> subQuery = SQLExpressions
-					.select(t_serp.runId.max().as(t_serp.runId), t_serp.googleSearchId).from(t_serp).innerJoin(t_run)
-					.on(t_serp.runId.eq(t_run.id).and(exp)
-							.and(t_run.day.between(Date.valueOf(startDate), Date.valueOf(endDate))))
-					.innerJoin(t_ggroup).on(t_ggroup.groupId.eq(t_ggroup.groupId).and(t_ggroup.groupId.eq(group.getId())))
-					.groupBy(t_run.day, t_serp.googleSearchId);
+					.select(t_serp.runId.max().as(t_serp.runId), t_serp.googleSearchId).from(t_serp)
+					.where(SQLExpressions.date(Date.class, t_serp.runDay).between(Date.valueOf(startDate), Date.valueOf(endDate)).and(exp))
+					.groupBy(SQLExpressions.date(Date.class, t_serp.runDay), t_serp.googleSearchId);
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
 					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.serp, t_gsearch.id,
