@@ -12,7 +12,6 @@ import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import java.util.Arrays;
 import java.util.List;
 
-
 public class GoogleSettings {
     
     int resultPerPage = 100;
@@ -22,6 +21,7 @@ public class GoogleSettings {
     int maxThreads = 1;
     int maxManualThreads = 1;
     int fetchRetry = 3;    
+    int proxyMaxRequest = 10;    
     
     GoogleCountryCode defaultCountry = GoogleCountryCode.__;
     String defaultDatacenter = null;
@@ -85,9 +85,18 @@ public class GoogleSettings {
         this.fetchRetry = fetchRetry;
     }
     
+    public int getProxyMaxRequest() {
+    	return proxyMaxRequest;
+    }
+    
+    public void setProxyMaxRequest(int proxyMaxRequest) {
+    	this.proxyMaxRequest = proxyMaxRequest;
+    }
+    
+    
     // search
 
-    public GoogleCountryCode getDefaultCountry() {
+	public GoogleCountryCode getDefaultCountry() {
         return defaultCountry;
     }
 

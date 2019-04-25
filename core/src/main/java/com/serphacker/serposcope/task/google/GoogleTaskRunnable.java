@@ -136,7 +136,7 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 
 				long duration = System.currentTimeMillis() - start;
-				if (requestCount > ScrapProxy.MAX_REQUEST_COUNT) {
+				if (requestCount > controller.googleOptions.getProxyMaxRequest()) {
 					// remove client info
 					if (device == GoogleDevice.DESKTOP) {
 						proxy.removeAttr(ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT);
