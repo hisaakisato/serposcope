@@ -27,7 +27,7 @@ public class GoogleScrapResult {
     public Status status;
     public List<GoogleScrapLinkEntry> entries;
     public int captchas;
-    public long googleResults;    
+    public Long googleResults;    
 
     public GoogleScrapResult() {
     }
@@ -43,7 +43,7 @@ public class GoogleScrapResult {
         this.captchas = captchas;
     }
 
-    public GoogleScrapResult(Status status, List<GoogleScrapLinkEntry> entries, int captchas, long googleResults) {
+    public GoogleScrapResult(Status status, List<GoogleScrapLinkEntry> entries, int captchas, Long googleResults) {
         this.status = status;
         this.entries = entries;
         this.captchas = captchas;
@@ -56,7 +56,7 @@ public class GoogleScrapResult {
         hash = 73 * hash + (this.status == null ? 0 : (this.status.ordinal()+1) );
         hash = 73 * hash + Objects.hashCode(this.entries);
         hash = 73 * hash + this.captchas;
-        hash = 73 * hash + (int) (this.googleResults ^ (this.googleResults >>> 32));
+		hash = 73 * hash + (this.googleResults == null ? -1 : (int) (this.googleResults ^ (this.googleResults >>> 32)));
         return hash;
     }
 
@@ -75,8 +75,8 @@ public class GoogleScrapResult {
         if (this.captchas != other.captchas) {
             return false;
         }
-        if (this.googleResults != other.googleResults) {
-            return false;
+        if (!Objects.equals(this.googleResults, other.googleResults)) {
+        	return false;
         }
         if (this.status != other.status) {
             return false;

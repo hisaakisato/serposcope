@@ -61,6 +61,7 @@ public class GoogleSerpDB extends AbstractDB {
 			inserted = new SQLInsertClause(con, dbTplConf, t_serp).set(t_serp.runId, serp.getRunId())
 					.set(t_serp.googleSearchId, serp.getGoogleSearchId())
 					.set(t_serp.runDay, Timestamp.valueOf(serp.getRunDay()))
+					.set(t_serp.results, serp.getResults())
 					.set(t_serp.serp, new SerialBlob(compress(serp.getSerializedEntries()))).execute() == 1;
 
 		} catch (Exception ex) {
@@ -152,7 +153,7 @@ public class GoogleSerpDB extends AbstractDB {
 					.groupBy(SQLExpressions.date(Date.class, t_serp.runDay));
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.serp, t_gsearch.id,
+					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.results, t_serp.serp, t_gsearch.id,
 							t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter, t_gsearch.device,
 							t_gsearch.local, t_gsearch.customParameters)
 					.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
@@ -190,7 +191,7 @@ public class GoogleSerpDB extends AbstractDB {
 					.groupBy(SQLExpressions.date(Date.class, t_serp.runDay), t_serp.googleSearchId);
 
 			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.serp, t_gsearch.id,
+					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.results, t_serp.serp, t_gsearch.id,
 							t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter, t_gsearch.device,
 							t_gsearch.local, t_gsearch.customParameters)
 					.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
@@ -220,6 +221,9 @@ public class GoogleSerpDB extends AbstractDB {
 
 		GoogleSerp serp = new GoogleSerp(tuple.get(t_serp.runId), tuple.get(t_serp.googleSearchId),
 				tuple.get(t_serp.runDay).toLocalDateTime());
+		if (tuple.get(t_serp.results) != null) {
+			serp.setResults(tuple.get(t_serp.results));
+		}
 		Blob blob = tuple.get(t_serp.serp);
 		if (blob != null) {
 			byte[] compressedData = blob.getBytes(1, (int) blob.length());

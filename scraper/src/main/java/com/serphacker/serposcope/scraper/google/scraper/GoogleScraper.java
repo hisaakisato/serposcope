@@ -124,7 +124,7 @@ public class GoogleScraper {
 		captchas = 0;
 		List<GoogleScrapLinkEntry> entries = new ArrayList<>();
 		prepareHttpClient(search);
-		long resultsNumber = 0;
+		Long resultsNumber = null;
 
 		LocalDate today = LocalDate.now();
 		try {
@@ -393,29 +393,29 @@ public class GoogleScraper {
 		return null;
 	}
 
-	protected long parseResultsNumberOnFirstPage() {
+	protected Long parseResultsNumberOnFirstPage() {
 		if (lastSerpHtml == null) {
-			return 0;
+			return null;
 		}
 
 		Element resultstStatsDiv = lastSerpHtml.getElementById("resultStats");
 		if (resultstStatsDiv == null) {
-			return 0;
+			return null;
 		}
 
 		return extractResultsNumber(resultstStatsDiv.html());
 	}
 
-	protected long extractResultsNumber(String html) {
+	protected Long extractResultsNumber(String html) {
 		if (html == null || html.isEmpty()) {
-			return 0;
+			return null;
 		}
-		html = html.replaceAll("\\(.+\\)", "");
+		html = html.replaceAll("\\(.+\\)", "").replaceAll("（.+）", "");
 		html = html.replaceAll("[^0-9]+", "");
 		if (!html.isEmpty()) {
 			return Long.parseLong(html);
 		}
-		return 0;
+		return null;
 	}
 
 	protected boolean hasNextPage() {

@@ -230,6 +230,9 @@ public class GoogleTask extends AbstractTask {
         Map<Short, GoogleSerp> history = getHistory(search);
 
         GoogleSerp serp = new GoogleSerp(run.getId(), search.getId(), run.getStarted());
+        if (res.googleResults != null) {
+        	serp.setResults(res.googleResults);
+        }
         for (GoogleScrapLinkEntry linkEntry : res.entries) {
             GoogleSerpEntry entry = new GoogleSerpEntry(linkEntry);
             entry.fillPreviousPosition(history);

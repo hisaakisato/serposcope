@@ -29,6 +29,7 @@ public class GoogleSerp {
     LocalDateTime runDay;
     List<GoogleSerpEntry> entries = new ArrayList<>();
     GoogleSearch search;
+    Long results;
 
     public GoogleSerp(int runId, int googleSearchId, LocalDateTime runDay) {
         this.runId = runId;
@@ -66,6 +67,14 @@ public class GoogleSerp {
 
 	public void setSearch(GoogleSearch search) {
 		this.search = search;
+	}
+
+	public Long getResults() {
+		return results;
+	}
+
+	public void setResults(Long results) {
+		this.results = results;
 	}
 
 	public void setSerializedEntries(byte[] data) throws IOException{

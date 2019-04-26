@@ -26,6 +26,7 @@ import com.serphacker.serposcope.models.google.GoogleBest;
 import com.serphacker.serposcope.models.google.GoogleRank;
 import static com.serphacker.serposcope.models.google.GoogleRank.UNRANKED;
 import com.serphacker.serposcope.models.google.GoogleSearch;
+import com.serphacker.serposcope.models.google.GoogleSerp;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 
@@ -499,9 +500,10 @@ public class GoogleTargetController extends GoogleController {
         			byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
         			out.write(bom);
 					writer.append(
-							messages.get("google.search.exportHeader", Optional.of(context.getAcceptLanguage())).get())
+							messages.get("google.target.exportHeader", Optional.of(context.getAcceptLanguage())).get())
 							.append("\n");
-                    for (LocalDate date : new TreeSet<LocalDate>(runs.stream().map(Run::getDay).collect(Collectors.toSet()))) {
+                    for (Run run : runs.stream().sorted(Comparator.comparing(Run::getDay)).collect(Collectors.toList())) {
+                    	LocalDate date = run.getDay();
                         String day = date.toString();
                         
                         for (GoogleSearch search : searches) {
@@ -509,6 +511,7 @@ public class GoogleTargetController extends GoogleController {
                             if (rank == null) {
                             	continue;
                             }
+                            GoogleSerp serp = googleDB.serp.get(run.getId(), search.getId());
                             writer.append(day).append(",");
                             writer.append(StringEscapeUtils.escapeCsv(search.getKeyword())).append(",");
                             writer.append(rank.rank == UNRANKED ? "-" : Integer.toString(rank.rank)).append(",");
@@ -530,7 +533,8 @@ public class GoogleTargetController extends GoogleController {
                                 search.getCustomParameters() != null
                                     ? StringEscapeUtils.escapeCsv(search.getCustomParameters())
                                     : ""
-                            );
+                            ).append(",");
+                            writer.append(serp.getResults() == null ? "" : serp.getResults().toString());
                             writer.append("\n");
                         }
                     }

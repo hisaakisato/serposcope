@@ -18,6 +18,7 @@ create table `GOOGLE_SERP` (
     run_id int,
     google_search_id int,
     run_day datetime default null,
+    results bigint,
     serp blob,
     primary key(run_id, google_search_id),
     foreign key (google_search_id) references `GOOGLE_SEARCH`(id) on delete cascade
