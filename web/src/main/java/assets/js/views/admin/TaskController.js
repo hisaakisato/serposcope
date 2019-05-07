@@ -23,6 +23,19 @@ serposcope.adminTaskController = function () {
         return false;
     };
 
+    var retryRun = function(elt) {
+        $('.modal').modal('hide');
+        var target = $(elt.currentTarget);
+        var href = target.attr("href");
+        var name = target.attr("data-name");
+        var dialog = $('#modal-retry-task');
+        dialog.find('form').attr('action', target.attr("href"));
+        dialog.find('#retryTaskId').val(target.attr("data-id"));
+        dialog.find('[name=_xsrf]').val($('#_xsrf').attr("data-value"));
+        dialog.modal();
+        return false;
+    };
+
     var rescanSerp = function(elt) {
         var date = $(elt.currentTarget).attr("data-date");
         var href= $(elt.currentTarget).attr("href");
@@ -51,6 +64,7 @@ serposcope.adminTaskController = function () {
     var render = function() {
         $('.btn-delete-run').click(deleteRun);
         $('.btn-rescan-serp').click(rescanSerp);
+        $('.btn-retry-run').click(retryRun);
     };
     
     var oPublic = {

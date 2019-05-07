@@ -427,6 +427,10 @@ public class GoogleSearchDB extends AbstractDB {
     }
     
     public List<Integer> listGroups(GoogleSearch search, boolean cron){
+    	return listGroups(search, cron ? LocalDate.now().getDayOfWeek() : null);
+    }
+    
+    public List<Integer> listGroups(GoogleSearch search, DayOfWeek dayOfWeek){
         List<Integer> groups = new ArrayList<>();
         
         try(Connection con = ds.getConnection()){
@@ -437,8 +441,8 @@ public class GoogleSearchDB extends AbstractDB {
 	            .leftJoin(t_group).on(t_ggroup.groupId.eq(t_group.id))
 	            .where(t_ggroup.googleSearchId.eq(search.getId()));
         	
-        	if (cron) {
-            	switch (LocalDate.now().getDayOfWeek()) {
+        	if (dayOfWeek != null) {
+            	switch (dayOfWeek) {
             	case SUNDAY:
                     query.where(t_group.sundayEnabled.isTrue());
             		break;

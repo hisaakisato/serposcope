@@ -28,6 +28,7 @@ public class Run {
     public enum Status {
         RUNNING,
         ABORTING,
+        RETRYING,
         DONE_SUCCESS,
         DONE_WITH_ERROR,
         DONE_ABORTED,
@@ -205,7 +206,7 @@ public class Run {
     }
 
     public boolean isRunning(){
-        return Status.RUNNING.equals(status) || Status.ABORTING.equals(status);
+        return Status.RUNNING.equals(status) || Status.ABORTING.equals(status) || Status.RETRYING.equals(status);
     }
     
 }

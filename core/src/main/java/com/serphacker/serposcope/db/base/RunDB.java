@@ -91,6 +91,7 @@ public class RunDB extends AbstractDB {
         try(Connection conn = ds.getConnection()){
             updated = new SQLUpdateClause(conn, dbTplConf, t_run)
                 .set(t_run.status, run.getStatus().ordinal())
+                .set(t_run.day, Date.valueOf(run.getDay()))
                 .where(t_run.id.eq(run.getId()))
                 .execute() == 1;
                 

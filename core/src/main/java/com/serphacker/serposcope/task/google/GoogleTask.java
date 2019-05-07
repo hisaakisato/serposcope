@@ -115,15 +115,21 @@ public class GoogleTask extends AbstractTask {
         solver = initializeCaptchaSolver();
         googleOptions = googleDB.options.get();
 
-		groupCount = this.getRun().getGroup() == null
-				? baseDB.group.list(null, this.getRun().getMode() == Mode.CRON ? LocalDate.now().getDayOfWeek() : null)
+		groupCount = this.run.getGroup() == null
+				? baseDB.group.list(null, this.run.getMode() == Mode.CRON ? this.run.getDay().getDayOfWeek() : null)
 						.size()
 				: 1;
         initializeSearches();
         initializePreviousRuns();
         initializeTargets();
         
-        
+        // reset status
+        if (run.getStatus() == Status.RETRYING) {
+        	this.run.setDay(this.run.getStarted().toLocalDate());
+        	this.run.setStatus(Status.RUNNING);
+        	baseDB.run.updateStatus(run);
+        }
+
         if (rotator.list().isEmpty()) {        	
         	List<ScrapProxy> proxies = baseDB.proxy.list().stream().map(Proxy::toScrapProxy).collect(Collectors.toList());        	
         	if(proxies.isEmpty()){
@@ -240,7 +246,8 @@ public class GoogleTask extends AbstractTask {
         }
         googleDB.serp.insert(serp);
 
-        List<Integer> groups = googleDB.search.listGroups(search, this.run.getMode() == Mode.CRON);
+		List<Integer> groups = googleDB.search.listGroups(search,
+				this.run.getMode() == Mode.CRON ? this.run.getDay().getDayOfWeek() : null);
         for (Integer group : groups) {
             List<GoogleTarget> targets = targetsByGroup.get(group);
             if (targets == null) {
@@ -282,7 +289,8 @@ public class GoogleTask extends AbstractTask {
 	        if(updateRun){
 	            searchList = googleDB.search.listUnchecked(run.getId());
 	        } else {
-	            searchList = googleDB.search.list(this.run.getMode() == Mode.CRON);
+				searchList = googleDB.search.listByGroup(null,
+						this.run.getMode() == Mode.CRON ? this.run.getDay().getDayOfWeek() : null);
 	        }
         } else {
         	searchList = googleDB.search.listByGroup(
@@ -304,7 +312,8 @@ public class GoogleTask extends AbstractTask {
         
         List<GoogleTarget> targets;
         if (this.run.getGroup() == null) {
-        	targets = googleDB.target.list(this.run.getMode() == Mode.CRON);
+			targets = googleDB.target.list(null,
+					this.run.getMode() == Mode.CRON ? this.run.getDay().getDayOfWeek() : null);
         } else {
         	targets = googleDB.target.list(
         			Arrays.asList(this.run.getGroup().getId()));

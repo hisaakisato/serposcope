@@ -16,8 +16,12 @@ import com.serphacker.serposcope.models.base.Group;
 import static com.serphacker.serposcope.models.base.Group.Module.GOOGLE;
 import com.serphacker.serposcope.models.base.Run;
 import com.serphacker.serposcope.models.base.User;
+import com.serphacker.serposcope.models.base.Run.Mode;
+import com.serphacker.serposcope.models.base.Run.Status;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
+
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
 import ninja.Context;
@@ -38,6 +42,7 @@ import com.serphacker.serposcope.task.TaskManager;
 import java.util.Arrays;
 import ninja.params.PathParam;
 import serposcope.controllers.HomeController;
+import serposcope.controllers.google.GoogleGroupController;
 
 @Singleton
 public class TaskController extends BaseController {
@@ -199,6 +204,48 @@ public class TaskController extends BaseController {
         }
 
         return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+    }
+
+    @FilterWith({ MaintenanceFilter.class, AdminFilter.class, XSRFFilter.class })
+    public Result retryRun(Context context,
+            @PathParam("runId") Integer runId) {
+        FlashScope flash = context.getFlashScope();
+
+        Run run = baseDB.run.find(runId);
+        if (run == null || run.isRunning()) {
+            flash.error("error.invalidId");
+            return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+        }
+
+        switch (run.getModule()) {
+        case GOOGLE:
+            break;
+        default:
+            flash.error("error.notImplemented");
+            return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+        }
+
+        Group group = run.getGroup();
+
+		if (googleDB.search.listByGroup(group == null ? null : Arrays.asList(group.getId()),
+				run.getMode() == Mode.CRON ? run.getDay().getDayOfWeek() : null).size() == 0) {
+			flash.error("admin.google.keywordEmpty");
+			return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+		}
+
+		Run retry = new Run(run.getMode(), run.getModule(), LocalDateTime.now());
+		// set previous day and retry status
+		retry.setDay(run.getDay());
+		retry.setStatus(Status.RETRYING);
+
+        User user = context.getAttribute("user", User.class);
+        if (!taskManager.startGoogleTask(retry, user, group)) {
+            flash.error("admin.task.errGoogleAlreadyRunning");
+			return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+        }
+
+		flash.success("admin.task.tasksStarted");
+		return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 
     @FilterWith({ MaintenanceFilter.class, AdminFilter.class, XSRFFilter.class })
