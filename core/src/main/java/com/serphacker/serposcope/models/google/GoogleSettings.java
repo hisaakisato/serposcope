@@ -9,8 +9,6 @@ package com.serphacker.serposcope.models.google;
 
 import com.serphacker.serposcope.scraper.google.GoogleCountryCode;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
-import java.util.Arrays;
-import java.util.List;
 
 public class GoogleSettings {
     
@@ -22,6 +20,7 @@ public class GoogleSettings {
     int maxManualThreads = 1;
     int fetchRetry = 3;    
     int proxyMaxRequest = 10;    
+    int averageDuration = 3;    
     
     GoogleCountryCode defaultCountry = GoogleCountryCode.__;
     String defaultDatacenter = null;
@@ -93,7 +92,14 @@ public class GoogleSettings {
     	this.proxyMaxRequest = proxyMaxRequest;
     }
     
+    public int getAverageDuration() {
+    	return averageDuration;
+    }
     
+    public void setAverageDuration(int averageDuration) {
+    	this.averageDuration = averageDuration;
+    }
+        
     // search
 
 	public GoogleCountryCode getDefaultCountry() {

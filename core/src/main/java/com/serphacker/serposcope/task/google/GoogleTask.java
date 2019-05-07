@@ -49,14 +49,13 @@ import com.serphacker.serposcope.di.GoogleScraperFactory;
 import com.serphacker.serposcope.models.google.GoogleBest;
 import com.serphacker.serposcope.models.google.GoogleTargetSummary;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class GoogleTask extends AbstractTask {
 
     protected static final Logger LOG = LoggerFactory.getLogger(GoogleTask.class);
-    
+
     GoogleScraperFactory googleScraperFactory;
     CaptchaSolverFactory captchaSolverFactory;
     ScrapClientFactory scrapClientFactory;
@@ -76,6 +75,7 @@ public class GoogleTask extends AbstractTask {
     protected final AtomicInteger searchDone = new AtomicInteger();
     final AtomicInteger captchaCount = new AtomicInteger();
     volatile int waitingCount;
+    volatile int standbyCount;
     
     Thread[] threads;
     volatile int totalSearch;
@@ -166,13 +166,25 @@ public class GoogleTask extends AbstractTask {
         return Run.Status.DONE_SUCCESS;
     }
     
+    public static final int MIN_THREAD_COUNT = 10;
+
     protected void startThreads(int nThread){
-        threads = new Thread[nThread];
-        for (int iThread = 0; iThread < threads.length; iThread++) {
-            threads[iThread] = new Thread(
-            		new GoogleTaskRunnable(this),
-            		"google-" + this.run.getId() + "-" + iThread);
-            threads[iThread].start();
+    	GoogleSettings settings = googleDB.options.get();
+    	int pause = (settings.getMaxPauseBetweenPageSec() + settings.getMinPauseBetweenPageSec()) / 2;
+    	int times = Math.max(1, pause / settings.getAverageDuration());
+		int maxThreads = Math.max(Math.min(MIN_THREAD_COUNT, nThread), nThread / times);
+        threads = new Thread[maxThreads];
+        for (int iThread = 0; iThread < nThread; iThread++) {
+        	if (iThread < maxThreads) {
+	        	Thread t = new Thread(
+	            		new GoogleTaskRunnable(this),
+	            		"google-" + this.run.getId() + "-" + iThread);
+	        	t.setPriority(Thread.NORM_PRIORITY - 1);
+	            threads[iThread] = t;
+	            threads[iThread].start();
+        	} else {
+        		standbyCount++;
+        	}
         }        
     }
     
@@ -221,18 +233,20 @@ public class GoogleTask extends AbstractTask {
         baseDB.run.updateCaptchas(run);
     }
     
-    protected void onSearchDone(GoogleSearch search, GoogleScrapResult res){
-        insertSearchResult(search, res);
-        incSearchDone();
+    protected boolean onSearchDone(GoogleSearch search, GoogleScrapResult res){
+        if (!insertSearchResult(search, res)) {
+        	return false;
+        }
+        return incSearchDone();
     }
     
-    protected void incSearchDone(){
+    protected boolean incSearchDone(){
         run.setProgress((int) (((float)searchDone.incrementAndGet()/(float)totalSearch)*100f) );
         run.setDone(searchDone.get());
-        baseDB.run.updateProgress(run);
+        return baseDB.run.updateProgress(run);
     }
     
-    protected void insertSearchResult(GoogleSearch search, GoogleScrapResult res) {
+    protected boolean insertSearchResult(GoogleSearch search, GoogleScrapResult res) {
         Map<Short, GoogleSerp> history = getHistory(search);
 
         GoogleSerp serp = new GoogleSerp(run.getId(), search.getId(), run.getStarted());
@@ -244,7 +258,9 @@ public class GoogleTask extends AbstractTask {
             entry.fillPreviousPosition(history);
             serp.addEntry(entry);
         }
-        googleDB.serp.insert(serp);
+        if (!googleDB.serp.insert(serp)) {
+        	return false;
+        }
 
 		List<Integer> groups = googleDB.search.listGroups(search,
 				this.run.getMode() == Mode.CRON ? this.run.getDay().getDayOfWeek() : null);
@@ -271,16 +287,22 @@ public class GoogleTask extends AbstractTask {
                 }
                 
                 GoogleRank gRank = new GoogleRank(run.getId(), group, target.getId(), search.getId(), rank, previousRank, rankedUrl);
-                googleDB.rank.insert(gRank);
+                if (!googleDB.rank.insert(gRank)) {
+                	return false;
+                }
                 
                 GoogleTargetSummary summary = summariesByTarget.get(target.getId());
                 summary.addRankCandidat(gRank);
                 
                 if(rank != GoogleRank.UNRANKED && rank <= best){
-                    googleDB.rank.insertBest(new GoogleBest(group, target.getId(), search.getId(), rank, run.getStarted(), rankedUrl));
+					if (!googleDB.rank.insertBest(
+							new GoogleBest(group, target.getId(), search.getId(), rank, run.getStarted(), rankedUrl))) {
+                    	return false;
+                    }
                 }
             }
         }
+        return true;
     }    
     
     protected void initializeSearches() {
@@ -413,7 +435,7 @@ public class GoogleTask extends AbstractTask {
     }
 
     public int getWaitingCount() {
-    	return waitingCount;
+    	return waitingCount + standbyCount;
     }
 
     public int getActiveCount() {

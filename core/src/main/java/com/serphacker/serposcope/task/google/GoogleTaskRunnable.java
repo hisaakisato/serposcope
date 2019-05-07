@@ -188,7 +188,15 @@ public class GoogleTaskRunnable implements Runnable {
 					continue;
 				}
 
-				controller.onSearchDone(search, res);
+				if (!controller.onSearchDone(search, res)) {
+					LOG.error("[Search Failed] id: {} device: {} keyword: [{}] duration: {} retry: {} captchas: {} reason: {} proxy: [{}] user-agent: [{}] request_count: {}",
+							search.getId(), device == GoogleDevice.DESKTOP ? "PC" : "SP",
+							search.getKeyword(), String.format("%.2f", duration * 1.0 / 1000), searchTry - 1, res.captchas, res.status,
+							proxy.toString().replaceFirst("proxy:", ""), userAgent, requestCount);
+					controller.searches.offer(search); // re-queue
+					search = null; // next
+					continue;
+				}
 
 				if (res.status == OK) {
 					LOG.info("[Search Done] id: {} device: {} keyword: [{}] duration: {} done: {} total: {} retry: {} captchas: {} proxy: [{}] user-agent: [{}] request_count: {}",

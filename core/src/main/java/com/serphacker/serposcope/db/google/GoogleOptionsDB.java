@@ -23,6 +23,7 @@ public class GoogleOptionsDB {
     private final static String MAX_THREADS = "google.maxThreads";
     private final static String FETCH_RETRY = "google.fetchRetry";    
     private final static String PROXY_MAX_REQUEST = "google.proxyMaxRequest";    
+    private final static String AVERAGE_DURATION = "google.averageDuration";    
     
     private final static String DEFAULT_DATACENTER = "google.default_datacenter";
     private final static String DEFAULT_DEVICE = "google.default.device";
@@ -44,6 +45,7 @@ public class GoogleOptionsDB {
         options.setMaxManualThreads(configDB.getInt(MAX_MANUAL_THREADS, options.getMaxManualThreads()));
         options.setFetchRetry(configDB.getInt(FETCH_RETRY, options.getFetchRetry()));
         options.setProxyMaxRequest(configDB.getInt(PROXY_MAX_REQUEST, options.getProxyMaxRequest()));
+        options.setAverageDuration(configDB.getInt(AVERAGE_DURATION, options.getAverageDuration()));
         
         options.setDefaultDatacenter(configDB.get(DEFAULT_DATACENTER, options.getDefaultDatacenter()));
         options.setDefaultDevice(configDB.get(DEFAULT_DEVICE, null));
@@ -67,6 +69,7 @@ public class GoogleOptionsDB {
         configDB.updateInt(MAX_MANUAL_THREADS, nullIfDefault(opts.getMaxManualThreads(), def.getMaxManualThreads()));
         configDB.updateInt(FETCH_RETRY, nullIfDefault(opts.getFetchRetry(), def.getFetchRetry()));
         configDB.updateInt(PROXY_MAX_REQUEST, nullIfDefault(opts.getProxyMaxRequest(), def.getProxyMaxRequest()));
+        configDB.updateInt(AVERAGE_DURATION, nullIfDefault(opts.getAverageDuration(), def.getAverageDuration()));
 
         // search
         configDB.update(DEFAULT_DATACENTER, nullIfDefault(opts.getDefaultDatacenter(), def.getDefaultDatacenter()));

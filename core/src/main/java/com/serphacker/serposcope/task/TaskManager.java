@@ -70,6 +70,7 @@ public class TaskManager {
 		public Thread newThread(Runnable r) {
 			Thread t = new Thread(threadGroup, r, threadGroup.getName()
 					+ "-" + count.incrementAndGet());
+			t.setPriority(Thread.NORM_PRIORITY - 1);
 			return t;
 		}
 	});

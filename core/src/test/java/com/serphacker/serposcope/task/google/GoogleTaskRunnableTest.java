@@ -169,6 +169,7 @@ public class GoogleTaskRunnableTest {
 //        taskController.scaperFactory = mock(ScraperFactory.class);
 //        when(taskController.scaperFactory.getGoogleScraper(any())).thenReturn(scraper);
         
+        when(taskController.onSearchDone(any(), any())).thenReturn(true);
         runnable.run();
         verify(taskController, times(1)).onSearchDone(theSearch, scrapResult);
         Assert.assertEquals(new HashSet<>(proxies), new HashSet<>(taskController.rotator.list()));

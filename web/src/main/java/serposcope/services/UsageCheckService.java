@@ -145,18 +145,18 @@ public class UsageCheckService {
 		}
 		// thread stats
 		int activeThreads = 0;
-		int waitingThreads = 0;
+		int waitingCount = 0;
 		for (GoogleTask task : taskManager.listRunningGoogleTasks()) {
 			if (task.isAlive()) {
 				activeThreads += task.getActiveCount();
-				waitingThreads += task.getWaitingCount();
+				waitingCount += task.getWaitingCount();
 			}
 		}
 		LOG.info("[Running Task Stats] "
 				+ "tasks: {} remaining: {} "
 				+ "active: {} waiting: {}",
 				activeTasks, remainingSearches,
-				activeThreads, waitingThreads);
+				activeThreads, waitingCount);
 	}
 
 	@Schedule(delay = 1, initialDelay = 0, timeUnit = TimeUnit.HOURS)
