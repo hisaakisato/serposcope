@@ -296,12 +296,11 @@ serposcope.googleTargetControllerGrid = function () {
             }
         }
         
-        var rankUrl = rank[COL_RANK_URL] == null ? "not provided" : serposcope.utils.escapeHTMLQuotes(rank[COL_RANK_URL]);
+        var rankUrl = rank[COL_RANK_URL] == null ? "No rank provided" : serposcope.utils.escapeHTMLQuotes(rank[COL_RANK_URL]);
         return '<div class="pointer diff-' + diffClass + ' ' + bestClass + '" ' +
             'rel="popover"" ' +
             'data-pt="' +
-            	days[col - 1] + 
-            	(isNaN(rankText) ? '' : serposcope.utils.escapeHTMLQuotes('<a class="fa fa-search fa-fw" target="_blank" style="position:absolute;right:10px" href="/google/' + groupId + "/search/" + rowData[COL_ID] + '/show-serp?date=' + days[col - 1] + '"/>')) +            
+            	days[col - 1] + serposcope.utils.escapeHTMLQuotes('<a class="fa fa-search fa-fw" target="_blank" style="position:absolute;right:10px" href="/google/' + groupId + "/search/" + rowData[COL_ID] + '/show-serp?date=' + days[col - 1] + '"/>') +            
             '" ' +
             'data-content="' + rankUrl + '" ' +
             '>' + rankText + '</div>';
@@ -311,11 +310,14 @@ serposcope.googleTargetControllerGrid = function () {
         if (row === 0) {
             return "";
         }
+    	var groupId = $('#csp-vars').attr('data-group-id');
         var best = rowData[COL_BEST];
         var rankText = (best[COL_BEST_RANK] == UNRANKED ? "-" : best[COL_BEST_RANK]);
         return '<div class="pointer best-cell" ' +
             'rel="popover"" ' +
-            'title="' + best[COL_BEST_DAY] + '" ' +
+            'data-pt="' + 
+            	best[COL_BEST_DAY] + serposcope.utils.escapeHTMLQuotes('<a class="fa fa-search fa-fw" target="_blank" style="position:absolute;right:10px" href="/google/' + groupId + "/search/" + rowData[COL_ID] + '/show-serp?date=' + best[COL_BEST_DAY] + '"/>') +
+            '" ' +
             'data-content="' + serposcope.utils.escapeHTMLQuotes(best[COL_BEST_URL]) + '" ' +
             '>' + rankText + '</div>';
     };
