@@ -40,6 +40,7 @@ import serposcope.helpers.TemplateEngineFreemarkerReverseRouteHelperSerposcope;
 import ninja.conf.FrameworkModule;
 import ninja.conf.NinjaClassicModule;
 import serposcope.services.CronService;
+import serposcope.services.GroupStatsService;
 import serposcope.services.ProxyCheckService;
 import serposcope.services.UsageCheckService;
 //import serposcope.services.CronSrv;
@@ -80,6 +81,7 @@ public class Module extends FrameworkModule {
         bind(CronService.class);
         bind(ProxyCheckService.class);
         bind(UsageCheckService.class);
+        bind(GroupStatsService.class);
         bind(Crypto.class).to(CryptoOverride.class);
         bind(TemplateEngineFreemarkerReverseRouteHelper.class).to(TemplateEngineFreemarkerReverseRouteHelperSerposcope.class);
         bind(Configuration.class).toProvider(new ConfigurationProvider(conf.dbUrl)).in(Singleton.class);

@@ -8,13 +8,9 @@
 package serposcope.services;
 
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.time.DayOfWeek;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -25,10 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import com.serphacker.serposcope.db.base.BaseDB;
 import com.serphacker.serposcope.db.google.GoogleDB;
-import com.serphacker.serposcope.models.base.Group;
-import com.serphacker.serposcope.models.google.GoogleSearch;
-import com.serphacker.serposcope.models.google.GoogleTarget;
-import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import com.serphacker.serposcope.scraper.google.scraper.parser.GoogleAbstractScrapParser;
 import com.serphacker.serposcope.task.TaskManager;
 import com.serphacker.serposcope.task.google.GoogleTask;
@@ -157,91 +149,6 @@ public class UsageCheckService {
 				+ "active: {} waiting: {}",
 				activeTasks, remainingSearches,
 				activeThreads, waitingCount);
-	}
-
-	@Schedule(delay = 1, initialDelay = 0, timeUnit = TimeUnit.HOURS)
-	public void checkGroupStats() {
-
-		String[] types = { "Total", "Sunday Scheduled", "Monday Scheduled", "Tuesday Scheduled", "Wednesday Scheduled",
-				"Thursday Scheduled", "Friday Scheduled", "Saturday Scheduled", "Non-Scheduled" };		
-		
-		List<Group> allGroups = baseDB.group.list();		
-		List<GoogleSearch> allSearches = googleDB.search.list();
-		List<GoogleTarget> allTargets = googleDB.target.list();
-
-		for (String type : types) {
-			long groupCount = 0;
-			DayOfWeek dayOfWeek = null;
-			switch (type) {
-			case "Total":
-				groupCount = allGroups.size();
-				break;
-			case "Sunday Scheduled":
-				dayOfWeek = DayOfWeek.SUNDAY;
-				groupCount = allGroups.stream().filter(Group::isSundayEnabled).count();
-				break;
-			case "Monday Scheduled":
-				dayOfWeek = DayOfWeek.MONDAY;
-				groupCount = allGroups.stream().filter(Group::isMondayEnabled).count();
-				break;
-			case "Tuesday Scheduled":
-				dayOfWeek = DayOfWeek.TUESDAY;
-				groupCount = allGroups.stream().filter(Group::isTuesdayEnabled).count();
-				break;
-			case "Wednesday Scheduled":
-				dayOfWeek = DayOfWeek.WEDNESDAY;
-				groupCount = allGroups.stream().filter(Group::isWednesdayEnabled).count();
-				break;
-			case "Thursday Scheduled":
-				dayOfWeek = DayOfWeek.THURSDAY;
-				groupCount = allGroups.stream().filter(Group::isThursdayEnabled).count();
-				break;
-			case "Friday Scheduled":
-				dayOfWeek = DayOfWeek.FRIDAY;
-				groupCount = allGroups.stream().filter(Group::isFridayEnabled).count();
-				break;
-			case "Saturday Scheduled":
-				dayOfWeek = DayOfWeek.SATURDAY;
-				groupCount = allGroups.stream().filter(Group::isSaturdayEnabled).count();
-				break;
-			case "Non-Scheduled":
-				groupCount = allGroups.stream()
-						.filter(g -> !g.isSundayEnabled() && !g.isMondayEnabled() && !g.isTuesdayEnabled()
-								&& !g.isWednesdayEnabled() && !g.isThursdayEnabled() && !g.isFridayEnabled()
-								&& !g.isSaturdayEnabled())
-						.count();
-			}
-
-			List<GoogleSearch> searches;
-			if (dayOfWeek == null) {
-				searches = new ArrayList<>(allSearches);
-			} else {
-				searches = googleDB.search.listByGroup(null, dayOfWeek);
-				allSearches.removeAll(searches);
-
-			}
-			int desktopSearch = 0;
-			int mobileSearch = 0;
-			for (GoogleSearch search : searches) {
-				if (search.getDevice() == GoogleDevice.DESKTOP) {
-					desktopSearch++;
-				} else {
-					mobileSearch++;
-				}
-			}
-
-			List<GoogleTarget> targets;
-			if (dayOfWeek == null) {
-				targets = new ArrayList<>(allTargets);
-			} else {
-				targets = googleDB.target.list(null, dayOfWeek);
-				allTargets.removeAll(targets);
-			}
-			int targetCount = targets.size();
-
-			LOG.info("[Group Stats: {}] groups: {} desktop: {} mobile: {} targets: {}", type, groupCount, desktopSearch,
-					mobileSearch, targetCount);
-		}
 	}
 
 	@Schedule(delay = 1, initialDelay = 1, timeUnit = TimeUnit.MINUTES)
