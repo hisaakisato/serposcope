@@ -24,6 +24,8 @@ import com.serphacker.serposcope.models.google.GoogleTarget;
 import java.time.DayOfWeek;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
+
 import ninja.Context;
 import ninja.FilterWith;
 import ninja.Result;
@@ -39,7 +41,11 @@ import serposcope.filters.AdminFilter;
 import serposcope.filters.MaintenanceFilter;
 import serposcope.filters.XSRFFilter;
 import com.serphacker.serposcope.task.TaskManager;
+
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
+
 import ninja.params.PathParam;
 import serposcope.controllers.HomeController;
 import serposcope.controllers.google.GoogleGroupController;
@@ -261,110 +267,33 @@ public class TaskController extends BaseController {
             return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
         }
 
-        switch (run.getModule()) {
-            case GOOGLE:
-                // delete google ranks
-                googleDB.targetSummary.deleteByRun(run.getId());
-                googleDB.rank.deleteByRunId(run.getId());
-                
-                List<Group> groups = baseDB.group.list();
-                for (Group group : groups) {
-                    List<GoogleTarget> targets = googleDB.target.list(Arrays.asList(group.getId()));
-                    List<GoogleSearch> searches = googleDB.search.listByGroup(Arrays.asList(group.getId()));
-                    taskManager.rescan(run.getId(), group, targets, searches, true);
-                }
-                
-                /*
-                Map<Integer, Integer> previousSummary = new HashMap<>();
-                
-                Run previousRun = baseDB.run.findPrevious(run.getId());
-                if(previousRun != null){
-                    previousSummary = googleDB.targetSummary.getPreviousScoreBP(previousRun.getId());
-                } 
+		switch (run.getModule()) {
+		case GOOGLE:
+			// delete google ranks
+			googleDB.targetSummary.deleteByRun(run.getId());
+			googleDB.rank.deleteByRunId(run.getId());
 
-                Map<Integer,GoogleTargetSummary> summariesByTarget = new HashMap<>();
-                Map<Integer,List<GoogleTarget>> targetsByGroup = new HashMap<>();                
-                List<GoogleTarget> targets = googleDB.target.list();
-                for (GoogleTarget target : targets) {
-                    targetsByGroup.putIfAbsent(target.getGroupId(), new ArrayList<>());
-                    targetsByGroup.get(target.getGroupId()).add(target);
-                    summariesByTarget.put(target.getId(), new GoogleTargetSummary(target.getGroupId(), target.getId(), run.getId(), 
-                        previousSummary.getOrDefault(target.getId(), 0)));
-                }
+			Set<Group> groups = new HashSet<>();
+			if (run.getGroup() == null) {
+				groups.addAll(baseDB.group.list(run.getMode() == Mode.CRON ? run.getDay().getDayOfWeek() : null));
+			} else {
+				groups.add(run.getGroup());
+			}
+			for (Group group : groups) {
+				List<GoogleTarget> targets = googleDB.target.list(Arrays.asList(group.getId()));
+				List<GoogleSearch> searches = googleDB.search.listByGroup(Arrays.asList(group.getId()));
+				taskManager.rescan(run.getId(), group, targets, searches, true);
+			}
 
-                List<GoogleSearch> searches = googleDB.search.list();
-                for (GoogleSearch search : searches) {
-                    GoogleSerp res = googleDB.serp.get(run.getId(), search.getId());
-                    if(res == null){
-                        continue;
-                    }
-                    
-                    List<Integer> searchGroupsIds = googleDB.search.listGroups(search);
-                    
-                    List<GoogleTarget> searchTargets = new ArrayList<>();
-                    for (Integer groupId : searchGroupsIds) {
-                        List<GoogleTarget> groupTargets = targetsByGroup.get(groupId);
-                        if(groupTargets != null && !groupTargets.isEmpty()){
-                            searchTargets.addAll(groupTargets);
-                        }
-                    }
-                    
-                    for (GoogleTarget target : searchTargets) {
-                        GoogleBest best = googleDB.rank.getBest(target.getGroupId(), target.getId(), search.getId());
-                        int rank = GoogleRank.UNRANKED;
-                        String rankedUrl = null;
-                        for (int i = 0; i < res.getEntries().size(); i++) {
-                            if (target.match(res.getEntries().get(i).getUrl())) {
-                                rankedUrl = res.getEntries().get(i).getUrl();
-                                rank = i + 1;
-                                break;
-                            }
-                        }
+			flash.success("admin.task.serpRescanDone");
+			break;
 
-                        int previousRank = GoogleRank.UNRANKED;
-                        if(previousRun != null){
-                            previousRank = googleDB.rank.get(previousRun.getId(), target.getGroupId(), target.getId(), search.getId());
-                        }
-                        
-                        GoogleRank googleRank = new GoogleRank(res.getRunId(), target.getGroupId(), target.getId(), 
-                            search.getId(), rank, previousRank,rankedUrl);
-                        
-                        googleDB.rank.insert(googleRank);
-                        
-                        summariesByTarget.get(target.getId()).addRankCandidat(googleRank);
-
-                        if(rank != GoogleRank.UNRANKED && rank <= best.getRank()){
-                            best.setRank((short)rank);
-                            best.setUrl(rankedUrl);
-                            best.setRunDay(res.getRunDay());
-                            googleDB.rank.insertBest(best);
-                        }
-                    }
-                }
-                if(!summariesByTarget.isEmpty()){
-                    googleDB.targetSummary.insert(summariesByTarget.values());
-                }
-                */
-                
-                flash.success("admin.task.serpRescanDone");
-                break;
-
-            default:
-                flash.error("error.notImplemented");
-                return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
-        }
+		default:
+			flash.error("error.notImplemented");
+			return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+		}
 
         return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 
-//    public String getGroupRoute(Group group){
-//        if(group != null){
-//            switch(group.getModule()){
-//                case GOOGLE:
-//                    return router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId());
-//            }
-//        }
-//        
-//        return router.getReverseRoute(HomeController.class, "home");
-//    }
 }
