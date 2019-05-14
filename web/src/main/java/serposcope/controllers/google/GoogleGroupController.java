@@ -274,6 +274,10 @@ public class GoogleGroupController extends GoogleController {
             	// use default
                 search.setLocal(settings.getDefaultLocal());
             } else {
+            	// adjust default
+                if (locals[i].equals("Minato,Tokyo,Japan")) {
+                	locals[i] = "Minato City,Tokyo,Japan";
+                }
                 if (!Validator.isCanonicalName(locals[i])) {
     				flash.error(msg
     						.get("admin.google.invalidLocal", context, Optional.absent(), locals[i])

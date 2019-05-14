@@ -182,9 +182,21 @@ public class GoogleScraperTest {
             scraper.buildUule("Lille,Nord-Pas-de-Calais,France").replaceAll("=+$", "")
         );
         assertEquals(
-            "w+CAIQICISTWluYXRvLFRva3lvLEphcGFu",
-            scraper.buildUule("Minato,Tokyo,Japan").replaceAll("=+$", "")
+        	"w+CAIQICISTWluYXRvLFRva3lvLEphcGFu",
+        	scraper.buildUule("Minato,Tokyo,Japan").replaceAll("=+$", "")
         );
+		assertEquals(
+		    "w+CAIQICIXTWluYXRvIENpdHksVG9reW8sSmFwYW4",
+		    scraper.buildUule("Minato City,Tokyo,Japan").replaceAll("=+$", "")
+		);
+		assertEquals(
+		    "w+CAIQICIdTmFoYSxPa2luYXdhIFByZWZlY3R1cmUsSmFwYW4",
+		    scraper.buildUule("Naha,Okinawa Prefecture,Japan").replaceAll("=+$", "")
+		);
+		assertEquals(
+		    "w+CAIQICISTmFoYSxPa2luYXdhLEphcGFu",
+		    scraper.buildUule("Naha,Okinawa,Japan").replaceAll("=+$", "")
+		);
         assertEquals(
             "w+CAIQICIWU2FwcG9ybyxIb2trYWlkbyxKYXBhbg",
             scraper.buildUule("Sapporo,Hokkaido,Japan").replaceAll("=+$", "")
