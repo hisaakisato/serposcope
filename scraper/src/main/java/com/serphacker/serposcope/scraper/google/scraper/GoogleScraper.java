@@ -482,7 +482,7 @@ public class GoogleScraper {
 
 	private final static String UULE_LENGTH = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
-	protected String buildUule(String location) {
+	protected static String buildUule(String location) {
 		if (location == null || location.isEmpty()) {
 			return null;
 		}
@@ -495,6 +495,16 @@ public class GoogleScraper {
 
 		return "w+CAIQICI" + UULE_LENGTH.charAt(locationArray.length)
 				+ Base64.getEncoder().encodeToString(locationArray);
+	}
+
+	protected static String decodeUule(String uule) {
+		if (uule == null || uule.isEmpty()) {
+			return null;
+		}
+		if (!uule.startsWith("w+CAIQICI")) {
+			return null;
+		}
+		return new String(Base64.getDecoder().decode(uule.substring(10)));
 	}
 
 	final static Pattern PATTERN_CAPTCHA_ID = Pattern.compile("/sorry/image\\?id=([0-9]+)&?");

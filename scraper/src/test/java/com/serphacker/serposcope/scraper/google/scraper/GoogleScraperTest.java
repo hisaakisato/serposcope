@@ -164,43 +164,127 @@ public class GoogleScraperTest {
 
     @Test
     public void testBuildUule() {
-        GoogleScraper scraper = new GoogleScraper(null, null);
         assertEquals(
-            "w+CAIQICIpTW9udGV1eCxQcm92ZW5jZS1BbHBlcy1Db3RlIGQnQXp1cixGcmFuY2U",
-            scraper.buildUule("Monteux,Provence-Alpes-Cote d'Azur,France").replaceAll("=+$", "")
+            "w+CAIQICIpTW9udGV1eCxQcm92ZW5jZS1BbHBlcy1Db3RlIGQnQXp1cixGcmFuY2U=",
+            GoogleScraper.buildUule("Monteux,Provence-Alpes-Cote d'Azur,France")
         );
         assertEquals(
             "w+CAIQICIGRnJhbmNl",
-            scraper.buildUule("France").replaceAll("=+$", "")
+            GoogleScraper.buildUule("France")
         );
         assertEquals(
-            "w+CAIQICIlQ2VudHJlLVZpbGxlLENoYW1wYWduZS1BcmRlbm5lLEZyYW5jZQ",
-            scraper.buildUule("Centre-Ville,Champagne-Ardenne,France").replaceAll("=+$", "")
+            "w+CAIQICIlQ2VudHJlLVZpbGxlLENoYW1wYWduZS1BcmRlbm5lLEZyYW5jZQ==",
+            GoogleScraper.buildUule("Centre-Ville,Champagne-Ardenne,France")
         );
         assertEquals(
-            "w+CAIQICIfTGlsbGUsTm9yZC1QYXMtZGUtQ2FsYWlzLEZyYW5jZQ",
-            scraper.buildUule("Lille,Nord-Pas-de-Calais,France").replaceAll("=+$", "")
+            "w+CAIQICIfTGlsbGUsTm9yZC1QYXMtZGUtQ2FsYWlzLEZyYW5jZQ==",
+            GoogleScraper.buildUule("Lille,Nord-Pas-de-Calais,France")
         );
+		// 北海道札幌市
+        assertEquals(
+            "w+CAIQICIWU2FwcG9ybyxIb2trYWlkbyxKYXBhbg==",
+            GoogleScraper.buildUule("Sapporo,Hokkaido,Japan")
+        );
+		// 宮城県仙台市
+        assertEquals(
+            "w+CAIQICIeU2VuZGFpLE1peWFnaSBQcmVmZWN0dXJlLEphcGFu",
+            GoogleScraper.buildUule("Sendai,Miyagi Prefecture,Japan")
+        );
+        assertEquals(
+            "w+CAIQICITU2VuZGFpLE1peWFnaSxKYXBhbg==",
+            GoogleScraper.buildUule("Sendai,Miyagi,Japan")
+        );
+		// 埼玉県さいたま市
+        assertEquals(
+            "w+CAIQICIgU2FpdGFtYSxTYWl0YW1hIFByZWZlY3R1cmUsSmFwYW4=",
+            GoogleScraper.buildUule("Saitama,Saitama Prefecture,Japan")
+        );
+        assertEquals(
+            "w+CAIQICIVU2FpdGFtYSxTYWl0YW1hLEphcGFu",
+            GoogleScraper.buildUule("Saitama,Saitama,Japan")
+        );
+        // 千葉県千葉市
+        assertEquals(
+            "w+CAIQICIcQ2hpYmEsQ2hpYmEgUHJlZmVjdHVyZSxKYXBhbg==",
+            GoogleScraper.buildUule("Chiba,Chiba Prefecture,Japan")
+        );
+        assertEquals(
+            "w+CAIQICIRQ2hpYmEsQ2hpYmEsSmFwYW4=",
+            GoogleScraper.buildUule("Chiba,Chiba,Japan")
+        );
+        // 東京都港区
         assertEquals(
         	"w+CAIQICISTWluYXRvLFRva3lvLEphcGFu",
-        	scraper.buildUule("Minato,Tokyo,Japan").replaceAll("=+$", "")
+        	GoogleScraper.buildUule("Minato,Tokyo,Japan")
         );
 		assertEquals(
-		    "w+CAIQICIXTWluYXRvIENpdHksVG9reW8sSmFwYW4",
-		    scraper.buildUule("Minato City,Tokyo,Japan").replaceAll("=+$", "")
+		    "w+CAIQICIXTWluYXRvIENpdHksVG9reW8sSmFwYW4=",
+		    GoogleScraper.buildUule("Minato City,Tokyo,Japan")
 		);
+		// 東京都立川市
 		assertEquals(
-		    "w+CAIQICIdTmFoYSxPa2luYXdhIFByZWZlY3R1cmUsSmFwYW4",
-		    scraper.buildUule("Naha,Okinawa Prefecture,Japan").replaceAll("=+$", "")
+        	"w+CAIQICIVVGFjaGlrYXdhLFRva3lvLEphcGFu",
+        	GoogleScraper.buildUule("Tachikawa,Tokyo,Japan")
+        );
+		// 神奈川県横浜市
+        assertEquals(
+        	"w+CAIQICIiWW9rb2hhbWEsS2FuYWdhd2EgUHJlZmVjdHVyZSxKYXBhbg==",
+        	GoogleScraper.buildUule("Yokohama,Kanagawa Prefecture,Japan")
+        );
+		assertEquals(
+		    "w+CAIQICIXWW9rb2hhbWEsS2FuYWdhd2EsSmFwYW4=",
+        	GoogleScraper.buildUule("Yokohama,Kanagawa,Japan")
+		);
+		// 愛知県名古屋市
+        assertEquals(
+        	"w+CAIQICIdTmFnb3lhLEFpY2hpIFByZWZlY3R1cmUsSmFwYW4=",
+        	GoogleScraper.buildUule("Nagoya,Aichi Prefecture,Japan")
+        );
+		assertEquals(
+		    "w+CAIQICISTmFnb3lhLEFpY2hpLEphcGFu",
+        	GoogleScraper.buildUule("Nagoya,Aichi,Japan")
+		);
+		// 大阪府大阪市
+        assertEquals(
+        	"w+CAIQICITT3Nha2EsIE9zYWthLCBKYXBhbg==",
+        	GoogleScraper.buildUule("Osaka, Osaka, Japan")
+        );
+        assertEquals(
+        	"w+CAIQICIRT3Nha2EsT3Nha2EsSmFwYW4=",
+        	GoogleScraper.buildUule("Osaka,Osaka,Japan")
+        );
+        // 兵庫県神戸市
+        assertEquals(
+        	"w+CAIQICIQS29iZSxIeW9nbyxKYXBhbg==",
+        	GoogleScraper.buildUule("Kobe,Hyogo,Japan")
+        );
+        // 広島県広島市
+        assertEquals(
+        	"w+CAIQICIkSGlyb3NoaW1hLEhpcm9zaGltYSBQcmVmZWN0dXJlLEphcGFu",
+        	GoogleScraper.buildUule("Hiroshima,Hiroshima Prefecture,Japan")
+        );
+        assertEquals(
+        	"w+CAIQICIZSGlyb3NoaW1hLEhpcm9zaGltYSxKYXBhbg==",
+        	GoogleScraper.buildUule("Hiroshima,Hiroshima,Japan")
+        );
+        // 福岡県福岡市
+        assertEquals(
+        	"w+CAIQICIgRnVrdW9rYSxGdWt1b2thIFByZWZlY3R1cmUsSmFwYW4=",
+        	GoogleScraper.buildUule("Fukuoka,Fukuoka Prefecture,Japan")
+        );
+        assertEquals(
+        	"w+CAIQICIVRnVrdW9rYSxGdWt1b2thLEphcGFu",
+        	GoogleScraper.buildUule("Fukuoka,Fukuoka,Japan")
+        );
+        // 沖縄県那覇市
+		assertEquals(
+		    "w+CAIQICIdTmFoYSxPa2luYXdhIFByZWZlY3R1cmUsSmFwYW4=",
+		    GoogleScraper.buildUule("Naha,Okinawa Prefecture,Japan")
 		);
 		assertEquals(
 		    "w+CAIQICISTmFoYSxPa2luYXdhLEphcGFu",
-		    scraper.buildUule("Naha,Okinawa,Japan").replaceAll("=+$", "")
+		    GoogleScraper.buildUule("Naha,Okinawa,Japan")
 		);
-        assertEquals(
-            "w+CAIQICIWU2FwcG9ybyxIb2trYWlkbyxKYXBhbg",
-            scraper.buildUule("Sapporo,Hokkaido,Japan").replaceAll("=+$", "")
-        );
     }
 
     @Test
