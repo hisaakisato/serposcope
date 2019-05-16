@@ -136,6 +136,11 @@ public class GoogleTaskRunnable implements Runnable {
 				}
 
 				long duration = System.currentTimeMillis() - start;
+
+				String userAgent = proxy
+						.getAttr(device == GoogleDevice.DESKTOP ? ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT
+								: ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT, String.class);
+
 				if (requestCount > controller.googleOptions.getProxyMaxRequest()) {
 					// remove client info
 					if (device == GoogleDevice.DESKTOP) {
@@ -159,10 +164,6 @@ public class GoogleTaskRunnable implements Runnable {
 				if (res.captchas > 0) {
 					controller.incCaptchaCount(res.captchas);
 				}
-
-				String userAgent = proxy
-						.getAttr(device == GoogleDevice.DESKTOP ? ScrapProxy.PROXY_ATTR_DESKTOP_USER_AGENT
-								: ScrapProxy.PROXY_ATTR_MOBILE_USER_AGENT, String.class);
 
 				if (res.status != OK) {// FIXME
 					if (res.status == ERROR_PROXY_GONE) {
