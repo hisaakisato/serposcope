@@ -65,6 +65,47 @@
             </table>
             <br/>
 
+            <h2 class="styled-h2">${i18n("admin.task.waitingTasks")}</h2>
+            <table class="table table-bordered table-condensed table-striped table-task">
+                <tr>
+                    <th style="width: 50px">#</th>
+                    <th style="width: 200px;text-align:left">${i18n("label.user")}</th>
+                    <th style="text-align:left">${i18n("label.group")}</th>
+                    <th style="width: 150px">${i18n("label.started")}</th>
+                    <th style="width: 30px">${i18n("label.total")}</th>
+                    <th style="width: 100px">${i18n("label.actions")}</th>
+                </tr>
+                <#list waiting as task>
+                <tr>
+                    <td>${task.getId()}</td>
+                    <td>${(task.user.name)!(task.user.email)!}</td>
+                    <td>
+	                    <#if task.getGroup()??>
+	                    <a href="${reverseRoute("google.GoogleGroupController","view","groupId",task.getGroup().getId())}" >
+	                    	${(task.group.name)!}
+	                    </a>
+	                    </#if>
+                    </td>
+                    <td>${global.ldtf.format(task.getStarted())}</td>
+                    <td>${task.getTotal()}</td>
+                    <td>
+                        <#if user.isAdmin() || user.email == (task.user.email)!>
+                        <a href="${reverseRoute("admin.TaskController","deleteRun","runId",task.getId())}" 
+                            class="btn-delete-run text-danger"
+                            data-id="${task.id}" 
+                            data-date="${task.getDay()}" 
+                            data-toggle="tooltip" title="${i18n("label.delete")}" >
+                            <i class="fa fa-fw fa-remove" ></i>
+                        </a>
+                        <#else>
+                        &nbsp;
+                        </#if>
+                    </td>
+                </tr>
+                </#list>
+            </table>
+            <br/>
+
             <h2 class="styled-h2">${i18n("admin.task.doneTasks")}</h2>
             <table class="table table-bordered table-condensed table-task">
                 <tr>

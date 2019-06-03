@@ -288,6 +288,9 @@ public class RunDB extends AbstractDB {
     public final static Collection<Run.Status> STATUSES_RUNNING = Arrays.asList(RUNNING,ABORTING);
     public final static Collection<Run.Status> STATUSES_DONE = Arrays.asList(DONE_ABORTED,DONE_CRASHED,DONE_SUCCESS,DONE_WITH_ERROR);
     public List<Run> listByStatus(Collection<Run.Status> statuses, Long limit, Long offset, User user){
+    	return listByStatus(statuses, limit, offset, user, false);
+    }
+    public List<Run> listByStatus(Collection<Run.Status> statuses, Long limit, Long offset, User user, boolean asc){
         List<Integer> statusesVal = null;
         if(statuses != null && !statuses.isEmpty()){
             statusesVal = statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList());
@@ -306,7 +309,7 @@ public class RunDB extends AbstractDB {
                 query.where(t_run.status.in(statusesVal));
             }
                 
-            query.orderBy(t_run.id.desc());
+            query.orderBy(asc ? t_run.id.asc() : t_run.id.desc());
             
             if(limit != null){
                 query.limit(limit);

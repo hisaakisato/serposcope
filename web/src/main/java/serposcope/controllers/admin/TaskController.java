@@ -79,6 +79,8 @@ public class TaskController extends BaseController {
 
         List<Run> running = taskManager.listRunningTasks();
 
+        List<Run> waiting = baseDB.run.listByStatus(Arrays.asList(Status.WAITING), null, null, null);
+
         if (page == null) {
             page = 0;
         }
@@ -95,6 +97,7 @@ public class TaskController extends BaseController {
             .render("previousPage", previousPage)
             .render("nextPage", nextPage)
             .render("running", running)
+            .render("waiting", waiting)
             .render("done", done);
     }
 
@@ -126,9 +129,11 @@ public class TaskController extends BaseController {
         User user = context.getAttribute("user", User.class);
         if (!taskManager.startGoogleTask(run, user, null)) {
             flash.error("admin.task.errGoogleAlreadyRunning");
-            return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
+            // return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
+        	flash.success("admin.task.tasksAccepted");
+        } else {
+        	flash.success("admin.task.tasksStarted");
         }
-        flash.success("admin.task.tasksStarted");
         return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
     }
 
@@ -190,7 +195,11 @@ public class TaskController extends BaseController {
         }
 
         Run run = baseDB.run.find(runId);
-        if (run == null || run.getFinished() == null) {
+        if (run == null) {
+            flash.error("error.invalidId");
+            return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+        }
+        if (run.getStatus() != Status.WAITING && run.getFinished() == null) {
             flash.error("error.invalidId");
             return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
         }
@@ -246,11 +255,12 @@ public class TaskController extends BaseController {
 
         User user = context.getAttribute("user", User.class);
         if (!taskManager.startGoogleTask(retry, user, group)) {
-            flash.error("admin.task.errGoogleAlreadyRunning");
-			return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+            // flash.error("admin.task.errGoogleAlreadyRunning");
+			// return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+        	flash.success("admin.task.tasksAccepted");
+        } else {
+        	flash.success("admin.task.tasksStarted");
         }
-
-		flash.success("admin.task.tasksStarted");
 		return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 

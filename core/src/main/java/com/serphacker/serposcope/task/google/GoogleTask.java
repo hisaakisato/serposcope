@@ -15,6 +15,7 @@ import com.serphacker.serposcope.di.ScrapClientFactory;
 //import com.serphacker.serposcope.di.ScraperFactory;
 import com.serphacker.serposcope.models.base.Proxy;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.User;
 import com.serphacker.serposcope.models.base.Run.Mode;
 import com.serphacker.serposcope.models.base.Run.Status;
 import com.serphacker.serposcope.models.google.GoogleSettings;
@@ -31,6 +32,7 @@ import com.serphacker.serposcope.scraper.http.ScrapClient;
 import com.serphacker.serposcope.scraper.http.proxy.DirectNoProxy;
 import com.serphacker.serposcope.scraper.http.proxy.ProxyRotator;
 import com.serphacker.serposcope.task.AbstractTask;
+import com.serphacker.serposcope.task.TaskManager;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,6 +65,9 @@ public class GoogleTask extends AbstractTask {
     GoogleDB googleDB;
     public volatile ProxyRotator rotator;
 
+    @Inject
+    protected TaskManager taskManager;
+    
     Run previousRun;
     int groupCount;
     final Map<Short,Integer> previousRunsByDay = new ConcurrentHashMap<>();
@@ -80,6 +85,7 @@ public class GoogleTask extends AbstractTask {
     Thread[] threads;
     volatile int totalSearch;
     volatile boolean interrupted;
+    public volatile boolean done;
     
     CaptchaSolver solver;
     String httpUserAgent;
@@ -447,18 +453,30 @@ public class GoogleTask extends AbstractTask {
 
     @Override
     protected void endRun(Status status) {
-    	super.endRun(status);
-    	int targets = targetsByGroup.values()
-    			.stream().collect(Collectors.summingInt(List::size));
-    	int searched = searchDone.intValue();
-        LOG.info("[Task Finished] id: {} status: {} "
-        		+ "duration: {} "
-        		+ "captchas: {} errors: {} "
-        		+ "groups: {} searched: {} remained: {} targets: {}",
-        		run.getId(), run.getStatus(),
-        		String.format("%.2f", run.getDurationMs() * 1.0 / 1000),
-        		run.getCaptchas(), run.getErrors(),
-        		groupCount, searched, totalSearch - searched, targets);
+    	try {
+	    	super.endRun(status);
+	    	int targets = targetsByGroup.values()
+	    			.stream().collect(Collectors.summingInt(List::size));
+	    	int searched = searchDone.intValue();
+	        LOG.info("[Task Finished] id: {} status: {} "
+	        		+ "duration: {} "
+	        		+ "captchas: {} errors: {} "
+	        		+ "groups: {} searched: {} remained: {} targets: {}",
+	        		run.getId(), run.getStatus(),
+	        		String.format("%.2f", run.getDurationMs() * 1.0 / 1000),
+	        		run.getCaptchas(), run.getErrors(),
+	        		groupCount, searched, totalSearch - searched, targets);
+    	} finally {
+        	done = true;
+            User user = run.getUser();
+            if (user != null) {
+                List<Run> runs = baseDB.run.listByStatus(Arrays.asList(Status.WAITING), 1L, null, run.getUser(), true);
+                if (!runs.isEmpty()) {
+                	Run nextRun = runs.get(0);
+                	taskManager.startGoogleTask(nextRun, user, nextRun.getGroup());
+                }
+            }
+    	}
     }
 
     @Override

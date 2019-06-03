@@ -32,7 +32,8 @@ public class Run {
         DONE_WITH_ERROR,
         DONE_ABORTED,
         DONE_CRASHED,
-        RETRYING;
+        RETRYING,
+        WAITING;
     }
     
     int id;

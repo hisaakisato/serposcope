@@ -884,11 +884,13 @@ public class GoogleGroupController extends GoogleController {
 					.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));        	
         }
         if (!taskManager.startGoogleTask(run, user, group)) {
-            flash.error("admin.task.errGoogleAlreadyRunning");
-			return Results
-					.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+//            flash.error("admin.task.errGoogleAlreadyRunning");
+//			return Results
+//					.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));
+        	flash.success("admin.task.tasksAccepted");
+        } else {
+        	flash.success("admin.task.tasksStarted");
         }
-        flash.success("admin.task.tasksStarted");
 		return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 

@@ -14,6 +14,8 @@ import com.serphacker.serposcope.db.google.GoogleDB;
 import com.serphacker.serposcope.di.TaskFactory;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.Run.Mode;
+import com.serphacker.serposcope.models.base.Run.Status;
 import com.serphacker.serposcope.models.base.User;
 import com.serphacker.serposcope.models.google.GoogleSearch;
 import com.serphacker.serposcope.models.google.GoogleTarget;
@@ -22,6 +24,7 @@ import com.serphacker.serposcope.task.google.GoogleTask;
 import com.serphacker.serposcope.util.TaskRescanRunnable;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -104,7 +107,14 @@ public class TaskManager {
     	Object lock = googleTaskLocks.get(key);
         synchronized(lock){
         	GoogleTask googleTask = googleTasks.get(key);
-            if(googleTask != null && googleTask.isAlive()){
+            if(googleTask != null && googleTask.isAlive() && !googleTask.done){
+                run.setStatus(Status.WAITING);
+                run.setUser(user);
+                run.setGroup(group);
+				List<GoogleSearch> searchList = googleDB.search.listByGroup(Arrays.asList(group.getId()),
+						run.getMode() == Mode.CRON ? run.getDay().getDayOfWeek() : null);
+				run.setTotal(searchList.size());
+                db.run.insert(run);
                 return false;
             }
 
