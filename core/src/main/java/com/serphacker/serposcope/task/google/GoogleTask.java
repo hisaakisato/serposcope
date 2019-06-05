@@ -441,7 +441,7 @@ public class GoogleTask extends AbstractTask {
     }
 
     public int getWaitingCount() {
-    	return waitingCount + standbyCount;
+    	return waitingCount + Math.min(standbyCount, searches.size());
     }
 
     public int getActiveCount() {

@@ -9,6 +9,7 @@ package com.serphacker.serposcope.db.google;
 
 import com.google.inject.Singleton;
 import com.mysema.commons.lang.CloseableIterator;
+import com.querydsl.core.QueryFlag;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.SubQueryExpression;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -58,11 +59,15 @@ public class GoogleSerpDB extends AbstractDB {
 
 		try (Connection con = ds.getConnection()) {
 
-			inserted = new SQLInsertClause(con, dbTplConf, t_serp).set(t_serp.runId, serp.getRunId())
+			new SQLInsertClause(con, dbTplConf, t_serp).set(t_serp.runId, serp.getRunId())
 					.set(t_serp.googleSearchId, serp.getGoogleSearchId())
 					.set(t_serp.runDay, Timestamp.valueOf(serp.getRunDay()))
 					.set(t_serp.results, serp.getResults())
-					.set(t_serp.serp, new SerialBlob(compress(serp.getSerializedEntries()))).execute() == 1;
+					.set(t_serp.serp, new SerialBlob(compress(serp.getSerializedEntries())))
+					// ignore duplicated
+					.addFlag(QueryFlag.Position.START_OVERRIDE, "insert ignore into")
+					.execute();
+			return true;
 
 		} catch (Exception ex) {
 			LOG.error("SQL error", ex);
