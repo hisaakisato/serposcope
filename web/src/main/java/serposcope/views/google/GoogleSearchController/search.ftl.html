@@ -135,7 +135,7 @@
                             </a>                                        
                         </#if>
                         <#if entry.nonAmpUrl?? >
-                        	<a target="_blank" href="${entry.url}" class="serps-entry" data-toggle="tooltip" data-amp-cur="entry.nonAmpUrl" title="${(entry.title)!entry.url}" referrerpolicy="no-referrer" >${entry.getUnicodeUrl()}</a>
+                        	<a target="_blank" href="${entry.url}" class="serps-entry" data-toggle="tooltip" data-amp-cur="${entry.nonAmpUrl}" title="${(entry.title)!entry.url}" referrerpolicy="no-referrer" >${entry.getUnicodeUrl()}</a>
                         <#else>
                         	<a target="_blank" href="${entry.url}" class="serps-entry" data-toggle="tooltip" title="${(entry.title)!entry.url}" referrerpolicy="no-referrer" >${entry.getUnicodeUrl()}</a>
                         </#if>
