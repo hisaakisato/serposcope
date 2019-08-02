@@ -433,9 +433,10 @@ public class GoogleSearchController extends GoogleController {
 	@FilterWith({
     	MaintenanceFilter.class, XSRFFilter.class
     })
-	public Result export(Context context, @Params("searchIds") String[] ids, @Param("targetOnly") boolean targetOnly,
-			@Param("firstTargetOnly") boolean firstTargetOnly, @Param("startDate") String start,
-			@Param("endDate") String end) {
+	public Result export(Context context, @Params("searchIds") String[] ids,
+			@Param("targetOnly") boolean targetOnly, @Param("firstTargetOnly") boolean firstTargetOnly,
+			@Param("exportTitle") boolean exportTitle, 
+			@Param("startDate") String start, @Param("endDate") String end) {
 
 		if (ids == null || ids.length == 0) {
 			FlashScope flash = context.getFlashScope();
@@ -464,8 +465,10 @@ public class GoogleSearchController extends GoogleController {
 						byte[] bom = { (byte) 0xEF, (byte) 0xBB, (byte) 0xBF };
 						out.write(bom);
 						// Header
+						String headerkey = exportTitle ? "google.search.exportHeader2"
+								: "google.search.exportHeader";
 						writer.append(
-								messages.get("google.search.exportHeader", Optional.of(ctx.getAcceptLanguage())).get())
+								messages.get(headerkey, Optional.of(ctx.getAcceptLanguage())).get())
 								.append("\n");
 						// SERP
 						LocalDate date = startDate;
@@ -506,18 +509,29 @@ public class GoogleSearchController extends GoogleController {
 											continue;
 										}
 										writer.append(dateString).append(",");
-										writer.append("\"").append(search.getKeyword()).append("\",");
+										writer.append("\"").append(
+												StringEscapeUtils.escapeCsv(search.getKeyword())).append("\",");
 										writer.append(String.valueOf(i + 1)).append(",");
 										writer.append("\"").append(entry.getUnicodeUrl()).append("\",");
-										writer.append("\"").append(targetName == null ? "" : targetName).append("\",");
+										if (exportTitle) {
+											writer.append("\"").append(
+													StringEscapeUtils.escapeCsv(entry.getTitle())).append("\",");											
+										}
+										writer.append("\"").append(
+												StringEscapeUtils.escapeCsv(targetName == null ? "" : targetName)).append("\",");
 										writer.append(tailer);
 									}
 									// check out of ranks
 									for (GoogleTarget target : targets) {
 										if (!founds.contains(target)) {
 											writer.append(dateString).append(",");
-											writer.append("\"").append(search.getKeyword()).append("\",-,,");
-											writer.append(target.getName()).append(",");
+											writer.append("\"").append(
+													StringEscapeUtils.escapeCsv(search.getKeyword())).append("\",-,,");
+											if (exportTitle) {
+												writer.append(",");
+											}
+											writer.append(
+													StringEscapeUtils.escapeCsv(target.getName())).append(",");
 											writer.append(tailer);
 										}
 									}
