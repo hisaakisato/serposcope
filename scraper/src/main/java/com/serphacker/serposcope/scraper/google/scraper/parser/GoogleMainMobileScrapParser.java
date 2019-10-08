@@ -14,7 +14,8 @@ public class GoogleMainMobileScrapParser extends GoogleMainPingAttrMobileScrapPa
 	public Status parse(Element divElement, List<GoogleScrapLinkEntry> entries) {
 
 		// for original unit tests
-		Elements links = divElement.select("#main a[href][ping] > div[role=heading]");
+		Elements links = divElement.select("#main a[href][ping] > div[role=heading],"
+				+ "#main a[href][onmousedown] > div[role=heading]");
 		
 		if (links.isEmpty()) {
 			// no ping attributes
@@ -23,6 +24,7 @@ public class GoogleMainMobileScrapParser extends GoogleMainPingAttrMobileScrapPa
 
 		links = divElement
 				.select("#main a[href][ping] > div[role=heading],"
+						+ "#main a[href][onmousedown] > div[role=heading],"
 						+ "#main a[href*='.google.'] > div[role=heading]," // google service sites
 						+ "#main .g h3 > a[href][ping]" // featured snippets & gcard
 						);
@@ -35,8 +37,11 @@ public class GoogleMainMobileScrapParser extends GoogleMainPingAttrMobileScrapPa
 			if (!link.tagName().equalsIgnoreCase("a")) {
 				link = link.parent();
 				type = StatsType.MOBILE_PING;
+				if (link.attr("ping") == null) {
+					type = StatsType.MOBILE_ONMOUSEDOWN;
+				}
 			}
-			if (link.attr("ping") == null) {
+			if (link.attr("ping") == null && link.attr("onmousedown") == null) {
 				// check google services
 				String href = link.attr("href");
 				if (!PATTERN_GOOGLE_SERVICES.matcher(href).matches()) {

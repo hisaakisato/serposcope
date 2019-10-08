@@ -34,7 +34,8 @@ public abstract class GoogleAbstractScrapParser {
 		MOBILE_NO_PING,
 		MOBILE_FEATURED,
 		MOBILE_PING_2,
-		MOBILE_FEATURED_2
+		MOBILE_FEATURED_2,
+		MOBILE_ONMOUSEDOWN
 	};
 
 	public abstract Status parse(Element resElement, List<GoogleScrapLinkEntry> entries);
@@ -142,7 +143,7 @@ public abstract class GoogleAbstractScrapParser {
 		if (stats.values().stream().mapToInt(AtomicInteger::get).sum() == 0) {
 			return;
 		}
-		LOG.info("[Scrap Parser Stats] stats: {} {} {} {} {} {} {} {} {}",
+		LOG.info("[Scrap Parser Stats] stats: {} {} {} {} {} {} {} {} {} {}",
 				stats.getOrDefault(LEGACY, new AtomicInteger()).getAndSet(0),
 				stats.getOrDefault(RES, new AtomicInteger()).getAndSet(0),
 				stats.getOrDefault(DESCTOP_MAIN_1, new AtomicInteger()).getAndSet(0),
@@ -151,6 +152,7 @@ public abstract class GoogleAbstractScrapParser {
 				stats.getOrDefault(MOBILE_NO_PING, new AtomicInteger()).getAndSet(0),
 				stats.getOrDefault(MOBILE_FEATURED, new AtomicInteger()).getAndSet(0),
 				stats.getOrDefault(MOBILE_PING_2, new AtomicInteger()).getAndSet(0),
-				stats.getOrDefault(MOBILE_FEATURED_2, new AtomicInteger()).getAndSet(0));
+				stats.getOrDefault(MOBILE_FEATURED_2, new AtomicInteger()).getAndSet(0),
+				stats.getOrDefault(MOBILE_ONMOUSEDOWN, new AtomicInteger()).getAndSet(0));
 	}
 }
