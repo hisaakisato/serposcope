@@ -91,9 +91,15 @@ public abstract class GoogleAbstractScrapParser {
 	
 	protected boolean isAdLink(Element element) {
 		for (Element parent : element.parents()) {
+			if (element.hasClass("ads-fr")) {
+				return true;
+			}
 			String classes = parent.attr("class");
 			if (classes != null && !classes.isEmpty()) {
-				return Arrays.stream(classes.split(" ")).map(String::trim).anyMatch(cls -> cls.startsWith("ads-"));
+				if (Arrays.stream(classes.split(" ")).map(String::trim)
+						.anyMatch(cls -> cls.startsWith("ads-"))) {
+					return true;
+				};
 			}
 		}
 		return false;
