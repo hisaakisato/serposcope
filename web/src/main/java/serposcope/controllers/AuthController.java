@@ -26,6 +26,8 @@ import ninja.session.FlashScope;
 import ninja.session.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import serposcope.controllers.admin.TaskController;
 import serposcope.helpers.Validator;
 
 @Singleton
@@ -179,7 +181,7 @@ public class AuthController extends BaseController {
         }
         sess.getAuthenticityToken(); // generate token
 
-        return Results.redirect(router.getReverseRoute(HomeController.class, "home"));
+        return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
     }
 
     public Result logout(Context context) {

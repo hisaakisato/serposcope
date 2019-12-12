@@ -38,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import serposcope.controllers.BaseController;
 import serposcope.controllers.GroupController;
 import serposcope.filters.AdminFilter;
+import serposcope.filters.AuthFilter;
 import serposcope.filters.MaintenanceFilter;
 import serposcope.filters.XSRFFilter;
 import com.serphacker.serposcope.task.TaskManager;
@@ -51,6 +52,7 @@ import serposcope.controllers.HomeController;
 import serposcope.controllers.google.GoogleGroupController;
 
 @Singleton
+@FilterWith(AuthFilter.class)
 public class TaskController extends BaseController {
 
     private static final Logger LOG = LoggerFactory.getLogger(TaskController.class);

@@ -91,7 +91,8 @@ public class Routes implements ApplicationRoutes {
         router.POST().route("/admin/proxies/abort").with(ProxyController.class, "abortCheck");
         
         // home / group
-        router.GET().route("/").with(HomeController.class, "home");
+        router.GET().route("/").with(TaskController.class, "tasks");
+        // router.GET().route("/").with(HomeController.class, "home");
         router.GET().route("/task-status/{taskId: [0-9]+}").with(HomeController.class, "taskStatus");
         
         router.GET().route("/groups").with(GroupController.class, "groups");

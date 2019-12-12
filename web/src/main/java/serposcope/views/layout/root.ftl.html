@@ -45,13 +45,10 @@
 
                 <ul class="nav navbar-top-links navbar-left">
                     <li>
-                        <a href="${reverseRoute("HomeController","home")}" >${i18n("label.home")}</a>
+                        <a href="${reverseRoute("admin.TaskController","tasks")}" >${i18n("label.tasks")}</a>
                     </li>
                     <li>
                         <a href="${reverseRoute("GroupController","groups")}" >${i18n("label.groups")}</a>
-                    </li>
-                    <li>
-                        <a href="${reverseRoute("admin.TaskController","tasks")}" >${i18n("label.tasks")}</a>
                     </li>
                     <#if user.isAdmin() >
                     <li>
