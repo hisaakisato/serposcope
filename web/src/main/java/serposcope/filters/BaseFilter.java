@@ -83,7 +83,7 @@ public class BaseFilter extends AbstractFilter {
         User user = getAuthUser(context);
         if (user != null) {
             context.setAttribute("user", user);
-            context.setAttribute("groups", baseDB.group.listForUser(user));
+            context.setAttribute("groups", baseDB.group.listForUser(user, user.isAdmin()));
         }
     }
 

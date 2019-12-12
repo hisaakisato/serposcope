@@ -7,22 +7,6 @@
  */
 package com.serphacker.serposcope.db.google;
 
-import com.google.inject.Singleton;
-import com.querydsl.core.Tuple;
-import com.querydsl.core.types.dsl.Expressions;
-import com.querydsl.sql.SQLQuery;
-import com.querydsl.sql.dml.SQLDeleteClause;
-import com.querydsl.sql.dml.SQLInsertClause;
-import com.querydsl.sql.dml.SQLMergeClause;
-import com.serphacker.serposcope.db.AbstractDB;
-import com.serphacker.serposcope.models.google.GoogleSearch;
-import com.serphacker.serposcope.querybuilder.QGoogleRank;
-import com.serphacker.serposcope.querybuilder.QGoogleRankBest;
-import com.serphacker.serposcope.querybuilder.QGoogleSearch;
-import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
-import com.serphacker.serposcope.querybuilder.QGoogleSerp;
-import com.serphacker.serposcope.querybuilder.QGroup;
-import com.serphacker.serposcope.scraper.google.GoogleDevice;
 import java.sql.Connection;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -31,6 +15,26 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import com.google.inject.Singleton;
+import com.querydsl.core.Tuple;
+import com.querydsl.core.types.SubQueryExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.sql.SQLExpressions;
+import com.querydsl.sql.SQLQuery;
+import com.querydsl.sql.dml.SQLDeleteClause;
+import com.querydsl.sql.dml.SQLInsertClause;
+import com.querydsl.sql.dml.SQLMergeClause;
+import com.serphacker.serposcope.db.AbstractDB;
+import com.serphacker.serposcope.models.base.User;
+import com.serphacker.serposcope.models.google.GoogleSearch;
+import com.serphacker.serposcope.querybuilder.QGoogleRank;
+import com.serphacker.serposcope.querybuilder.QGoogleRankBest;
+import com.serphacker.serposcope.querybuilder.QGoogleSearch;
+import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
+import com.serphacker.serposcope.querybuilder.QGoogleSerp;
+import com.serphacker.serposcope.querybuilder.QGroup;
+import com.serphacker.serposcope.scraper.google.GoogleDevice;
 
 @Singleton
 public class GoogleSearchDB extends AbstractDB {
@@ -264,9 +268,27 @@ public class GoogleSearchDB extends AbstractDB {
     public long count(){
         Long count = null;
         try(Connection con = ds.getConnection()){
-            count =new SQLQuery<Void>(con, dbTplConf)
+            count = new SQLQuery<Void>(con, dbTplConf)
                 .select(t_gsearch.count())
                 .from(t_gsearch)
+                .fetchFirst();
+        } catch(Exception ex){
+            LOG.error("SQL error", ex);
+        }
+        
+        return count == null ? -1l : count;
+    }
+    
+    public long countForUser(User user){
+        Long count = null;
+        try(Connection con = ds.getConnection()){
+			SubQueryExpression<Integer> subQuery = SQLExpressions
+					.select(t_group.id).from(t_group)
+					.where(t_group.ownerId.eq(user.getId()));
+			count = new SQLQuery<Void>(con, dbTplConf)
+                .select(t_ggroup.googleSearchId.countDistinct())
+                .from(t_ggroup)
+				.where(t_ggroup.groupId.in(subQuery))
                 .fetchFirst();
         } catch(Exception ex){
             LOG.error("SQL error", ex);

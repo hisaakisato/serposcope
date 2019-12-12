@@ -520,17 +520,17 @@ public class GoogleGroupController extends GoogleController {
         Group group = context.getAttribute("group", Group.class);
         if (name == null || name.isEmpty()) {
             flash.error("admin.google.groupNameMissing");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+            return Results.redirect(router.getReverseRoute(GroupController.class, "myGroups"));
         }
         if (!name.equals(group.getName())) {
             flash.error("admin.google.groupNameNotMatch");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+            return Results.redirect(router.getReverseRoute(GroupController.class, "myGroups"));
         }
 
         // TODO FIX ME locking until database modification done
         if (taskManager.isGoogleRunning()) {
             flash.error("admin.google.errorTaskRunning");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+            return Results.redirect(router.getReverseRoute(GroupController.class, "myGroups"));
         }
 
         // abort rescans
@@ -561,7 +561,7 @@ public class GoogleGroupController extends GoogleController {
             // delete group specific runs
             baseDB.run.delete(group);
         }
-        return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+        return Results.redirect(router.getReverseRoute(GroupController.class, "myGroups"));
 
     }
 

@@ -16,6 +16,8 @@ import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.User;
 import conf.SerposcopeConf;
+
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import ninja.Context;
@@ -47,6 +49,22 @@ public class GroupController extends BaseController {
     @Inject
     GoogleDB googleDB;
 
+    public Result myGroups(Context context) throws JsonProcessingException{
+        User user = context.getAttribute("user", User.class);
+        long count = googleDB.search.countForUser(user);
+        List<User> users = baseDB.user.list();
+        List<Group> groups = baseDB.group.listForUser(user, false);
+        return Results
+            .ok()
+    		.template("serposcope/views/GroupController/groups.ftl.html")
+            .render("currentUser", user)
+            .render("users", users)
+            .render("groups", groups)
+            .render("search_count", count)
+            .render("h2warning", count > 2000 && conf.dbUrl != null && conf.dbUrl.contains(":h2:"))
+            ;
+    }
+    
     public Result groups(Context context) throws JsonProcessingException{
         long count = googleDB.search.count();
         User currentUser = context.getAttribute("user", User.class);
@@ -56,7 +74,7 @@ public class GroupController extends BaseController {
             .render("currentUser", currentUser)
             .render("users", users)
             .render("groups", context.getAttribute("groups"))
-            .render("search_count", googleDB.search.count())
+            .render("search_count", count)
             .render("h2warning", count > 2000 && conf.dbUrl != null && conf.dbUrl.contains(":h2:"))
             ;
     }
@@ -108,18 +126,18 @@ public class GroupController extends BaseController {
         
         if(name == null || name.isEmpty()){
             flash.error("error.invalidName");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+            return Results.redirect(router.getReverseRoute(GroupController.class, "myGroups"));
         }
         if (baseDB.group.findByName(name) != null) {
             flash.error("google.group.alreadyExists");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+            return Results.redirect(router.getReverseRoute(GroupController.class, "myGroups"));
         }
         
         try {
             module = Module.values()[moduleNum];
         }catch(Exception ex){
             flash.error("error.invalidModule");
-            return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));            
+            return Results.redirect(router.getReverseRoute(GroupController.class, "myGroups"));            
         }
         
         User owner = context.getAttribute("user", User.class);
@@ -141,7 +159,7 @@ public class GroupController extends BaseController {
             case GOOGLE:
                 return Results.redirect(router.getReverseRoute(GoogleGroupController.class, "view", "groupId", group.getId()));  
             default:
-                return Results.redirect(router.getReverseRoute(GroupController.class, "groups"));
+                return Results.redirect(router.getReverseRoute(GroupController.class, "myGroups"));
         }
         
         

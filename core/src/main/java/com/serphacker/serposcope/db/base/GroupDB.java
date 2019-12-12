@@ -195,7 +195,7 @@ public class GroupDB extends AbstractDB {
         return groups;
     }
     
-    public List<Group> listForUser(User user){
+    public List<Group> listForUser(User user, boolean admin){
         List<Group> groups = new ArrayList<>();
         try(Connection con = ds.getConnection()){
             
@@ -218,7 +218,7 @@ public class GroupDB extends AbstractDB {
 					.groupBy(t_group.id, t_target.id)
 					.orderBy(t_group.name.asc());
             
-            if(user != null && !user.isAdmin()){
+            if(user != null && !admin){
                 query.leftJoin(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
                 query.where(t_group.shared.isTrue()
                 		.or(t_group.ownerId.eq(user.getId()))
@@ -236,7 +236,7 @@ public class GroupDB extends AbstractDB {
         }        
         
         return groups;
-    }    
+    }
     
     public Group find(int groupId){
         Group group = null;

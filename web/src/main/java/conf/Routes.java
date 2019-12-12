@@ -97,6 +97,7 @@ public class Routes implements ApplicationRoutes {
         router.GET().route("/task-status/{taskId: [0-9]+}").with(HomeController.class, "taskStatus");
         
         router.GET().route("/groups").with(GroupController.class, "groups");
+        router.GET().route("/myGroups").with(GroupController.class, "myGroups");
         router.POST().route("/groups/create").with(GroupController.class, "create");
         router.GET().route("/groups/suggest").with(GroupController.class, "jsonSuggest");
         
