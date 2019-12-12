@@ -208,11 +208,11 @@ public class TaskManager {
         } 
     }
     
-    public List<Run> listRunningTasks(){
+    public List<Run> listRunningTasks(User user){
         List<Run> tasks = new ArrayList<>();
         
         synchronized(googleTaskLock){
-            for (GoogleTask task : listRunningGoogleTasks()) {
+            for (GoogleTask task : listRunningGoogleTasks(user)) {
                 tasks.add(task.getRun());
             }
         }
@@ -220,16 +220,26 @@ public class TaskManager {
         return tasks;
     }
 
-    public List<GoogleTask> listRunningGoogleTasks() {
+    public List<GoogleTask> listRunningGoogleTasks(User user) {
         List<GoogleTask> tasks = new ArrayList<>();
         
         synchronized(googleTaskLock){
             if(googleTask != null && googleTask.isAlive()){
-                tasks.add(googleTask);
+        		User taskUser = googleTask.run.getUser();
+            	if (user == null || (taskUser != null && user.getId() == taskUser.getId())) {
+                    tasks.add(googleTask);
+            	}
             }
             for (GoogleTask task : googleTasks.values()) {
             	if(task != null && task.isAlive()){
-                    tasks.add(task);
+                	if (user == null) {
+                        tasks.add(task);
+                	} else {
+                		User taskUser = task.run.getUser();
+                    	if (user == null || (taskUser != null && user.getId() == taskUser.getId())) {
+                            tasks.add(task);
+                    	}
+                	}
                 }
             }
         }

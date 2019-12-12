@@ -45,14 +45,23 @@
 
                 <ul class="nav navbar-top-links navbar-left">
                     <li>
-                        <a href="${reverseRoute("admin.TaskController","tasks")}" >${i18n("label.tasks")}</a>
+                        <a href="${reverseRoute("admin.TaskController","myTasks")}" >${i18n("label.myTasks")}</a>
                     </li>
                     <li>
-                        <a href="${reverseRoute("GroupController","groups")}" >${i18n("label.groups")}</a>
+                        <a href="${reverseRoute("admin.TaskController","tasks")}" >${i18n("label.allTasks")}</a>
+                    </li>
+                    <li>
+                        <a href="${reverseRoute("GroupController","myGroups")}" >${i18n("label.myGroups")}</a>
+                    </li>
+                    <li>
+                        <a href="${reverseRoute("GroupController","sharedGroups")}" >${i18n("label.sharedGroups")}</a>
                     </li>
                     <#if user.isAdmin() >
                     <li>
                         <a href="${reverseRoute("admin.AdminController","admin")}" >${i18n("label.admin")}</a>
+                    </li>
+                    <li>
+                        <a href="${reverseRoute("admin.TaskController","tasks")}" >${i18n("label.allTasks")}</a>
                     </li>
                     <li>
                         <a href="#" id="btn-run-modules" title="${i18n("label.checkRanksDesc")}" data-toggle="tooltip" data-placement="bottom" >

@@ -80,7 +80,7 @@ public class CronService implements Runnable {
             return;
         }
         
-        for (GoogleTask task : manager.listRunningGoogleTasks()) {
+        for (GoogleTask task : manager.listRunningGoogleTasks(null)) {
         	if (task.getRun().getMode() == Mode.CRON) {
                 LOG.debug("failed to start google task via cron, this task is already running");
         		return;

@@ -75,11 +75,42 @@ public class TaskController extends BaseController {
             .ok();
     }
 
+    public Result myTasks(Context context,
+            @Param("page") Integer page
+        ) {
+
+    	User user = context.getAttribute("user", User.class);
+
+    	List<Run> running = taskManager.listRunningTasks(user);
+
+        List<Run> waiting = baseDB.run.listByStatus(Arrays.asList(Status.WAITING), null, null, user);
+
+        if (page == null) {
+            page = 0;
+        }
+
+        long limit = 50;
+        long offset = page * limit;
+
+        List<Run> done = baseDB.run.listByStatus(RunDB.STATUSES_DONE, limit, offset, user);
+
+        Integer previousPage = page > 0 ? (page - 1) : null;
+        Integer nextPage = done.size() == limit ? (page + 1) : null;
+
+        return Results.ok()
+    		.template("serposcope/views/admin/TaskController/tasks.ftl.html")
+            .render("previousPage", previousPage)
+            .render("nextPage", nextPage)
+            .render("running", running)
+            .render("waiting", waiting)
+            .render("done", done);
+    }
+
     public Result tasks(Context context,
         @Param("page") Integer page
     ) {
 
-        List<Run> running = taskManager.listRunningTasks();
+        List<Run> running = taskManager.listRunningTasks(null);
 
         List<Run> waiting = baseDB.run.listByStatus(Arrays.asList(Status.WAITING), null, null, null);
 

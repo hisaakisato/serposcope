@@ -73,6 +73,7 @@ public class Routes implements ApplicationRoutes {
         router.POST().route("/admin/users/{userId: [0-9]+}/edit").with(UsersController.class, "edit");
         router.POST().route("/admin/users/permissions/set").with(UsersController.class, "setPerm");        
         
+        router.GET().route("/admin/myTasks").with(TaskController.class, "myTasks");
         router.GET().route("/admin/tasks").with(TaskController.class, "tasks");
         router.GET().route("/admin/tasks/start").with(TaskController.class, "startTask");
         router.GET().route("/admin/tasks/stop").with(TaskController.class, "abortTask"); 
@@ -91,7 +92,7 @@ public class Routes implements ApplicationRoutes {
         router.POST().route("/admin/proxies/abort").with(ProxyController.class, "abortCheck");
         
         // home / group
-        router.GET().route("/").with(TaskController.class, "tasks");
+        router.GET().route("/").with(TaskController.class, "myTasks");
         // router.GET().route("/").with(HomeController.class, "home");
         router.GET().route("/task-status/{taskId: [0-9]+}").with(HomeController.class, "taskStatus");
         

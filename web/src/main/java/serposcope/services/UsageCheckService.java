@@ -129,7 +129,7 @@ public class UsageCheckService {
 		// tasks
 		int activeTasks = 0;
 		int remainingSearches = 0;
-		for (GoogleTask task :  taskManager.listRunningGoogleTasks()) {
+		for (GoogleTask task :  taskManager.listRunningGoogleTasks(null)) {
 			if (task.getRun().isRunning()) {
 				activeTasks++;
 				remainingSearches += task.getRemainigSearches();
@@ -138,7 +138,7 @@ public class UsageCheckService {
 		// thread stats
 		int activeThreads = 0;
 		int waitingCount = 0;
-		for (GoogleTask task : taskManager.listRunningGoogleTasks()) {
+		for (GoogleTask task : taskManager.listRunningGoogleTasks(null)) {
 			if (task.isAlive()) {
 				activeThreads += task.getActiveCount();
 				waitingCount += task.getWaitingCount();

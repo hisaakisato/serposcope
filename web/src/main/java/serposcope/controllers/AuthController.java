@@ -181,7 +181,7 @@ public class AuthController extends BaseController {
         }
         sess.getAuthenticityToken(); // generate token
 
-        return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
+        return Results.redirect(router.getReverseRoute(TaskController.class, "myTasks"));
     }
 
     public Result logout(Context context) {

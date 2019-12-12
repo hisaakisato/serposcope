@@ -17,6 +17,8 @@ import ninja.Result;
 import ninja.Router;
 import ninja.session.FlashScope;
 import ninja.session.Session;
+import serposcope.controllers.admin.TaskController;
+
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.junit.Before;
@@ -121,7 +123,7 @@ public class AuthControllerTest {
     protected void assertDoLoginSuccess(Result result) {
         verify(context).getSession();
         verify(context.getSession()).put("id", "" + validUser.getId());
-        verify(router).getReverseRoute(HomeController.class, "home");
+        verify(router).getReverseRoute(TaskController.class, "myTasks");
         verifyNoMoreInteractions(router);
         assertEquals(303, result.getStatusCode());
     }
