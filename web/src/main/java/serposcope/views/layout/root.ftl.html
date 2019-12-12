@@ -39,8 +39,7 @@
                     </button>
                     <a class="navbar-brand" href="/">
                         SERPOSCOPE 
-                        <span class="version" data-toggle="tooltip" title="${global.version}" data-placement="bottom"
-                            >${global.version.shortString()}</span>
+                        <span class="version" data-toggle="tooltip" title="${global.version}" data-placement="bottom">for Speee</span>
                     </a>
                 </div>
 
@@ -63,14 +62,6 @@
                            ${i18n("label.checkRanks")}
                         </a>
                     </li>
-                    <#if global.update.hasNewVersion() >
-                    <li>
-                        <a href="https://serposcope.serphacker.com/?pk_campaign=serposcope" id="btn-new-version" target="_blank"
-                            data-toggle="tooltip" data-placement="bottom" tool title="${i18n("label.newVersionAvailable")}" >
-                            ${i18n("label.newVersion")} !
-                        </a>                    
-                    </li>
-                    </#if>                    
                     </#if>
                 </ul>      
 
