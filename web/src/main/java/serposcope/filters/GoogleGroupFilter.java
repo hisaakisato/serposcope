@@ -44,9 +44,6 @@ public class GoogleGroupFilter extends AbstractFilter {
     GoogleDB googleDB;
     
     @Inject
-    BaseDB baseDB;
-    
-    @Inject
     Router router;
 
     @Override

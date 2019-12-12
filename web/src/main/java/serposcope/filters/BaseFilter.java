@@ -12,7 +12,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 import com.serphacker.serposcope.db.base.BaseDB;
-import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.User;
 import conf.SerposcopeConf;
 import java.io.File;
@@ -52,10 +51,10 @@ public class BaseFilter extends AbstractFilter {
     @Override
     public Result filter(FilterChain filterChain, Context context) {
 //        LOG.trace("filter");
-        Result redirect = redirectIfNoAdmin(context);
-        if (redirect != null) {
-            return redirect;
-        }
+//        Result redirect = redirectIfNoAdmin(context);
+//        if (redirect != null) {
+//            return redirect;
+//        }
 
         beforeBaseFilter(context);
         Result result = filterChain.next(context);
@@ -83,7 +82,6 @@ public class BaseFilter extends AbstractFilter {
         User user = getAuthUser(context);
         if (user != null) {
             context.setAttribute("user", user);
-            context.setAttribute("groups", baseDB.group.listForUser(user, user.isAdmin()));
         }
     }
 

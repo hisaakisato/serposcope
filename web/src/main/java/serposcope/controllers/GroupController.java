@@ -67,13 +67,14 @@ public class GroupController extends BaseController {
     
     public Result groups(Context context) throws JsonProcessingException{
         long count = googleDB.search.count();
-        User currentUser = context.getAttribute("user", User.class);
+        User user = context.getAttribute("user", User.class);
         List<User> users = baseDB.user.list();
+        List<Group> groups = baseDB.group.listForUser(user, user.isAdmin());
         return Results
             .ok()
-            .render("currentUser", currentUser)
+            .render("currentUser", user)
             .render("users", users)
-            .render("groups", context.getAttribute("groups"))
+            .render("groups", groups)
             .render("search_count", count)
             .render("h2warning", count > 2000 && conf.dbUrl != null && conf.dbUrl.contains(":h2:"))
             ;
@@ -83,7 +84,8 @@ public class GroupController extends BaseController {
         Context context,
         @Param("query") String query
     ){
-        List<Group> groups = (List<Group>) context.getAttribute("groups");
+    	User user = context.getAttribute("user", User.class);
+        List<Group> groups = baseDB.group.listForUser(user, user.isAdmin());
         
         StringBuilder builder = new StringBuilder("[");
         groups.stream()

@@ -81,7 +81,7 @@ public class HomeController extends BaseController {
             display = Config.DEFAULT_DISPLAY_HOME;
         }
         User user = context.getAttribute("user", User.class);
-        List<Group> groups = (List<Group>) context.getAttribute("groups");
+        List<Group> groups = baseDB.group.listForUser(user, user.isAdmin());
         Run currentRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_RUNNING, null, null, user);
         Run lastRun = baseDB.run.findLast(Module.GOOGLE, RunDB.STATUSES_DONE, null);
         if(lastRun == null){
@@ -132,7 +132,7 @@ public class HomeController extends BaseController {
             .ok()
             .template("/serposcope/views/HomeController/" + display + ".ftl.html")
             .render("display", display)
-            .render("groups", context.getAttribute("groups"))
+            .render("groups", groups)
             .render("currentRun", currentRun)
             .render("lastRun", lastRun)
             .render("lastRuns", baseDB.run.listByStatus(null, 7l, 0l, user))
