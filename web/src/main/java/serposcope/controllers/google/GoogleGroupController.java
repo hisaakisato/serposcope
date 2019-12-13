@@ -93,35 +93,11 @@ public class GoogleGroupController extends GoogleController {
     final Object searchLock = new Object();
 
     public Result view(Context context) {
-
-        Group group = context.getAttribute("group", Group.class);
-
-        Map<Integer, GoogleTargetSummary> summaryByTagetId = new HashMap<>();
-        Map<Integer, List<Integer>> scoreHistoryByTagetId = new HashMap<>();
-
-        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, null, group, null);
-        if (lastRun != null) {
-            List<GoogleTargetSummary> summaries = googleDB.targetSummary.list(lastRun.getId());
-            for (GoogleTargetSummary summary : summaries) {
-                if (summary != null) {
-                    summaryByTagetId.put(summary.getTargetId(), summary);
-                    List<Integer> scoreHistory = googleDB.targetSummary.listScoreHistory(group.getId(), summary.getTargetId(), 30);
-                    int missingScore = 30 - scoreHistory.size();
-                    for (int i = 0; i < missingScore; i++) {
-                        scoreHistory.add(0, 0);
-                    }
-                    scoreHistoryByTagetId.put(summary.getTargetId(), scoreHistory);
-                }
-            }
-        }
-
         return Results
             .ok()
             .render("default", googleDB.options.get())
             .render("searchesSize", context.getAttribute("searches", List.class).size())
-            .render("targets", context.getAttribute("targets"))
-            .render("summaries", summaryByTagetId)
-            .render("histories", scoreHistoryByTagetId);
+            .render("targets", context.getAttribute("targets"));
     }
 
     public Result jsonSearches(Context context) {

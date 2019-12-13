@@ -9,19 +9,10 @@
                 <th data-sort="string" >${i18n("label.name")} <i class="fa fa-sort" ></i></th>
                 <th class="compact-col" >${i18n("label.type")}</th>
                 <th>${i18n("label.pattern")}</th>                                
-                <th data-sort="int" class="compact-col">Score <i class="fa fa-sort" ></i></th>
-                <th class="compact-col">${i18n("label.history")}</th>
-                <th data-sort="int" >top 3 <i class="fa fa-sort" ></i></th>
-                <th data-sort="int" >top 10 <i class="fa fa-sort" ></i></th>
-                <th data-sort="int" >top 100 <i class="fa fa-sort" ></i></th>
-                <th data-sort="int" >out <i class="fa fa-sort" ></i></th>                                
             </tr>
             </thead>
             <tbody>
             <#list targets as target>
-            <#if summaries?api.get(target.getId())?? >
-                <#assign summary = summaries?api.get(target.getId()) >
-            </#if>
             <tr id="target-${target.getId()}">
                 <td><input class="chk-target" type="checkbox" name="id[]" value="${target.getId()}" /></td>
                 <td  class="compact-col">
@@ -43,62 +34,6 @@
                 </td>
                 <td>${target.getType().toString()?lower_case}</td>
                 <td>${target.getPattern()}</td>                                
-                <td>
-                    <#if summaries?api.get(target.getId())?? >
-                        <span class="<#if (summary.getDiffBP() > 0) >text-success<#elseif (summary.getDiffBP() < 0)>text-danger</#if>" data-toggle="tooltip" 
-                    title="${i18n("label.previous")} : ${fu.formatScore(summary.getPreviousScoreBP())}%" >${fu.formatScore(summary.getScoreBP())}%</span>
-                    </#if>
-                </td>
-                <td>
-                    <#if histories?api.get(target.getId())?? >
-                        <#assign history = histories?api.get(target.getId()) >
-                        <span class="score-history-inline" data-values="<#list history as score>${fu.formatScore(score)}<#sep>,</#list>" ></span>
-                    </#if>
-                </td>
-                <td class="td-top-kw">
-                    <#if summaries?api.get(target.getId())?? && (summaries?api.get(target.getId()).getTotalKeywords() > 0) >
-                    <div class="progress" data-toggle="tooltip" title="${(summary.getTotalTop3()/summary.getTotalKeywords()*100)?string["0.##"]}%">
-                        <div class="progress-bar" style="width: ${(summary.getTotalTop3()/summary.getTotalKeywords()*100)?c}%;">
-                            <span >
-                                ${summary.getTotalTop3()}/${summary.getTotalKeywords()}
-                            </span>
-                        </div>
-                    </div>
-                    </#if>
-                </td>
-                <td class="td-top-kw">
-                    <#if summaries?api.get(target.getId())?? && (summaries?api.get(target.getId()).getTotalKeywords() > 0) >
-                    <div class="progress" data-toggle="tooltip" title="${(summary.getTotalTop10()/summary.getTotalKeywords()*100)?string["0.##"]}%">
-                        <div class="progress-bar" style="width: ${(summary.getTotalTop10()/summary.getTotalKeywords()*100)?c}%;">
-                            <span >
-                                ${summary.getTotalTop10()}/${summary.getTotalKeywords()}
-                            </span>
-                        </div>
-                    </div>
-                    </#if>
-                </td>
-                <td class="td-top-kw">
-                    <#if summaries?api.get(target.getId())?? && (summaries?api.get(target.getId()).getTotalKeywords() > 0) >
-                    <div class="progress" data-toggle="tooltip" title="${(summary.getTotalTop100()/summary.getTotalKeywords()*100)?string["0.##"]}%">
-                        <div class="progress-bar" style="width: ${(summary.getTotalTop100()/summary.getTotalKeywords()*100)?c}%;">
-                            <span >
-                                ${summary.getTotalTop100()}/${summary.getTotalKeywords()}
-                            </span>
-                        </div>
-                    </div>
-                    </#if>
-                </td>
-                <td class="td-top-kw">
-                    <#if summaries?api.get(target.getId())?? && (summaries?api.get(target.getId()).getTotalKeywords() > 0) >
-                    <div class="progress" data-toggle="tooltip" title="${(summary.getTotalOut()/summary.getTotalKeywords()*100)?string["0.##"]}%">
-                        <div class="progress-bar" style="width: ${(summary.getTotalOut()/summary.getTotalKeywords()*100)?c}%;">
-                            <span >
-                                ${summary.getTotalOut()}/${summary.getTotalKeywords()}
-                            </span>
-                        </div>
-                    </div>
-                    </#if>
-                </td>                                
             </tr>
             </#list>
             </tbody>
