@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Singleton
@@ -415,73 +416,69 @@ public class RunDB extends AbstractDB {
 
 	public Run findLast(Module module, Collection<Run.Status> statuses, LocalDate untilDate, Group group, User user,
 			Collection<Integer> searchIds, Collection<Integer> targetIds) {
-        Run run = null;
+		Run run = null;
         try(Connection conn = ds.getConnection()){
 
-            boolean sub = (searchIds != null && !searchIds.isEmpty())
-					|| (targetIds != null && !targetIds.isEmpty());
-
-            SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
-                .select(getFields())
-                .from(t_run)
-                .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
-                .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
-                .where(t_run.moduleId.eq(module.ordinal()));
-            
-            BooleanExpression cond = null;
+            SQLQuery<Integer> query1 = new SQLQuery<>(conn,dbTplConf)
+                    .select(t_run.id)
+                    .from(t_run)
+                    .where(t_run.moduleId.eq(module.ordinal()));
 
             if(statuses != null){
-            	cond = t_run.status.in(statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList()));
+            	query1.where(t_run.status.in(statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList())));
             }
             
             if(untilDate != null){
-            	cond = t_run.day.loe(Date.valueOf(untilDate)).and(cond);
+            	query1.where(t_run.day.loe(Date.valueOf(untilDate)));
             }
         
         	if (user != null) {
-            	cond = t_run.userId.eq(user.getId()).and(cond);
+        		query1.where(t_run.userId.eq(user.getId()));
         	}
 
         	if (group != null) {
-        		if (sub) {
-        			cond = t_rank.groupId.eq(group.getId()).and(cond);
-        		} else {
-        			cond = t_run.groupId.eq(group.getId()).and(cond);
-        		}
+        		query1.where(t_run.groupId.eq(group.getId()));
             }
-
-        	if (searchIds != null) {
-        		cond = t_rank.googleSearchId.in(searchIds).and(cond);
-            }
-
-        	if (targetIds != null) {
-        		cond = t_rank.googleTargetId.in(targetIds).and(cond);
-            }
-
-        	if (cond != null) {
-            	if (sub) {
-					SubQueryExpression<Integer> subQuery = SQLExpressions.select(t_run.id.max().as(t_run.id))
-							.from(t_run).innerJoin(t_rank).on(t_run.id.eq(t_rank.runId).and(cond)).groupBy(t_run.day);
-    				query.where(t_run.id.in(subQuery));
-            	} else {
-            		query.where(cond);
+        	List<Integer> runIds = query1.fetch();
+        	
+        	if ((searchIds != null && !searchIds.isEmpty())
+					|| (targetIds != null && !targetIds.isEmpty())) {
+                SQLQuery<Integer> query2 = new SQLQuery<>(conn,dbTplConf)
+                        .select(t_rank.runId)
+                        .distinct()
+                        .from(t_rank)
+                        .where(t_rank.runId.in(runIds));
+                if (searchIds != null && !searchIds.isEmpty()) {
+            		query2.where(t_rank.googleSearchId.in(searchIds));
+                }
+                if (targetIds != null && !targetIds.isEmpty()) {
+                	query2.where(t_rank.googleTargetId.in(targetIds));
+                }
+                runIds = query2.fetch();
+                if (runIds.isEmpty() && group != null) { // no rank yet
+            		return findLast(module, statuses, untilDate, group, user, null, null);
             	}
         	}
 
-        	Tuple tuple = query
-                .orderBy(t_run.id.desc())
-                .limit(1)
-                .fetchFirst();
-
-        	if (tuple == null && sub && group != null) { // no rank yet
-        		return findLast(module, statuses, untilDate, group, user, null, null);
+        	Integer max = runIds.stream()
+                    .max((a, b) -> a.compareTo(b)).get();
+        	if (max != null) {
+            	SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
+                        .select(getFields())
+                        .from(t_run)
+                        .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+                        .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
+                        .where(t_run.id.eq(max))
+                        .where(t_run.moduleId.eq(module.ordinal()));
+              	Tuple tuple = query
+                       .orderBy(t_run.id.asc())
+                       .fetchFirst();
+                  run = fromTuple(tuple);	
         	}
-            run = fromTuple(tuple);
-
         }catch(Exception ex){
             LOG.error("SQL error", ex);
         }
-        return run;           
+        return run;
     }
     
     public Run findFirst(Module module, Collection<Run.Status> statuses, LocalDate fromDate){
@@ -497,69 +494,66 @@ public class RunDB extends AbstractDB {
         Run run = null;
         try(Connection conn = ds.getConnection()){
 
-            boolean sub = (searchIds != null && !searchIds.isEmpty())
-					|| (targetIds != null && !targetIds.isEmpty());
-
-            SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
-                .select(getFields())
-                .from(t_run)
-                .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
-                .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
-                .where(t_run.moduleId.eq(module.ordinal()));
-            
-            BooleanExpression cond = null;
+            SQLQuery<Integer> query1 = new SQLQuery<>(conn,dbTplConf)
+                    .select(t_run.id)
+                    .from(t_run)
+                    .where(t_run.moduleId.eq(module.ordinal()));
 
             if(statuses != null){
-            	cond = t_run.status.in(statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList()));
+            	query1.where(t_run.status.in(statuses.stream().map(Run.Status::ordinal).collect(Collectors.toList())));
             }
             
             if(fromDate != null){
-            	cond = t_run.day.goe(Date.valueOf(fromDate)).and(cond);
+            	query1.where(t_run.day.goe(Date.valueOf(fromDate)));
             }
         
         	if (user != null) {
-            	cond = t_run.userId.eq(user.getId()).and(cond);
+        		query1.where(t_run.userId.eq(user.getId()));
         	}
 
         	if (group != null) {
-        		if (sub) {
-        			cond = t_rank.groupId.eq(group.getId()).and(cond);
-        		} else {
-        			cond = t_run.groupId.eq(group.getId()).and(cond);
-        		}
+        		query1.where(t_run.groupId.eq(group.getId()));
             }
-
-        	if (searchIds != null) {
-        		cond = t_rank.googleSearchId.in(searchIds).and(cond);
-            }
-
-        	if (targetIds != null) {
-        		cond = t_rank.googleTargetId.in(targetIds).and(cond);
-            }
-
-        	if (cond != null) {
-            	if (sub) {
-					SubQueryExpression<Integer> subQuery = SQLExpressions.select(t_run.id.max().as(t_run.id))
-							.from(t_run).innerJoin(t_rank).on(t_run.id.eq(t_rank.runId).and(cond)).groupBy(t_run.day);
-    				query.where(t_run.id.in(subQuery));
-            	} else {
-            		query.where(cond);
+        	List<Integer> runIds = query1.fetch();
+        	
+        	if ((searchIds != null && !searchIds.isEmpty())
+					|| (targetIds != null && !targetIds.isEmpty())) {
+                SQLQuery<Integer> query2 = new SQLQuery<>(conn,dbTplConf)
+                        .select(t_rank.runId)
+                        .distinct()
+                        .from(t_rank)
+                        .where(t_rank.runId.in(runIds));
+                if (searchIds != null && !searchIds.isEmpty()) {
+            		query2.where(t_rank.googleSearchId.in(searchIds));
+                }
+                if (targetIds != null && !targetIds.isEmpty()) {
+                	query2.where(t_rank.googleTargetId.in(targetIds));
+                }
+                runIds = query2.fetch();
+                if (runIds.isEmpty() && group != null) { // no rank yet
+            		return findFirst(module, statuses, fromDate, group, user, null, null);
             	}
         	}
-        	
-        	Tuple tuple = query
-                .orderBy(t_run.id.asc())
-                .fetchFirst();
 
-        	if (tuple == null && sub && group != null) { // no rank yet
-        		return findFirst(module, statuses, fromDate, group, user, null, null);
+        	Integer min = runIds.stream()
+                    .min((a, b) -> a.compareTo(b)).get();
+        	if (min != null) {
+            	SQLQuery<Tuple> query = new SQLQuery<>(conn,dbTplConf)
+                        .select(getFields())
+                        .from(t_run)
+                        .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+                        .leftJoin(t_group).on(t_run.groupId.eq(t_group.id))
+                        .where(t_run.id.eq(min))
+                        .where(t_run.moduleId.eq(module.ordinal()));
+              	Tuple tuple = query
+                       .orderBy(t_run.id.asc())
+                       .fetchFirst();
+                  run = fromTuple(tuple);	
         	}
-            run = fromTuple(tuple);
-
         }catch(Exception ex){
             LOG.error("SQL error", ex);
         }
-        return run;           
+        return run;
     }    
     
     public void wipe(){
