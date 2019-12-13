@@ -60,9 +60,7 @@ public class GroupController extends BaseController {
             .render("currentUser", user)
             .render("users", users)
             .render("groups", groups)
-            .render("search_count", count)
-            .render("h2warning", count > 2000 && conf.dbUrl != null && conf.dbUrl.contains(":h2:"))
-            ;
+            .render("search_count", count);
     }
     
     public Result groups(Context context) throws JsonProcessingException{
@@ -75,9 +73,7 @@ public class GroupController extends BaseController {
             .render("currentUser", user)
             .render("users", users)
             .render("groups", groups)
-            .render("search_count", count)
-            .render("h2warning", count > 2000 && conf.dbUrl != null && conf.dbUrl.contains(":h2:"))
-            ;
+            .render("search_count", count);
     }
     
     public Result jsonSuggest(
