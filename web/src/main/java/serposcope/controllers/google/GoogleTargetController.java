@@ -450,14 +450,6 @@ public class GoogleTargetController extends GoogleController {
         builder.setCharAt(builder.length() - 1, ']');
         builder.append(",\n\"maxRank\": ").append(maxRank).append("}");
 
-        List<Event> events = baseDB.event.list(group, startDate, endDate);
-        String jsonEvents = null;
-        try {
-            jsonEvents = objectMapper.writeValueAsString(events);
-        } catch (JsonProcessingException ex) {
-            jsonEvents = "[]";
-        }
-
         Map<Integer, GoogleBest> bestRanks = new HashMap<>();
         for (GoogleSearch search : searches) {
             bestRanks.put(search.getId(), googleDB.rank.getBest(target.getGroupId(), target.getId(), search.getId()));
@@ -472,8 +464,7 @@ public class GoogleTargetController extends GoogleController {
             .render("minDate", minDay)
             .render("maxDate", maxDay)
             .render("display", display)
-            .render("ranksJson", builder.toString())
-            .render("eventsJson", jsonEvents);
+            .render("ranksJson", builder.toString());
     }
 
     @FilterWith({
@@ -626,25 +617,9 @@ public class GoogleTargetController extends GoogleController {
         	dates.add(run.getDay());
         }
         // events
-        List<Event> events = baseDB.event.list(group, startDate, endDate);
         for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {
-            LocalDate date = itr.next();
-            Event event = null;
-
-            for (Event candidat : events) {
-                if (date.equals(candidat.getDay())) {
-                    event = candidat;
-                    break;
-                }
-            }
-
-            if (event != null) {
-                writer
-                    .append("[\"").append(StringEscapeUtils.escapeJson(event.getTitle())).append("\",")
-                    .append('"').append(StringEscapeUtils.escapeJson(event.getDescription())).append("\"]");
-            } else {
-                writer.append("0");
-            }
+        	LocalDate date = itr.next();
+            writer.append("0");
 
             if (itr.hasNext()) {
                 writer.append(",");
@@ -749,26 +724,9 @@ public class GoogleTargetController extends GoogleController {
         	dates.add(run.getDay());
         }
         // events
-        List<Event> events = baseDB.event.list(group, startDate, endDate);
         for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {
         	LocalDate date = itr.next();
-            Event event = null;
-
-            for (Event candidat : events) {
-                if (date.equals(candidat.getDay())) {
-                    event = candidat;
-                    break;
-                }
-            }
-
-            if (event != null) {
-                jsonData
-                    .append("{\"title\":\"").append(StringEscapeUtils.escapeJson(event.getTitle()))
-                    .append("\",\"description\":\"").append(StringEscapeUtils.escapeJson(event.getDescription()))
-                    .append("\"},");
-            } else {
-                jsonData.append("null,");
-            }
+            jsonData.append("null,");
         }
         jsonData.deleteCharAt(jsonData.length() - 1);
         jsonData.append("]},");

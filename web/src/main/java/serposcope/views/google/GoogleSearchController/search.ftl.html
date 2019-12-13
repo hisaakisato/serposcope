@@ -33,15 +33,6 @@
     <div class="col-sm-6" >
         <div class="pull-right" >
             
-            <div class="inline-block">
-                <div class="input-group" >
-                    <a href="#" id="btn-add-event" class="btn btn-default" data-toggle="tooltip" data-container="body" 
-                       title="${i18n("label.addEventToCalendar")}" >
-                       <span class="fa fa-calendar"></span>
-                    </a>       
-                </div>
-            </div>
-
             <div class="inline-block" >
                 <div class="input-group" style="width: 190px;">
                     <input id="daterange-search" type="text" class="form-control" value="${i18n("label.noDataAvailable")}" disabled />
@@ -165,7 +156,6 @@
 </div>
 
 <#include "../../helpers/new-target.ftl.html" />
-<#include "../../helpers/add-event-modal.ftl.html" >
 <#include "../../helpers/export-serps-modal.ftl.html" >
 <div id="modal-export-serp" class="modal fade">
     <div class="modal-dialog">
@@ -202,7 +192,6 @@
      data-group-id="${group.getId()}"
      data-search-id="${search.getId()}"
      data-chart="${chart!"{}"}"
-     data-events="${events!"[]"}"
      data-start-date="${startDate!""}"
      data-end-date="${endDate!""}"
      data-min-date="${minDate!""}"

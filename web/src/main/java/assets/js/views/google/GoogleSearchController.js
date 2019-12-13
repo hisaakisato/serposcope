@@ -112,26 +112,6 @@ serposcope.googleSearchController = function () {
         }
         chart = new Dygraph(document.getElementById("google-search-chart"),chartData,chartOptions);
         chart.ready(function() {
-            var events = JSON.parse($("#csp-vars").attr("data-events"));
-            var labelFormatter = chart.getOption('axes').x.axisLabelFormatter;
-            var annotations = [];
-            for(var i=0;i<chartData.length;i++){
-                for(var j=0;j<events.length;j++){
-                    var event = events[j];
-                    var eventDate = serposcope.utils.eventDate(event);
-                    if(eventDate == labelFormatter(chartData[i][0])){
-                        annotations.push({
-                            series: "###CALENDAR###",
-                            x: chartData[i][0],
-                            cssClass: "fa fa-calendar calendar-annotation",
-                            title: event.title,
-                            text: event.description
-                        });
-                    }
-                }
-            }
-            
-            chart.setAnnotations(annotations); 
             $('.calendar-annotation').popover({
                 html:true,
                 placement: "bottom"

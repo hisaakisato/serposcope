@@ -117,7 +117,6 @@ public class GoogleGroupController extends GoogleController {
 
         return Results
             .ok()
-            .render("events", baseDB.event.list(group, null, null))
             .render("default", googleDB.options.get())
             .render("searchesSize", context.getAttribute("searches", List.class).size())
             .render("targets", context.getAttribute("targets"))
@@ -548,8 +547,8 @@ public class GoogleGroupController extends GoogleController {
         deleteSearches(group, searches);
         LOG.info("[Group Delete] Searches were deleted. id: {}", group.getId());
 
-        baseDB.event.delete(group);
-        LOG.info("[Group Delete] Events were deleted. id: {}", group.getId());
+//        baseDB.event.delete(group);
+//        LOG.info("[Group Delete] Events were deleted. id: {}", group.getId());
         baseDB.user.delPerm(group);
         LOG.info("[Group Delete] Permissions were deleted. id: {}", group.getId());
         if (!baseDB.group.delete(group)) {

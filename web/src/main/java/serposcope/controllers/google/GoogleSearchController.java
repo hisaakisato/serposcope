@@ -151,13 +151,6 @@ public class GoogleSearchController extends GoogleController {
 		startDate = firstRun.getDay();
 		endDate = lastRun.getDay();
 
-		String jsonEvents = null;
-		try {
-			jsonEvents = objectMapper.writeValueAsString(baseDB.event.list(group, startDate, endDate));
-		} catch (JsonProcessingException ex) {
-			jsonEvents = "[]";
-		}
-
 		GoogleSerp lastSerp = googleDB.serp.get(lastRun.getId(), search.getId());
 
 		List<GoogleTarget> targets = getTargets(context);
@@ -173,7 +166,7 @@ public class GoogleSearchController extends GoogleController {
 		String jsonRanks = getJsonRanks(targets, firstRun, lastRun, searchId);
 		Config config = baseDB.config.getConfig();
 
-		return Results.ok().render("displayMode", config.getDisplayGoogleSearch()).render("events", jsonEvents)
+		return Results.ok().render("displayMode", config.getDisplayGoogleSearch())
 				.render("targets", targets).render("chart", jsonRanks).render("search", search).render("serp", lastSerp)
 				.render("startDate", startDate).render("endDate", endDate).render("minDate", minDay)
 				.render("maxDate", maxDay).render("bestRankings", bestRankings);
