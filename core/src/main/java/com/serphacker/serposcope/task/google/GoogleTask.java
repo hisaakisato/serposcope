@@ -275,8 +275,9 @@ public class GoogleTask extends AbstractTask {
             if (targets == null) {
                 continue;
             }
+            Map<Integer, GoogleBest> bests = googleDB.rank.getBestByTarget(group, targets, search.getId());
             for (GoogleTarget target : targets) {
-                int best = googleDB.rank.getBest(group, target.getId(), search.getId()).getRank();
+            	GoogleBest best = bests.get(target.getId());
                 int rank = GoogleRank.UNRANKED;
                 String rankedUrl = null;
                 for (int i = 0; i < res.entries.size(); i++) {
@@ -300,7 +301,7 @@ public class GoogleTask extends AbstractTask {
                 GoogleTargetSummary summary = summariesByTarget.get(target.getId());
                 summary.addRankCandidat(gRank);
                 
-                if(rank != GoogleRank.UNRANKED && rank <= best){
+                if(rank != GoogleRank.UNRANKED && best != null && rank <= best.getRank()){
 					if (!googleDB.rank.insertBest(
 							new GoogleBest(group, target.getId(), search.getId(), rank, run.getStarted(), rankedUrl))) {
                     	return false;

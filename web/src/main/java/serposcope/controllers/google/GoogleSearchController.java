@@ -155,13 +155,7 @@ public class GoogleSearchController extends GoogleController {
 
 		List<GoogleTarget> targets = getTargets(context);
 
-		Map<Integer, GoogleBest> bestRankings = new HashMap<>();
-		for (GoogleTarget target : targets) {
-			GoogleBest best = googleDB.rank.getBest(target.getGroupId(), target.getId(), search.getId());
-			if (best != null) {
-				bestRankings.put(best.getGoogleTargetId(), best);
-			}
-		}
+		Map<Integer, GoogleBest> bestRankings = googleDB.rank.getBestByTarget(group.getId(), targets, search.getId());
 
 		String jsonRanks = getJsonRanks(targets, firstRun, lastRun, searchId);
 		Config config = baseDB.config.getConfig();

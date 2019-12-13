@@ -450,11 +450,6 @@ public class GoogleTargetController extends GoogleController {
         builder.setCharAt(builder.length() - 1, ']');
         builder.append(",\n\"maxRank\": ").append(maxRank).append("}");
 
-        Map<Integer, GoogleBest> bestRanks = new HashMap<>();
-        for (GoogleSearch search : searches) {
-            bestRanks.put(search.getId(), googleDB.rank.getBest(target.getGroupId(), target.getId(), search.getId()));
-        }
-
         return Results.ok()
             .template("/serposcope/views/google/GoogleTargetController/" + display + ".ftl.html")
             .render("target", target)
@@ -629,10 +624,12 @@ public class GoogleTargetController extends GoogleController {
         writer.append("]],");
 
         Map<Integer, StringBuilder> builders = new HashMap<>();
+        Map<Integer, GoogleBest> bests = googleDB.rank.getBestBySearch(target.getGroupId(), target.getId(), searches);
+
         for (GoogleSearch search : searches) {
             StringBuilder builder;
             builders.put(search.getId(), builder = new StringBuilder("["));
-            GoogleBest best = googleDB.rank.getBest(target.getGroupId(), target.getId(), search.getId());
+//            GoogleBest best = googleDB.rank.getBest(target.getGroupId(), target.getId(), search.getId());
 
             builder
                 .append(search.getId())
@@ -644,16 +641,16 @@ public class GoogleTargetController extends GoogleController {
                 .append("\",\"").append(search.getCustomParameters() == null ? "" : StringEscapeUtils.escapeJson(search.getCustomParameters()))
                 .append("\"],");
 
+            GoogleBest best = bests.get(search.getId());
             if (best == null) {
-                builder.append("0,");
-            } else {
-                builder
-                    .append("[").append(best.getRank())
-                    .append(",\"").append(best.getRunDay() != null ? best.getRunDay().toLocalDate().toString() : "?")
-                    .append("\",\"").append(StringEscapeUtils.escapeJson(best.getUrl()))
-                    .append("\"],");
+            	best = googleDB.rank.createUnranked(target.getGroupId(), target.getId(), search.getId());
             }
-            builder.append("[");
+            builder
+                .append("[").append(best.getRank())
+                .append(",\"").append(best.getRunDay() != null ? best.getRunDay().toLocalDate().toString() : "?")
+                .append("\",\"").append(StringEscapeUtils.escapeJson(best.getUrl()))
+                .append("\"],")
+            	.append("[");
         }
 
     	int start = runs.stream().min(Comparator.comparingInt(Run::getId)).get().getId();
@@ -732,12 +729,13 @@ public class GoogleTargetController extends GoogleController {
         jsonData.append("]},");
 
         Map<Integer, StringBuilder> builders = new HashMap<>();
+        Map<Integer, GoogleBest> bests = googleDB.rank.getBestBySearch(target.getGroupId(), target.getId(), searches);
 
         for (GoogleSearch search : searches) {
             StringBuilder builder;
             builders.put(search.getId(), builder = new StringBuilder());
             builder.append("");
-            GoogleBest best = googleDB.rank.getBest(target.getGroupId(), target.getId(), search.getId());
+            // GoogleBest best = googleDB.rank.getBest(target.getGroupId(), target.getId(), search.getId());
 
             builder.append("{\"id\":").append(search.getId())
                 .append(",\"search\":{")
@@ -750,16 +748,16 @@ public class GoogleTargetController extends GoogleController {
                 .append("\",\"c\":\"").append(search.getCustomParameters() == null ? "" : StringEscapeUtils.escapeJson(search.getCustomParameters()))
                 .append("\"}, \"best\":");
 
+            GoogleBest best = bests.get(search.getId());
             if (best == null) {
-                builder.append("null,");
-            } else {
-                builder
-                    .append("{\"rank\":").append(best.getRank())
-                    .append(",\"date\":\"").append(best.getRunDay() != null ? best.getRunDay().toLocalDate().toString() : "?")
-                    .append("\",\"url\":\"").append(StringEscapeUtils.escapeJson(best.getUrl()))
-                    .append("\"},");
+            	best = googleDB.rank.createUnranked(target.getGroupId(), target.getId(), search.getId());
             }
-            builder.append("\"days\": [");
+            builder
+                .append("{\"rank\":").append(best.getRank())
+                .append(",\"date\":\"").append(best.getRunDay() != null ? best.getRunDay().toLocalDate().toString() : "?")
+                .append("\",\"url\":\"").append(StringEscapeUtils.escapeJson(best.getUrl()))
+                .append("\"},")
+            	.append("\"days\": [");
         }
 
         for (Iterator<LocalDate> itr = dates.iterator(); itr.hasNext();) {

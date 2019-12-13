@@ -187,16 +187,17 @@ public class GoogleSerpRescanDB {
             final Map<Integer, GoogleBest> bests = new LinkedHashMap<>();
             final Map<Integer, MutableInt> previousRunIds = new HashMap<>();
             final Map<Integer, MutableInt> previousRanks = new HashMap<>();
+            Map<Integer, GoogleBest> specificBests = rankDB.getBestBySearch(target.getGroupId(), target.getId(), searches);
             for (GoogleSearch search : searches) {
             	int searchId = search.getId();
             	previousRunIds.putIfAbsent(searchId, new MutableInt(0));
             	previousRanks.putIfAbsent(searchId, new MutableInt(GoogleRank.UNRANKED));
-            	bests.putIfAbsent(searchId, new GoogleBest(target.getGroupId(), target.getId(), searchId, GoogleRank.UNRANKED, null, null));
+            	bests.putIfAbsent(searchId, rankDB.createUnranked(target.getGroupId(), target.getId(), searchId));
                 
                 if(specPrevRun != null){
                     previousRunIds.get(searchId).setValue(specPrevRun.getId());
                     previousRanks.get(searchId).setValue(rankDB.get(specPrevRun.getId(), target.getGroupId(), target.getId(), search.getId()));
-                    GoogleBest specificBest = rankDB.getBest(target.getGroupId(), target.getId(), search.getId());
+                    GoogleBest specificBest = specificBests.get(search.getId());
                     if(specificBest != null){
                     	bests.put(searchId, specificBest);
                     }
