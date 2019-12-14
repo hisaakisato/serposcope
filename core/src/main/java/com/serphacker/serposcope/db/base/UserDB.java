@@ -28,7 +28,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.sql.rowset.serial.SerialBlob;
 
 @Singleton
@@ -40,6 +43,7 @@ public class UserDB extends AbstractDB {
     QUser t_user = QUser.user;
     QGroup t_group = QGroup.group;
     QUserGroup t_user_group = QUserGroup.userGroup;
+    QUser t_owner = new QUser("OWNER");
 
     public int insert(User user) {
 
@@ -103,26 +107,36 @@ public class UserDB extends AbstractDB {
     }
 
     public List<User> list() {
-        List<User> users = new ArrayList<>();
+        Map<Integer, User> users = new LinkedHashMap<>();
 
         try (Connection con = ds.getConnection()) {
 
             List<Tuple> userTuples = new SQLQuery<Void>(con, dbTplConf)
-                .select(t_user.all())
+                .select(t_user.id, t_user.name, t_user.email,
+                		t_user.passwordHash, t_user.passwordSalt,
+                		t_user.admin, t_user.logout,
+                		t_group.id, t_group.moduleId, t_group.name, t_group.shared)
                 .from(t_user)
+                .leftJoin(t_user_group)
+                .on(t_user.id.eq(t_user_group.userId))
+                .leftJoin(t_group)
+                .on(t_user_group.groupId.eq(t_group.id))
                 .fetch();
 
             for (Tuple userTuple : userTuples) {
-
-                User user = fromTuple(userTuple);
-                addUserGroup(con, user);
-                users.add(user);
+                User tmp = fromTuple(userTuple);
+                User user = users.get(tmp.getId());
+                if (user == null) {
+                	users.put(tmp.getId(), tmp);
+                } else {
+                	user.getGroups().addAll(tmp.getGroups());
+                }
             }
 
         } catch (Exception ex) {
             LOG.error("SQL ex", ex);
         }
-        return users;
+        return new ArrayList<User>(users.values());
     }
 
     public User findById(int id) {
@@ -265,11 +279,10 @@ public class UserDB extends AbstractDB {
             LOG.error("SQL ex", ex);
         }
         return updated;
-    }    
+    }
 
     protected User fromTuple(Tuple tuple) throws SQLException {
-
-        if (tuple == null) {
+    	if (tuple == null) {
             return null;
         }
         
@@ -288,6 +301,14 @@ public class UserDB extends AbstractDB {
         user.setAdmin(tuple.get(t_user.admin));
         user.setLogout(tuple.get(t_user.logout) == null ? null : tuple.get(t_user.logout).toLocalDateTime());
 
+        if (tuple.get(t_group.id) != null) {
+        	Group group = new Group(
+                    tuple.get(t_group.id), 
+                    Group.Module.values()[tuple.get(t_group.moduleId)], 
+                    tuple.get(t_group.name));
+    		group.setShared(tuple.get(t_group.shared) == null ? false : tuple.get(t_group.shared));
+    		user.addGroup(group);
+        }
         return user;
     }
 

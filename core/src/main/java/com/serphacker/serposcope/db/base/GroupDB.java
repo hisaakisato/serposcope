@@ -27,7 +27,11 @@ import com.serphacker.serposcope.querybuilder.QUserGroup;
 import java.sql.Connection;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Singleton
 public class GroupDB extends AbstractDB {
@@ -196,41 +200,58 @@ public class GroupDB extends AbstractDB {
     }
     
     public List<Group> listForUser(User user, boolean admin){
-        List<Group> groups = new ArrayList<>();
+        List<Group> groups = new ArrayList<Group>();
         try(Connection con = ds.getConnection()){
-            
-			SubQueryExpression<Tuple> subQuery = SQLExpressions
-					.select(t_target.groupId, t_target.groupId.count().castToNum(Integer.class).as(t_target.id))
-					.from(t_target).groupBy(t_target.groupId);
 
-			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+			SQLQuery<Tuple> query1 = new SQLQuery<Void>(con, dbTplConf)
 					.select(t_group.id, t_group.moduleId, t_group.name, t_group.shared,
 							t_group.sundayEnabled, t_group.mondayEnabled,
 							t_group.tuesdayEnabled, t_group.wednesdayEnabled,
 							t_group.thursdayEnabled, t_group.fridayEnabled,
 							t_group.saturdayEnabled,
-							t_user.id, t_user.name, t_user.email, t_user.admin,
-							t_group.id.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId), t_target.id)
+							t_user.id, t_user.name, t_user.email, t_user.admin)
 					.from(t_group)
-					.leftJoin(t_user).on(t_group.ownerId.eq(t_user.id))
-					.leftJoin(t_searchGroup).on(t_group.id.eq(t_searchGroup.groupId))
-					.leftJoin(subQuery, t_target).on(t_group.id.eq(t_target.groupId))
-					.groupBy(t_group.id, t_target.id)
-					.orderBy(t_group.name.asc());
+					.leftJoin(t_user).on(t_group.ownerId.eq(t_user.id));;
             
             if(user != null && !admin){
-                query.leftJoin(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
-                query.where(t_group.shared.isTrue()
+                query1.leftJoin(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
+                query1.where(t_group.shared.isTrue()
                 		.or(t_group.ownerId.eq(user.getId()))
                 		.or(t_user_group.userId.eq(user.getId())));
             }
             
-            List<Tuple> tuples = query.fetch();
-
+            Map<Integer, Group> map = new HashMap<>();
+            List<Tuple> tuples = query1.fetch();
             for (Tuple tuple : tuples) {
-                groups.add(fromTuple(tuple));
+            	Group group = fromTuple(tuple);
+            	map.put(group.getId(), group);
             }
+
+            SQLQuery<Tuple> query2 = new SQLQuery<Void>(con, dbTplConf)
+            		.select(t_target.groupId, t_target.id.count().castToNum(Integer.class).as(t_target.id))
+					.from(t_target).groupBy(t_target.groupId)
+					.where(t_target.groupId.in(map.keySet()));
             
+            tuples = query2.fetch();
+            for (Tuple tuple : tuples) {
+            	Integer groupId = tuple.get(t_target.groupId);
+            	map.get(groupId).setTargets(tuple.get(t_target.id));
+            } 
+            
+            SQLQuery<Tuple> query3 = new SQLQuery<Void>(con, dbTplConf)
+            		.select(t_searchGroup.groupId, t_searchGroup.googleSearchId.count().castToNum(Integer.class).as(t_searchGroup.googleSearchId))
+					.from(t_searchGroup).groupBy(t_searchGroup.groupId)
+					.where(t_searchGroup.groupId.in(map.keySet()));
+            
+            tuples = query3.fetch();
+            for (Tuple tuple : tuples) {
+            	Integer groupId = tuple.get(t_searchGroup.groupId);
+            	map.get(groupId).setTargets(tuple.get(t_searchGroup.googleSearchId));
+            } 
+
+            groups.addAll(map.values());
+            groups.sort((x, y) -> x.getName().compareTo(y.getName()));
+
         }catch(Exception ex){
             LOG.error("SQLError ex", ex);
         }        
