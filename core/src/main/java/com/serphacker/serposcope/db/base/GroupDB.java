@@ -247,7 +247,7 @@ public class GroupDB extends AbstractDB {
             tuples = query3.fetch();
             for (Tuple tuple : tuples) {
             	Integer groupId = tuple.get(t_searchGroup.groupId);
-            	map.get(groupId).setTargets(tuple.get(t_searchGroup.googleSearchId));
+            	map.get(groupId).setSearches(tuple.get(t_searchGroup.googleSearchId));
             } 
 
             groups.addAll(map.values());
