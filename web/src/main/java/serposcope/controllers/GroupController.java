@@ -17,8 +17,6 @@ import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.User;
 import conf.SerposcopeConf;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import ninja.Context;
 import ninja.FilterWith;
@@ -29,7 +27,6 @@ import ninja.params.Param;
 import ninja.session.FlashScope;
 import org.apache.commons.lang3.StringEscapeUtils;
 import serposcope.controllers.google.GoogleGroupController;
-import serposcope.filters.AdminFilter;
 import serposcope.filters.AuthFilter;
 import serposcope.filters.XSRFFilter;
 
@@ -51,9 +48,23 @@ public class GroupController extends BaseController {
 
     public Result myGroups(Context context) throws JsonProcessingException{
         User user = context.getAttribute("user", User.class);
-        long count = googleDB.search.countForUser(user);
+        long count = googleDB.search.countForUser(user, false);
         List<User> users = baseDB.user.list();
-        List<Group> groups = baseDB.group.listForUser(user, false);
+        List<Group> groups = baseDB.group.listForUser(user, false, false);
+        return Results
+            .ok()
+    		.template("serposcope/views/GroupController/groups.ftl.html")
+            .render("currentUser", user)
+            .render("users", users)
+            .render("groups", groups)
+            .render("search_count", count);
+    }
+    
+    public Result sharedGroups(Context context) throws JsonProcessingException{
+        User user = context.getAttribute("user", User.class);
+        long count = googleDB.search.countForUser(user, true);
+        List<User> users = baseDB.user.list();
+        List<Group> groups = baseDB.group.listForUser(user, true, false);
         return Results
             .ok()
     		.template("serposcope/views/GroupController/groups.ftl.html")
@@ -67,7 +78,7 @@ public class GroupController extends BaseController {
         long count = googleDB.search.count();
         User user = context.getAttribute("user", User.class);
         List<User> users = baseDB.user.list();
-        List<Group> groups = baseDB.group.listForUser(user, user.isAdmin());
+        List<Group> groups = baseDB.group.listForUser(user, true, user.isAdmin());
         return Results
             .ok()
             .render("currentUser", user)
@@ -81,7 +92,7 @@ public class GroupController extends BaseController {
         @Param("query") String query
     ){
     	User user = context.getAttribute("user", User.class);
-        List<Group> groups = baseDB.group.listForUser(user, user.isAdmin());
+        List<Group> groups = baseDB.group.listForUser(user, true, user.isAdmin());
         
         StringBuilder builder = new StringBuilder("[");
         groups.stream()

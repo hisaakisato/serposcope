@@ -27,11 +27,9 @@ import com.serphacker.serposcope.querybuilder.QUserGroup;
 import java.sql.Connection;
 import java.time.DayOfWeek;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @Singleton
 public class GroupDB extends AbstractDB {
@@ -199,7 +197,7 @@ public class GroupDB extends AbstractDB {
         return groups;
     }
     
-    public List<Group> listForUser(User user, boolean admin){
+    public List<Group> listForUser(User user, boolean shared, boolean admin){
         List<Group> groups = new ArrayList<Group>();
         try(Connection con = ds.getConnection()){
 
@@ -215,9 +213,12 @@ public class GroupDB extends AbstractDB {
             
             if(user != null && !admin){
                 query1.leftJoin(t_user_group).on(t_user_group.groupId.eq((t_group.id)));
-                query1.where(t_group.shared.isTrue()
-                		.or(t_group.ownerId.eq(user.getId()))
-                		.or(t_user_group.userId.eq(user.getId())));
+                if (shared) {
+                	query1.where(t_group.shared.isTrue()
+                    		.or(t_user_group.userId.eq(user.getId())));
+                } else {
+                    query1.where((t_group.ownerId.eq(user.getId())));
+                }
             }
             
             Map<Integer, Group> map = new HashMap<>();

@@ -34,6 +34,7 @@ import com.serphacker.serposcope.querybuilder.QGoogleSearch;
 import com.serphacker.serposcope.querybuilder.QGoogleSearchGroup;
 import com.serphacker.serposcope.querybuilder.QGoogleSerp;
 import com.serphacker.serposcope.querybuilder.QGroup;
+import com.serphacker.serposcope.querybuilder.QUserGroup;
 import com.serphacker.serposcope.scraper.google.GoogleDevice;
 
 @Singleton
@@ -45,6 +46,7 @@ public class GoogleSearchDB extends AbstractDB {
     QGoogleSearchGroup t_ggroup = QGoogleSearchGroup.googleSearchGroup;
     QGoogleSerp t_gserp = QGoogleSerp.googleSerp;
     QGroup t_group = QGroup.group;
+    QUserGroup t_user_group = QUserGroup.userGroup;
     QGoogleRank t_rank = QGoogleRank.googleRank;
     QGoogleRankBest t_best = QGoogleRankBest.googleRankBest;
 	QGoogleSerp t_serp = QGoogleSerp.googleSerp;
@@ -279,12 +281,22 @@ public class GoogleSearchDB extends AbstractDB {
         return count == null ? -1l : count;
     }
     
-    public long countForUser(User user){
+    public long countForUser(User user, boolean shared){
         Long count = null;
         try(Connection con = ds.getConnection()){
-			SubQueryExpression<Integer> subQuery = SQLExpressions
-					.select(t_group.id).from(t_group)
-					.where(t_group.ownerId.eq(user.getId()));
+			SubQueryExpression<Integer> subQuery;
+			if (shared) {
+				subQuery = SQLExpressions
+						.select(t_group.id).from(t_group)
+						.leftJoin(t_user_group).on(t_user_group.groupId.eq((t_group.id)))
+						.where(t_group.shared.isTrue()
+	                    		.or(t_user_group.userId.eq(user.getId())));
+			} else {
+				subQuery = SQLExpressions
+						.select(t_group.id).from(t_group)
+						.where(t_group.ownerId.eq(user.getId()));
+			}
+			
 			count = new SQLQuery<Void>(con, dbTplConf)
                 .select(t_ggroup.googleSearchId.countDistinct())
                 .from(t_ggroup)

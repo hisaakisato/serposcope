@@ -98,6 +98,7 @@ public class Routes implements ApplicationRoutes {
         
         router.GET().route("/groups").with(GroupController.class, "groups");
         router.GET().route("/myGroups").with(GroupController.class, "myGroups");
+        router.GET().route("/sharedGroups").with(GroupController.class, "sharedGroups");
         router.POST().route("/groups/create").with(GroupController.class, "create");
         router.GET().route("/groups/suggest").with(GroupController.class, "jsonSuggest");
         
