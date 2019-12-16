@@ -18,12 +18,16 @@ create table `GOOGLE_SERP` (
     run_id int,
     google_search_id int,
     run_day datetime default null,
+    day date GENERATED ALWAYS AS (CAST(run_day AS DATE)) STORED,
     results bigint,
     serp blob,
     primary key(run_id, google_search_id),
     foreign key (google_search_id) references `GOOGLE_SEARCH`(id) on delete cascade
 ) engine = innodb default charset=utf8 /*! collate utf8_bin */;
 create index GOOGLE_SERP_SEARCH_ID on GOOGLE_SERP(google_search_id);
+create index GOOGLE_SERP_RUN_DAY on GOOGLE_SERP(run_day);
+create index GOOGLE_SERP_DAY on GOOGLE_SERP(day);
+create index GOOGLE_SERP_SEARCH_DAY on GOOGLE_SERP(google_search_id, day);
 
 drop table if exists `GOOGLE_SEARCH_GROUP`;
 create table `GOOGLE_SEARCH_GROUP` (

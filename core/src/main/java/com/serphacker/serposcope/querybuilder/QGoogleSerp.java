@@ -30,6 +30,8 @@ public class QGoogleSerp extends com.querydsl.sql.RelationalPathBase<QGoogleSerp
 
     public final DateTimePath<java.sql.Timestamp> runDay = createDateTime("runDay", java.sql.Timestamp.class);
 
+    public final DatePath<java.sql.Date> day = createDate("day", java.sql.Date.class);
+
     public final NumberPath<Integer> runId = createNumber("runId", Integer.class);
 
     public final SimplePath<java.sql.Blob> serp = createSimple("serp", java.sql.Blob.class);
@@ -65,10 +67,11 @@ public class QGoogleSerp extends com.querydsl.sql.RelationalPathBase<QGoogleSerp
 
     public void addMetadata() {
         addMetadata(googleSearchId, ColumnMetadata.named("GOOGLE_SEARCH_ID").withIndex(2).ofType(Types.INTEGER).withSize(10).notNull());
-        addMetadata(results, ColumnMetadata.named("RESULTS").withIndex(4).ofType(Types.BIGINT).withSize(19));
+        addMetadata(results, ColumnMetadata.named("RESULTS").withIndex(5).ofType(Types.BIGINT).withSize(19));
         addMetadata(runDay, ColumnMetadata.named("RUN_DAY").withIndex(3).ofType(Types.TIMESTAMP).withSize(23).withDigits(10));
+        addMetadata(day, ColumnMetadata.named("DAY").withIndex(4).ofType(Types.DATE).withSize(8).notNull());
         addMetadata(runId, ColumnMetadata.named("RUN_ID").withIndex(1).ofType(Types.INTEGER).withSize(10).notNull());
-        addMetadata(serp, ColumnMetadata.named("SERP").withIndex(5).ofType(Types.BLOB).withSize(2147483647));
+        addMetadata(serp, ColumnMetadata.named("SERP").withIndex(6).ofType(Types.BLOB).withSize(2147483647));
     }
 
 }
