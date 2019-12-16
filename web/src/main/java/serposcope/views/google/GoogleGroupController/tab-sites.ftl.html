@@ -8,11 +8,15 @@
                 <!--<th style="width:120px;"></th>-->
                 <th data-sort="string" >${i18n("label.name")} <i class="fa fa-sort" ></i></th>
                 <th class="compact-col" >${i18n("label.type")}</th>
-                <th>${i18n("label.pattern")}</th>                                
+                <th>${i18n("label.pattern")}</th>
+                <th data-sort="int" class="compact-col">Score<i class="fa fa-sort" ></i></th>                      
             </tr>
             </thead>
             <tbody>
             <#list targets as target>
+            <#if summaries?api.get(target.getId())?? >
+                <#assign summary = summaries?api.get(target.getId()) >
+            </#if>
             <tr id="target-${target.getId()}">
                 <td><input class="chk-target" type="checkbox" name="id[]" value="${target.getId()}" /></td>
                 <td  class="compact-col">
@@ -33,7 +37,13 @@
                     <a href="${reverseRoute("google.GoogleTargetController","target","groupId",group.getId(), "targetId", target.getId(), "display", "table")}" data-toggle="tooltip" title="${i18n("label.table")}" ><span class="fa fa-table"></span></a>                                    
                 </td>
                 <td>${target.getType().toString()?lower_case}</td>
-                <td>${target.getPattern()}</td>                                
+                <td>${target.getPattern()}</td>
+                <td>
+                    <#if summaries?api.get(target.getId())?? >
+                        <span class="<#if (summary.getDiffBP() > 0) >text-success<#elseif (summary.getDiffBP() < 0)>text-danger</#if>" data-toggle="tooltip" 
+                    title="${i18n("label.previous")} : ${fu.formatScore(summary.getPreviousScoreBP())}%" >${fu.formatScore(summary.getScoreBP())}%</span>
+                    </#if>
+                </td>
             </tr>
             </#list>
             </tbody>
