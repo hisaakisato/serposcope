@@ -106,7 +106,7 @@
     </dependencies>
     <build>
         <plugins>
-            <plugin>
+<!--             <plugin>
                 <groupId>com.querydsl</groupId>
                 <artifactId>querydsl-maven-plugin</artifactId>
                 <version>${querydsl.version}</version>
@@ -136,7 +136,7 @@
                         <version>1.4.189</version>
                     </dependency>                
                 </dependencies>
-            </plugin>    
+            </plugin>  -->   
         </plugins>
     </build>            
     
