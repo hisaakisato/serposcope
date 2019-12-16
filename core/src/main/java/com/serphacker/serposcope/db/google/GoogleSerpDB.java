@@ -35,7 +35,10 @@ import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import javax.sql.rowset.serial.SerialBlob;
 import net.jpountz.lz4.LZ4Compressor;
@@ -44,6 +47,8 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 
 @Singleton
 public class GoogleSerpDB extends AbstractDB {
+
+	private static final int FETCH_SIZE = 250;
 
 	QGoogleSerp t_serp = QGoogleSerp.googleSerp;
 	QGoogleRank t_rank = QGoogleRank.googleRank;
@@ -143,34 +148,47 @@ public class GoogleSerpDB extends AbstractDB {
 	public void stream(Integer firstRun, Integer lastRun, List<Integer> googleSearchIds, ThrowableConsumer<GoogleSerp> callback) {
 		try (Connection con = ds.getConnection()) {
 
-			BooleanExpression exp = t_serp.googleSearchId.in(googleSearchIds);
+			// sort by date and keyword
+			SQLQuery<Tuple> query1 = new SQLQuery<Void>(con, dbTplConf)
+					.select(t_serp.runId.max().as(t_serp.runId), t_serp.googleSearchId)
+					.from(t_serp)
+					.innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
+					.where(t_serp.googleSearchId.in(googleSearchIds))
+					.orderBy(t_serp.day.asc(), t_gsearch.keyword.asc())
+					.groupBy(t_serp.day, t_serp.googleSearchId);
+
 			if (firstRun != null && lastRun != null) {
-				exp = exp.and(t_serp.runId.between(firstRun, lastRun));
+				query1.where(t_serp.runId.between(firstRun, lastRun));
 			} else if (firstRun != null) {
-				exp = exp.and(t_serp.runId.goe(firstRun));
+				query1.where(t_serp.runId.goe(firstRun));
 			} else if (lastRun != null) {
-				exp = exp.and(t_serp.runId.loe(lastRun));
+				query1.where(t_serp.runId.loe(lastRun));
 			}
-
-			SubQueryExpression<Integer> subQuery = SQLExpressions
-					.select(t_serp.runId.max().as(t_serp.runId)).from(t_serp)
-					.where(exp)
-					.groupBy(SQLExpressions.date(Date.class, t_serp.runDay));
-
-			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.results, t_serp.serp, t_gsearch.id,
-							t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter, t_gsearch.device,
-							t_gsearch.local, t_gsearch.customParameters)
-					.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
-					.where(t_serp.runId.in(subQuery).and(t_serp.googleSearchId.in(googleSearchIds)))
-					.orderBy(t_serp.runId.asc());
-
-			query.setStatementOptions(StatementOptions.builder().setFetchSize(250).build());
-			CloseableIterator<Tuple> iterate = query.iterate();
-
-			while (iterate.hasNext()) {
-				GoogleSerp serp = fromTuple(iterate.next());
-				callback.accept(serp);
+			
+			List<Tuple> list = new ArrayList<>();
+			List<Tuple> tuples = query1.fetch();
+			for (Iterator<Tuple> itr = tuples.iterator(); itr.hasNext();) {
+				list.add(itr.next());
+				if (list.size() >= FETCH_SIZE || !itr.hasNext()) {
+					try {
+						SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+								.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.results, t_serp.serp,
+										t_gsearch.id, t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter,
+										t_gsearch.device, t_gsearch.local, t_gsearch.customParameters)
+								.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
+								.where(Expressions.list(t_serp.runId, t_serp.googleSearchId).in(list))
+								.orderBy(t_serp.day.asc(), t_gsearch.keyword.asc());
+	
+						query.setStatementOptions(StatementOptions.builder().setFetchSize(FETCH_SIZE).build());
+						CloseableIterator<Tuple> iterate = query.iterate();
+						while (iterate.hasNext()) {
+							GoogleSerp serp = fromTuple(iterate.next());
+							callback.accept(serp);
+						}
+					} finally {
+						list.clear();
+					}
+				}
 			}
 
 		} catch (InterruptedException ex) {
@@ -185,30 +203,42 @@ public class GoogleSerpDB extends AbstractDB {
 			ThrowableConsumer<GoogleSerp> callback) {
 		try (Connection con = ds.getConnection()) {
 
-			BooleanExpression exp = null;
+			// sort by date and keyword
+			SQLQuery<Tuple> query1 = new SQLQuery<Void>(con, dbTplConf)
+					.select(t_serp.runId.max().as(t_serp.runId), t_serp.googleSearchId)
+					.from(t_serp)
+					.innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
+					.where(t_serp.day.between(Date.valueOf(startDate), Date.valueOf(endDate)))
+					.orderBy(t_serp.day.asc(), t_gsearch.keyword.asc())
+					.groupBy(t_serp.day, t_serp.googleSearchId);
 			if (googleSearchIds != null && !googleSearchIds.isEmpty()) {
-				exp = t_serp.googleSearchId.in(googleSearchIds);
+				query1.where(t_serp.googleSearchId.in(googleSearchIds));
 			}
-
-			SubQueryExpression<Tuple> subQuery = SQLExpressions
-					.select(t_serp.runId.max().as(t_serp.runId), t_serp.googleSearchId).from(t_serp)
-					.where(SQLExpressions.date(Date.class, t_serp.runDay).between(Date.valueOf(startDate), Date.valueOf(endDate)).and(exp))
-					.groupBy(SQLExpressions.date(Date.class, t_serp.runDay), t_serp.googleSearchId);
-
-			SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
-					.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.results, t_serp.serp, t_gsearch.id,
-							t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter, t_gsearch.device,
-							t_gsearch.local, t_gsearch.customParameters)
-					.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
-					.where(Expressions.list(t_serp.runId, t_serp.googleSearchId).in(subQuery).and(exp))
-					.orderBy(t_serp.runId.asc(), t_gsearch.keyword.asc());
-
-			query.setStatementOptions(StatementOptions.builder().setFetchSize(250).build());
-			CloseableIterator<Tuple> iterate = query.iterate();
-
-			while (iterate.hasNext()) {
-				GoogleSerp serp = fromTuple(iterate.next());
-				callback.accept(serp);
+			
+			List<Tuple> list = new ArrayList<>();
+			List<Tuple> tuples = query1.fetch();
+			for (Iterator<Tuple> itr = tuples.iterator(); itr.hasNext();) {
+				list.add(itr.next());
+				if (list.size() >= FETCH_SIZE || !itr.hasNext()) {
+					try {
+						SQLQuery<Tuple> query = new SQLQuery<Void>(con, dbTplConf)
+								.select(t_serp.runId, t_serp.googleSearchId, t_serp.runDay, t_serp.results, t_serp.serp,
+										t_gsearch.id, t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter,
+										t_gsearch.device, t_gsearch.local, t_gsearch.customParameters)
+								.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
+								.where(Expressions.list(t_serp.runId, t_serp.googleSearchId).in(list))
+								.orderBy(t_serp.day.asc(), t_gsearch.keyword.asc());
+	
+						query.setStatementOptions(StatementOptions.builder().setFetchSize(FETCH_SIZE).build());
+						CloseableIterator<Tuple> iterate = query.iterate();
+						while (iterate.hasNext()) {
+							GoogleSerp serp = fromTuple(iterate.next());
+							callback.accept(serp);
+						}
+					} finally {
+						list.clear();
+					}
+				}
 			}
 
 		} catch (InterruptedException ex) {
