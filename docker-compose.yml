@@ -16,8 +16,8 @@ services:
             - "./web/target/serposcope.jar:/var/lib/serposcope/serposcope.jar"
         links:
             - mysql
+        env_file: .env
         environment:
-            SERPOSCOPE_DB_PASSWORD: secret
             SERPOSCOPE_UPLOAD_BUCKET: jp.markeship.serposcope.serps-dev
     mysql:
         image: mysql:5.7
