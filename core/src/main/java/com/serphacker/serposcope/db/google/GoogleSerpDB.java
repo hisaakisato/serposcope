@@ -9,6 +9,7 @@ package com.serphacker.serposcope.db.google;
 
 import com.google.inject.Singleton;
 import com.mysema.commons.lang.CloseableIterator;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.QueryFlag;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.SubQueryExpression;
@@ -48,7 +49,7 @@ import net.jpountz.lz4.LZ4FastDecompressor;
 @Singleton
 public class GoogleSerpDB extends AbstractDB {
 
-	private static final int FETCH_SIZE = 250;
+	private static final int FETCH_SIZE = 500;
 
 	QGoogleSerp t_serp = QGoogleSerp.googleSerp;
 	QGoogleRank t_rank = QGoogleRank.googleRank;
@@ -176,9 +177,14 @@ public class GoogleSerpDB extends AbstractDB {
 										t_gsearch.id, t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter,
 										t_gsearch.device, t_gsearch.local, t_gsearch.customParameters)
 								.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
-								.where(Expressions.list(t_serp.runId, t_serp.googleSearchId).in(list))
 								.orderBy(t_serp.day.asc(), t_gsearch.keyword.asc());
-	
+						BooleanBuilder builder = new BooleanBuilder();
+						for (Tuple tuple : list) {
+							builder.or(
+									t_serp.runId.eq(tuple.get(t_serp.runId)).and(
+											t_serp.googleSearchId.eq(tuple.get(t_serp.googleSearchId))));
+						}
+						query.where(builder);
 						query.setStatementOptions(StatementOptions.builder().setFetchSize(FETCH_SIZE).build());
 						CloseableIterator<Tuple> iterate = query.iterate();
 						while (iterate.hasNext()) {
@@ -226,9 +232,14 @@ public class GoogleSerpDB extends AbstractDB {
 										t_gsearch.id, t_gsearch.keyword, t_gsearch.country, t_gsearch.datacenter,
 										t_gsearch.device, t_gsearch.local, t_gsearch.customParameters)
 								.from(t_serp).innerJoin(t_gsearch).on(t_serp.googleSearchId.eq(t_gsearch.id))
-								.where(Expressions.list(t_serp.runId, t_serp.googleSearchId).in(list))
 								.orderBy(t_serp.day.asc(), t_gsearch.keyword.asc());
-	
+						BooleanBuilder builder = new BooleanBuilder();
+						for (Tuple tuple : list) {
+							builder.or(
+									t_serp.runId.eq(tuple.get(t_serp.runId)).and(
+											t_serp.googleSearchId.eq(tuple.get(t_serp.googleSearchId))));
+						}
+						query.where(builder);
 						query.setStatementOptions(StatementOptions.builder().setFetchSize(FETCH_SIZE).build());
 						CloseableIterator<Tuple> iterate = query.iterate();
 						while (iterate.hasNext()) {
