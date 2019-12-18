@@ -105,13 +105,14 @@ public class GoogleGroupController extends GoogleController {
 				}
 			}
 		}
-    	
+		Map<Integer, List<Integer>> scoreHistoryByTagetId = googleDB.targetSummary.listScoreHistories(group.getId(), summaryByTagetId.keySet(), 30);
         return Results
             .ok()
             .render("default", googleDB.options.get())
             .render("searchesSize", context.getAttribute("searches", List.class).size())
             .render("targets", context.getAttribute("targets"))
-            .render("summaries", summaryByTagetId);
+            .render("summaries", summaryByTagetId)
+            .render("histories", scoreHistoryByTagetId);
     }
 
     public Result jsonSearches(Context context) {

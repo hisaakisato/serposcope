@@ -9,7 +9,8 @@
                 <th data-sort="string" >${i18n("label.name")} <i class="fa fa-sort" ></i></th>
                 <th class="compact-col" >${i18n("label.type")}</th>
                 <th>${i18n("label.pattern")}</th>
-                <th data-sort="int" class="compact-col">Score<i class="fa fa-sort" ></i></th>                      
+                <th data-sort="int" class="compact-col">Score<i class="fa fa-sort" ></i></th>
+                <th class="compact-col">${i18n("label.history")}</th>
             </tr>
             </thead>
             <tbody>
@@ -42,6 +43,12 @@
                     <#if summaries?api.get(target.getId())?? >
                         <span class="<#if (summary.getDiffBP() > 0) >text-success<#elseif (summary.getDiffBP() < 0)>text-danger</#if>" data-toggle="tooltip" 
                     title="${i18n("label.previous")} : ${fu.formatScore(summary.getPreviousScoreBP())}%" >${fu.formatScore(summary.getScoreBP())}%</span>
+                    </#if>
+                </td>
+                <td>
+                    <#if histories?api.get(target.getId())?? >
+                        <#assign history = histories?api.get(target.getId()) >
+                        <span class="score-history-inline" data-values="<#list history as score>${fu.formatScore(score)}<#sep>,</#list>" ></span>
                     </#if>
                 </td>
             </tr>

@@ -39,6 +39,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -162,6 +163,40 @@ public class GoogleTargetSummaryDB extends AbstractDB {
         return scores;        
     }
     
+    public Map<Integer, List<Integer>> listScoreHistories(int groupId, Collection<Integer> targetIds, int history){  
+    	Map<Integer, List<Integer>> scores = new LinkedHashMap<>();
+        try(Connection con = ds.getConnection()){
+        	List<Tuple> tuples = new SQLQuery<Tuple>(con, dbTplConf)
+                .select(t_summary.googleTargetId, t_summary.scoreBasisPoint)
+                .from(t_summary)
+                .where(t_summary.groupId.eq(groupId))
+                .where(t_summary.googleTargetId.in(targetIds))
+                .orderBy(t_summary.googleTargetId.asc(), t_summary.runId.asc())
+                .fetch();
+        	
+        	for (Tuple tuple : tuples) {
+        		Integer targetId = tuple.get(t_summary.googleTargetId);
+        		if (!scores.containsKey(targetId)) {
+        			scores.put(targetId, new LinkedList<>());
+        		}
+        		List<Integer> targetScores = scores.get(targetId);
+        		if (targetScores.size() < history) {
+        			targetScores.add(tuple.get(t_summary.scoreBasisPoint));        			
+        		}
+        	}
+
+        	for (List<Integer> targetScores : scores.values()) {
+        		for (int i = targetScores.size(); i < history; i++) {
+        			targetScores.add(0,0);
+        		}
+        	}
+        }catch(Exception ex){
+            LOG.error("SQLError", ex);
+        }
+        
+        return scores;        
+    }
+
     public List<GoogleTargetSummary> list(int runId){
         return list(runId, false);
     }
