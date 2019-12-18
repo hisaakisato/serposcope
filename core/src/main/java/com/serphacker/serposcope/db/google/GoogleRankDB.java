@@ -380,7 +380,7 @@ public class GoogleRankDB extends AbstractDB {
 					.select(t_run.id.max().as(t_run.id))
 					.from(t_run)
 					.innerJoin(t_rank)
-					.on(t_run.id.between(runStartId, runEndId).and(t_run.groupId.eq(groupId))
+					.on(t_run.id.between(runStartId, runEndId)
 							.and(t_run.id.eq(t_rank.runId)).and(t_rank.googleTargetId.eq(targetId)))
 					.groupBy(t_run.day);
         	List<Integer> runIds = query1.fetch();
@@ -389,6 +389,7 @@ public class GoogleRankDB extends AbstractDB {
                 .select(t_rank.all())
                 .from(t_rank)
                 .where(t_rank.runId.in(runIds))
+                .where(t_rank.groupId.eq(groupId))
                 .where(t_rank.googleTargetId.eq(targetId));
             List<Tuple> tuples = query.fetch();
             

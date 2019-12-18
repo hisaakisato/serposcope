@@ -21,6 +21,7 @@ import com.serphacker.serposcope.db.AbstractDB;
 import com.serphacker.serposcope.models.base.Group;
 import com.serphacker.serposcope.models.base.Group.Module;
 import com.serphacker.serposcope.models.base.Run;
+import com.serphacker.serposcope.models.base.Run.Mode;
 import com.serphacker.serposcope.models.base.Run.Status;
 import com.serphacker.serposcope.models.google.GoogleTarget;
 import com.serphacker.serposcope.models.base.User;
@@ -42,6 +43,7 @@ import com.serphacker.serposcope.querybuilder.QUser;
 import java.sql.Connection;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -200,9 +202,9 @@ public class RunDB extends AbstractDB {
     }
 
     public List<Run> listDone(Integer firstId, Integer lastId){
-    	return listDone(firstId, lastId, null);
+    	return listDone(firstId, lastId, null, null);
     }
-    public List<Run> listDone(Integer firstId, Integer lastId, GoogleTarget target){
+    public List<Run> listDone(Integer firstId, Integer lastId, Group group, GoogleTarget target){
         List<Run> runs = new ArrayList<>();
         try(Connection conn = ds.getConnection()){
             SQLQuery<Tuple> query = new SQLQuery<>(conn, dbTplConf)
@@ -240,6 +242,23 @@ public class RunDB extends AbstractDB {
             for (Tuple tuple : tuples) {
                 Run run = fromTuple(tuple);
                 if(run != null){
+					if (run.getMode() == Mode.CRON && group != null
+							&& (group.isSundayEnabled() || group.isMondayEnabled() || group.isTuesdayEnabled()
+									|| group.isWednesdayEnabled() || group.isThursdayEnabled()
+									|| group.isFridayEnabled() || group.isSaturdayEnabled())) {
+						// check scheduled
+						DayOfWeek dayOfWeek = run.getDay().getDayOfWeek();
+						if ((dayOfWeek == DayOfWeek.SUNDAY && group.isSundayEnabled())
+								|| (dayOfWeek == DayOfWeek.MONDAY && group.isMondayEnabled())
+								|| (dayOfWeek == DayOfWeek.TUESDAY && group.isTuesdayEnabled())
+								|| (dayOfWeek == DayOfWeek.WEDNESDAY && group.isWednesdayEnabled())
+								|| (dayOfWeek == DayOfWeek.THURSDAY && group.isThursdayEnabled())
+								|| (dayOfWeek == DayOfWeek.FRIDAY && group.isFridayEnabled())
+								|| (dayOfWeek == DayOfWeek.SATURDAY && group.isSaturdayEnabled())) {
+							runs.add(run);							
+						}
+						continue;
+					}
                     runs.add(run);
                 }
             }
@@ -248,9 +267,73 @@ public class RunDB extends AbstractDB {
             LOG.error("SQL error", ex);
         }
         return runs;
-    }    
-    
-    
+    }
+
+    public List<Run> listDone(LocalDate startDate, LocalDate endDate, Group group, GoogleTarget target){
+        List<Run> runs = new ArrayList<>();
+        try(Connection conn = ds.getConnection()){
+            SQLQuery<Tuple> query = new SQLQuery<>(conn, dbTplConf)
+            	.distinct()
+                .select(getFields())
+                .from(t_run)
+                .leftJoin(t_user).on(t_run.userId.eq(t_user.id))
+                .leftJoin(t_group).on(t_run.groupId.eq(t_group.id));
+            
+            BooleanExpression exp = null;
+			if (startDate != null && endDate != null) {
+				exp = t_run.day.between(Date.valueOf(startDate), Date.valueOf(endDate));
+			} else if (startDate != null) {
+				exp = t_run.day.goe(Date.valueOf(startDate));
+			} else if (endDate != null) {
+				exp = t_run.day.loe(Date.valueOf(endDate));
+			}
+			
+            if (target != null) {
+            	exp = t_rank.googleTargetId.eq(target.getId()).and(exp);
+				query.leftJoin(t_rank).on(t_run.id.eq(t_rank.runId).and(t_rank.googleTargetId.eq(target.getId())));
+            }
+
+			SubQueryExpression<Integer> subQuery = SQLExpressions.select(t_run.id.max().as(t_run.id))
+					.from(t_run).innerJoin(t_rank).on(t_run.id.eq(t_rank.runId).and(exp)).groupBy(t_run.day);
+            
+			query.where(t_run.id.in(subQuery).and(exp));
+
+            
+            List<Tuple> tuples = query
+                .where(t_run.finished.isNotNull())
+                .orderBy(t_run.id.asc())
+                .fetch();
+            
+            for (Tuple tuple : tuples) {
+                Run run = fromTuple(tuple);
+                if(run != null){
+					if (run.getMode() == Mode.CRON && group != null
+							&& (group.isSundayEnabled() || group.isMondayEnabled() || group.isTuesdayEnabled()
+									|| group.isWednesdayEnabled() || group.isThursdayEnabled()
+									|| group.isFridayEnabled() || group.isSaturdayEnabled())) {
+						// check scheduled
+						DayOfWeek dayOfWeek = run.getDay().getDayOfWeek();
+						if ((dayOfWeek == DayOfWeek.SUNDAY && group.isSundayEnabled())
+								|| (dayOfWeek == DayOfWeek.MONDAY && group.isMondayEnabled())
+								|| (dayOfWeek == DayOfWeek.TUESDAY && group.isTuesdayEnabled())
+								|| (dayOfWeek == DayOfWeek.WEDNESDAY && group.isWednesdayEnabled())
+								|| (dayOfWeek == DayOfWeek.THURSDAY && group.isThursdayEnabled())
+								|| (dayOfWeek == DayOfWeek.FRIDAY && group.isFridayEnabled())
+								|| (dayOfWeek == DayOfWeek.SATURDAY && group.isSaturdayEnabled())) {
+							runs.add(run);							
+						}
+						continue;
+					}
+                    runs.add(run);
+                }
+            }
+            
+        }catch(Exception ex){
+            LOG.error("SQL error", ex);
+        }
+        return runs;
+    }
+
     public long count(){
         Long count = -1l;
         try(Connection conn = ds.getConnection()){

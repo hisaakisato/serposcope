@@ -39,6 +39,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -191,8 +192,28 @@ public class GoogleTargetController extends GoogleController {
                 .render("target", target);
         }
 
-        LocalDate minDay = minRun.getDay();
+        boolean scheduled = false;
+        LocalDate minDay = minRun.getDay();        
         LocalDate maxDay = maxRun.getDay();
+		if (group.isSundayEnabled() || group.isMondayEnabled() || group.isTuesdayEnabled() || group.isWednesdayEnabled()
+				|| group.isThursdayEnabled() || group.isFridayEnabled() || group.isSaturdayEnabled()) {
+			scheduled = true;
+			minDay = null;
+			for (int i = 0; i < 7; i++) {
+				LocalDate date = LocalDate.now();
+				DayOfWeek dayOfWeek = date.minusDays(i).getDayOfWeek();
+				if ((dayOfWeek == DayOfWeek.SUNDAY && group.isSundayEnabled())
+						|| (dayOfWeek == DayOfWeek.MONDAY && group.isMondayEnabled())
+						|| (dayOfWeek == DayOfWeek.TUESDAY && group.isTuesdayEnabled())
+						|| (dayOfWeek == DayOfWeek.WEDNESDAY && group.isWednesdayEnabled())
+						|| (dayOfWeek == DayOfWeek.THURSDAY && group.isThursdayEnabled())
+						|| (dayOfWeek == DayOfWeek.FRIDAY && group.isFridayEnabled())
+						|| (dayOfWeek == DayOfWeek.SATURDAY && group.isSaturdayEnabled())) {
+					maxDay = maxDay.compareTo(date) >= 0 ? maxDay : date;
+					break;
+				}
+			}
+		}
 
         LocalDate startDate = null;
         if (startDateStr != null) {
@@ -214,13 +235,28 @@ public class GoogleTargetController extends GoogleController {
             endDate = maxDay;
         }
 
-        Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate, group, null, null, Arrays.asList(targetId));
-        Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, group, null, null, Arrays.asList(targetId));
+        List<Run> runs = null;
+        if (scheduled) {
+            runs = baseDB.run.listDone((LocalDate)null, (LocalDate)null, group, target);
+            if (runs.size() > 0) {
+                minDay = runs.get(0).getDay();
+                if (startDate.compareTo(minDay) < 0) {
+                	startDate = minDay;
+                }
+                maxDay = runs.get(runs.size() - 1).getDay();            	
+                if (endDate.compareTo(maxDay) >= 0) {
+                	endDate = maxDay;
+                }
+            }
+        } else {
+        	List<Integer> targetIds = Arrays.asList(targetId);
+            Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate, group, null, null, targetIds);
+            Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, group, null, null, targetIds);
 
-        List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId(), target);
-
-        startDate = firstRun.getDay();
-        endDate = lastRun.getDay();
+            runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId(), group, target);
+            startDate = firstRun.getDay();
+            endDate = lastRun.getDay();
+        }
 
         switch (display) {
             case "table":
@@ -551,9 +587,7 @@ public class GoogleTargetController extends GoogleController {
             return Results.json().renderRaw("[]");
         }
 
-        final Run firstRun = baseDB.run.findFirst(group.getModule(), RunDB.STATUSES_DONE, startDate, group, null, null, Arrays.asList(targetId));
-        final Run lastRun = baseDB.run.findLast(group.getModule(), RunDB.STATUSES_DONE, endDate, group, null, null, Arrays.asList(targetId));
-        final List<Run> runs = baseDB.run.listDone(firstRun.getId(), lastRun.getId(), target);
+        final List<Run> runs = baseDB.run.listDone(startDate, endDate, group, target);
 
         return Results.ok()
             .json()
