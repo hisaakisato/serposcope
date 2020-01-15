@@ -13,7 +13,7 @@ public class GoogleResScrapParser extends GoogleLegacyScrapParser {
 	@Override
 	public Status parse(Element resElement, List<GoogleScrapLinkEntry> entries) {
 
-		Elements h3Elts = resElement.select("a > h3:first-child");
+		Elements h3Elts = resElement.select("a > h3");
 		if (h3Elts.isEmpty()) {
 			return super.parse(resElement, entries);
 		}
