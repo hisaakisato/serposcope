@@ -26,7 +26,7 @@ public class GoogleMainMobileScrapParser extends GoogleMainPingAttrMobileScrapPa
 				.select("#main a[href][ping] > div[role=heading],"
 						+ "#main a[href][onmousedown] > div[role=heading],"
 						+ "#main a[href*='.google.'] > div[role=heading]," // google service sites
-						+ "#main .g h3 > a[href][ping]" // featured snippets & gcard
+						+ "#main .g h3 a[href][ping]" // featured snippets & gcard
 						);
 
 		for (Element link : links) {
