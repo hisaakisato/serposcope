@@ -286,7 +286,7 @@ public class TaskController extends BaseController {
 		retry.setDay(run.getDay());
 		retry.setStatus(Status.RETRYING);
 
-        User user = context.getAttribute("user", User.class);
+        User user = run.getUser();
         if (!taskManager.startGoogleTask(retry, user, group)) {
             // flash.error("admin.task.errGoogleAlreadyRunning");
 			// return Results.redirect(router.getReverseRoute(TaskController.class, "tasks"));
