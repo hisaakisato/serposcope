@@ -4,7 +4,7 @@ SET FOREIGN_KEY_CHECKS=0;
 drop table if exists `GOOGLE_SEARCH`;
 create table `GOOGLE_SEARCH` (
     id int primary key auto_increment,
-    keyword varchar(255) not null,
+    keyword varchar(255) not null CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
     country varchar(2),
     datacenter varchar(64),
     device tinyint,
