@@ -91,7 +91,10 @@ public abstract class GoogleAbstractScrapParser {
 	
 	protected boolean isAdLink(Element element) {
 		for (Element parent : element.parents()) {
-			if (element.hasClass("ads-fr")) {
+			if (parent.hasClass("ads-fr")) {
+				return true;
+			}
+			if (parent.id().equals("tads")) {
 				return true;
 			}
 			String classes = parent.attr("class");
@@ -105,9 +108,18 @@ public abstract class GoogleAbstractScrapParser {
 		return false;
 	}
 
+	protected boolean underAreaLabel(Element element) {
+		for (Element parent : element.parents()) {
+			if (parent.hasAttr("aria-label")) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	protected boolean isFeaturedSnippets(Element element) {
 		for (Element parent : element.parents()) {
-			if (parent.hasClass("kno-result")) {
+			if (parent.hasClass("kno-result") || parent.hasClass("g-blk")) {
 				return true;
 			}
 		}

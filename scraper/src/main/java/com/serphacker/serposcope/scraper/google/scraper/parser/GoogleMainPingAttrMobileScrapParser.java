@@ -23,7 +23,7 @@ public class GoogleMainPingAttrMobileScrapParser extends GoogleMainDesktopScrapP
 		}
 
 		for (Element link : links) {
-			if (isInnerCard(link) || isAdLink(link)) {
+			if (isInnerCard(link) || isAdLink(link) || underAreaLabel(link)) {
 				continue;
 			}
 			StatsType type = StatsType.MOBILE_FEATURED_2;

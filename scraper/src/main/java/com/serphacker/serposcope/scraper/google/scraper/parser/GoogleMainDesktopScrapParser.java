@@ -24,6 +24,9 @@ public class GoogleMainDesktopScrapParser extends GoogleLegacyScrapParser {
 			if (isAdLink(link)) {
 				continue;
 			}
+			if (underAreaLabel(link)) {
+				continue;
+			}
 			if (!link.children().isEmpty() && "img".equals(link.child(0).tagName())) {
 				continue;
 			}
