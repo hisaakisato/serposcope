@@ -59,16 +59,16 @@ public class GoogleScraperTest {
 
         search = new GoogleScrapSearch();
         search.setKeyword("keyword");
-        assertEquals("https://www.google.com/search?q=keyword", scraper.buildRequestUrl(search, 0));
+        assertEquals("https://www.google.com/search?q=keyword&oq=keyword&hl=ja&ie=UTF-8", scraper.buildRequestUrl(search, 0));
 
         search = new GoogleScrapSearch();
         search.setKeyword("keyword");
-        assertEquals("https://www.google.com/search?q=keyword&start=10", scraper.buildRequestUrl(search, 1));
+        assertEquals("https://www.google.com/search?q=keyword&oq=keyword&hl=ja&ie=UTF-8&start=10", scraper.buildRequestUrl(search, 1));
 
         search = new GoogleScrapSearch();
         search.setKeyword("keyword");
         search.setDatacenter("10.0.0.1");
-        assertEquals("https://www.google.com/search?q=keyword", scraper.buildRequestUrl(search, 0));
+        assertEquals("https://www.google.com/search?q=keyword&oq=keyword&hl=ja&ie=UTF-8", scraper.buildRequestUrl(search, 0));
     }
 
     @Test
