@@ -135,6 +135,17 @@ public class GoogleScraper {
 					throw new InterruptedException();
 				}
 
+				// try top page
+				switch (navigateTopPage(search)) {
+				case 302:
+					++captchas;
+					return new GoogleScrapResult(Status.ERROR_CAPTCHA_NO_SOLVER, entries, captchas);
+				case 200:
+					break;
+				default:
+					return new GoogleScrapResult(Status.ERROR_NETWORK, entries, captchas);
+				}
+
 				String url = buildRequestUrl(search, page);
 
 				Status status = null;
@@ -263,6 +274,11 @@ public class GoogleScraper {
 		}
 	}
 
+	protected int navigateTopPage(GoogleScrapSearch search) {
+		String url = buildTopPageUrl(search);
+		return http.get(url);
+	}
+	
 	protected Status downloadSerp(String url, String referrer, GoogleScrapSearch search, int retry) {
 		if (referrer == null) {
 			referrer = "https://www.google.com";
@@ -438,12 +454,31 @@ public class GoogleScraper {
 
 	}
 
+	protected String buildTopPageUrl(GoogleScrapSearch search) {
+		String url = "https://" + buildHost(search) + "/";
+
+		if (search.getCountry() != null && !GoogleCountryCode.__.equals(search.getCountry())) {
+			url += "?gl=" + search.getCountry().name().toLowerCase();
+		} else {
+			url += "?gl=ja";			
+		}
+
+		url += "&hl=ja";
+
+		if (search.getResultPerPage() != 10) {
+			url += "&num=" + search.getResultPerPage();
+		}
+
+		return url;
+	}
+
 	protected String buildRequestUrl(GoogleScrapSearch search, int page) {
 		String url = "https://";
 		try {
-			url += buildHost(search) + "/search?q=" + URLEncoder.encode(search.getKeyword(), "utf-8");
+			String q = URLEncoder.encode(search.getKeyword(), "utf-8");
+			url += buildHost(search) + "/search?q=" + q + "&oq=" + q;
 		} catch (UnsupportedEncodingException ex) {
-			url += buildHost(search) + "/search?q=" + search.getKeyword();
+			url += buildHost(search) + "/search?q=" + search.getKeyword() + "&oq=" + search.getKeyword();
 		}
 
 		if (search.getCountry() != null && !GoogleCountryCode.__.equals(search.getCountry())) {
@@ -465,6 +500,11 @@ public class GoogleScraper {
 			}
 			url += search.getCustomParameters();
 		}
+
+		if (!url.contains("&hl=")) {
+			url += "&hl=ja";
+		}
+		url += "&ie=UTF-8";		
 
 		if (search.getResultPerPage() != 10) {
 			url += "&num=" + search.getResultPerPage();
